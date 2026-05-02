@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="ERM.Core/ERM.Core.csproj" />
+  <Project Path="ERM.Infrastructire/ERM.Infrastructure.csproj" />
+  <Project Path="ERM.UI/ERM.UI.csproj" />
+</Solution>
