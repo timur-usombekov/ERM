@@ -1,4 +1,5 @@
-﻿using ERM.Infrastructure;
+﻿using ERM.Application;
+using ERM.Infrastructure;
 using ERM.UI.ViewModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -7,7 +8,7 @@ using System.Windows;
 
 namespace ERM.UI
 {
-    public partial class App : Application
+    public partial class App : System.Windows.Application
     {
         private readonly IHost _host;
 
@@ -17,6 +18,7 @@ namespace ERM.UI
                 .ConfigureServices((_, services) =>
                 {
                     services.AddInfrastructure();
+                    services.AddApplication();
                     services.AddTransient<MainViewModel>();
                     services.AddTransient<MainWindow>();
                 })
@@ -37,9 +39,9 @@ namespace ERM.UI
             base.OnStartup(e);
         }
 
-        protected override async void OnExit(ExitEventArgs e)
+        protected override void OnExit(ExitEventArgs e)
         {
-            await _host.StopAsync();
+            _host.StopAsync(TimeSpan.FromSeconds(5)).GetAwaiter().GetResult();
             _host.Dispose();
             base.OnExit(e);
         }

@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using ERM.Application.Interfaces.Repositories;
+using ERM.Infrastructure.Repositories;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ERM.Infrastructure
@@ -17,6 +19,8 @@ namespace ERM.Infrastructure
 
             services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlite($"Data Source={dbPath}"));
+
+            services.AddScoped<IEmployeeRepository, EmployeeRepository>();
 
             return services;
         }

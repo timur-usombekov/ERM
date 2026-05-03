@@ -1,14 +1,29 @@
-﻿using ERM.Infrastructure;
+﻿using ERM.Application.Interfaces.Services;
+using ERM.UI.ViewModels.Base;
 
 namespace ERM.UI.ViewModels
 {
-    public class MainViewModel
+    public class MainViewModel : ViewModelBase
     {
-        private readonly AppDbContext _context;
+        private readonly IEmployeeService _employeeService;
 
-        public MainViewModel(AppDbContext context)
+        private ViewModelBase _currentViewModel = null!;
+        public ViewModelBase CurrentViewModel
         {
-            _context = context;
+            get => _currentViewModel;
+            set => SetField(ref _currentViewModel, value);
+        }
+
+        public RelayCommand NavigateToEmployeesCommand { get; }
+
+        public MainViewModel(IEmployeeService employeeService)
+        {
+            _employeeService = employeeService;
+
+            NavigateToEmployeesCommand = new RelayCommand(
+                _ => CurrentViewModel = new EmployeesViewModel(_employeeService));
+
+            CurrentViewModel = new EmployeesViewModel(_employeeService);
         }
     }
 }

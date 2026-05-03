@@ -28,7 +28,29 @@ namespace ERM.Core.Domain.Entities
             FullName = fullName;
             PhoneNumber = phoneNumber;
         }
+        public void AssignSeamstressRole(string machineNumber)
+        {
+            if (IsSeamstress)
+                throw new InvalidOperationException("Сотрудник уже является швеёй.");
 
+            Seamstress = new Seamstress(Id, machineNumber);
+        }
+
+        public void RevokeSeamstressRole()
+        {
+            if (!IsSeamstress)
+                throw new InvalidOperationException("Сотрудник не является швеёй.");
+
+            Seamstress = null;
+        }
+
+        public void UpdateMachineNumber(string machineNumber)
+        {
+            if (!IsSeamstress)
+                throw new InvalidOperationException("Сотрудник не является швеёй.");
+
+            Seamstress!.UpdateMachineNumber(machineNumber);
+        }
         public bool IsSeamstress => Seamstress is not null;
     }
 }
