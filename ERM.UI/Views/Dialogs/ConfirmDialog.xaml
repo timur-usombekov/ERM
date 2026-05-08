@@ -3,29 +3,23 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
-             Width="360">
-    <md:Card Padding="24">
+             Width="380">
+    <md:Card Padding="32" UniformCornerRadius="8">
         <StackPanel>
-            <TextBlock Text="Подтверждение"
-                       Style="{StaticResource MaterialDesignHeadline6TextBlock}"
-                       Margin="0,0,0,12" />
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                <md:PackIcon Kind="AlertCircleOutline" Width="32" Height="32" Foreground="#E53935" Margin="0,0,12,0"/>
+                <TextBlock Text="Подтверждение" Style="{StaticResource MaterialDesignHeadline6TextBlock}" VerticalAlignment="Center" />
+            </StackPanel>
 
-            <TextBlock Text="{Binding Message}"
-                       TextWrapping="Wrap"
-                       Margin="0,0,0,24" />
+            <TextBlock Text="{Binding Message}" TextWrapping="Wrap" FontSize="15" Opacity="0.8" Margin="0,0,0,32" />
 
-            <StackPanel Orientation="Horizontal"
-                        HorizontalAlignment="Right">
-                <Button Content="Отмена"
-                        Style="{StaticResource MaterialDesignFlatButton}"
-                        Command="{x:Static md:DialogHost.CloseDialogCommand}"
-                        CommandParameter="{x:Static sys:Boolean.FalseString}"
-                        Margin="0,0,8,0" />
-                <Button Content="Удалить"
-                        Style="{StaticResource MaterialDesignRaisedButton}"
-                        Background="Red" BorderBrush="Red"
-                        Command="{x:Static md:DialogHost.CloseDialogCommand}"
-                        CommandParameter="{x:Static sys:Boolean.TrueString}" />
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="Отмена" Style="{StaticResource MaterialDesignFlatButton}"
+                        Command="{x:Static md:DialogHost.CloseDialogCommand}" CommandParameter="{x:Static sys:Boolean.FalseString}"
+                        Foreground="{DynamicResource MaterialDesignBody}" Margin="0,0,8,0" />
+                <Button Content="Удалить" Style="{StaticResource MaterialDesignRaisedButton}"
+                        Background="#E53935" BorderBrush="#E53935" Foreground="White"
+                        Command="{x:Static md:DialogHost.CloseDialogCommand}" CommandParameter="{x:Static sys:Boolean.TrueString}" />
             </StackPanel>
         </StackPanel>
     </md:Card>

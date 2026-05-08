@@ -33,6 +33,18 @@
                 <dialogs:EditEmployeeDialog />
             </DataTemplate>
             
+            <DataTemplate DataType="{x:Type vm:ClothingModelsViewModel}">
+                <views:ClothingModelsView />
+            </DataTemplate>
+
+            <DataTemplate DataType="{x:Type vmDialogs:AddClothingModelDialogViewModel}">
+                <dialogs:AddClothingModelDialog />
+            </DataTemplate>
+
+            <DataTemplate DataType="{x:Type vmDialogs:EditClothingModelDialogViewModel}">
+                <dialogs:EditClothingModelDialog />
+            </DataTemplate>
+
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
             <converters:BoolToYesNoConverter x:Key="BoolToYesNo" />
         </ResourceDictionary>

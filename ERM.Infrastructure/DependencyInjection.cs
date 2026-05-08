@@ -21,6 +21,7 @@ namespace ERM.Infrastructure
                 options.UseSqlite($"Data Source={dbPath}"));
 
             services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+            services.AddScoped<IClothingModelRepository, ClothingModelRepository>();
 
             return services;
         }

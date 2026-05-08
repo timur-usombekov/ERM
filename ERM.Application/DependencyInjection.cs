@@ -9,6 +9,7 @@ namespace ERM.Application
         public static IServiceCollection AddApplication(this IServiceCollection services)
         {
             services.AddScoped<IEmployeeService, EmployeeService>();
+            services.AddScoped<IClothingModelService, ClothingModelService>();
             return services;
         }
     }

@@ -1,0 +1,15 @@
+﻿using ERM.Application.DTOs;
+using ERM.Core.Domain.Entities;
+
+namespace ERM.Application.Mappers
+{
+    public static class ClothingModelMapper
+    {
+        public static ClothingModelDto ToDto(this ClothingModel m) => new()
+        {
+            Id = m.Id,
+            Name = m.Name,
+            Description = m.Description
+        };
+    }
+}

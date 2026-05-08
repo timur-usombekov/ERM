@@ -1,0 +1,43 @@
+﻿<UserControl x:Class="ERM.UI.Views.Dialogs.AddClothingModelDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+             MinWidth="400" MaxWidth="500"
+             MaxHeight="600">
+
+    <md:Card Padding="32" UniformCornerRadius="8">
+        <!-- ScrollViewer, чтобы окно не ломалось на маленьких экранах -->
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,24">
+                    <md:PackIcon Kind="TshirtCrewOutline" Width="28" Height="28" Foreground="{DynamicResource PrimaryHueMidBrush}" Margin="0,0,12,0"/>
+                    <TextBlock Text="Новая модель одежды" Style="{StaticResource MaterialDesignHeadline5TextBlock}" VerticalAlignment="Center" />
+                </StackPanel>
+
+                <TextBox md:HintAssist.Hint="Название модели"
+                         md:HintAssist.IsFloating="True"
+                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                         Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
+                         Margin="0,0,0,16" FontSize="15" />
+
+                <!-- Добавлено MaxHeight="150" -->
+                <TextBox md:HintAssist.Hint="Описание (особенности кроя, материалы)"
+                         md:HintAssist.IsFloating="True"
+                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                         Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}"
+                         AcceptsReturn="True" TextWrapping="Wrap" 
+                         MinHeight="100" MaxHeight="150" 
+                         VerticalScrollBarVisibility="Auto"
+                         Margin="0,0,0,24" FontSize="15" />
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="Отмена" Style="{StaticResource MaterialDesignFlatButton}"
+                            Command="{x:Static md:DialogHost.CloseDialogCommand}" CommandParameter="{x:Null}"
+                            Foreground="{DynamicResource MaterialDesignBody}" Margin="0,0,8,0" Width="100"/>
+                    <Button Content="Сохранить" Style="{StaticResource MaterialDesignRaisedButton}"
+                            Command="{x:Static md:DialogHost.CloseDialogCommand}" CommandParameter="{Binding}" Width="120" />
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+    </md:Card>
+</UserControl>
