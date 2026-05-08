@@ -1,4 +1,5 @@
 ﻿using ERM.Application.Interfaces.Services;
+using ERM.Application.DTOs;
 using ERM.Core.Domain.Entities;
 using ERM.UI.ViewModels.Base;
 using ERM.UI.ViewModels.Dialogs;
@@ -11,7 +12,7 @@ namespace ERM.UI.ViewModels
     {
         private readonly IEmployeeService _employeeService;
 
-        public ObservableCollection<Employee> Employees { get; } = [];
+        public ObservableCollection<EmployeeDto> Employees { get; } = [];
 
         private bool _isLoading;
         public bool IsLoading
@@ -22,8 +23,8 @@ namespace ERM.UI.ViewModels
 
         public AsyncRelayCommand LoadEmployeesCommand { get; }
         public AsyncRelayCommand AddEmployeeCommand { get; }
-        public AsyncRelayCommand<Employee> DeleteEmployeeCommand { get; }
-        public AsyncRelayCommand<Employee> EditEmployeeCommand { get; }
+        public AsyncRelayCommand<EmployeeDto> DeleteEmployeeCommand { get; }
+        public AsyncRelayCommand<EmployeeDto> EditEmployeeCommand { get; }
 
 
         public EmployeesViewModel(IEmployeeService employeeService)
@@ -31,12 +32,12 @@ namespace ERM.UI.ViewModels
             _employeeService = employeeService;
             LoadEmployeesCommand = new AsyncRelayCommand(_ => LoadEmployeesAsync());
             AddEmployeeCommand = new AsyncRelayCommand(_ => AddEmployeeAsync());
-            DeleteEmployeeCommand = new AsyncRelayCommand<Employee>(DeleteEmployeeAsync);
-            EditEmployeeCommand = new AsyncRelayCommand<Employee>(EditEmployeeAsync);
+            DeleteEmployeeCommand = new AsyncRelayCommand<EmployeeDto>(DeleteEmployeeAsync);
+            EditEmployeeCommand = new AsyncRelayCommand<EmployeeDto>(EditEmployeeAsync);
 
             _ = LoadEmployeesAsync();
         }
-        private async Task EditEmployeeAsync(Employee? employee)
+        private async Task EditEmployeeAsync(EmployeeDto? employee)
         {
             if (employee is null) return;
 
@@ -46,7 +47,6 @@ namespace ERM.UI.ViewModels
             if (result is not EditEmployeeDialogViewModel vm || !vm.IsValid)
                 return;
 
-            // Передаем всё в сервис ОДНИМ вызовом
             await _employeeService.EditEmployeeAsync(
                 vm.EmployeeId,
                 vm.FullName,
@@ -59,7 +59,7 @@ namespace ERM.UI.ViewModels
             await LoadEmployeesAsync();
         }
 
-        private async Task DeleteEmployeeAsync(Employee? employee)
+        private async Task DeleteEmployeeAsync(EmployeeDto? employee)
         {
             if (employee is null) return;
 
@@ -95,7 +95,6 @@ namespace ERM.UI.ViewModels
 
             var result = await DialogHost.Show(dialogVm, "RootDialog");
 
-            // Пользователь нажал "Отмена" — result будет null
             if (result is not AddEmployeeDialogViewModel vm || !vm.IsValid)
                 return;
 

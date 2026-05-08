@@ -76,7 +76,7 @@
                 </DataGridTextColumn>
 
                 <DataGridTextColumn Header="№ машины"
-                        Binding="{Binding Seamstress.MachineNumber}"
+                        Binding="{Binding MachineNumber}"
                         Width="90" />
                 
                 <DataGridTemplateColumn Width="Auto">

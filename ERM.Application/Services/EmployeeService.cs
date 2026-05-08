@@ -1,6 +1,9 @@
 ﻿using ERM.Application.Interfaces.Repositories;
 using ERM.Application.Interfaces.Services;
 using ERM.Core.Domain.Entities;
+using ERM.Application.Mappers;
+using ERM.Application.DTOs;
+using System.Linq;
 
 namespace ERM.Application.Services
 {
@@ -13,13 +16,20 @@ namespace ERM.Application.Services
             _repository = repository;
         }
 
-        public Task<IReadOnlyList<Employee>> GetAllAsync(CancellationToken ct = default)
-            => _repository.GetAllAsync(ct);
+        public async Task<IReadOnlyList<EmployeeDto>> GetAllAsync(CancellationToken ct = default)
+        {
+            var employees = await _repository.GetAllAsync(ct);
 
-        public Task<Employee?> GetByIdAsync(Guid id, CancellationToken ct = default)
-            => _repository.GetByIdAsync(id, ct);
+            return employees.Select(e => e.ToDto()).ToList();
+        }
 
-        public async Task<Employee> CreateAsync(
+        public async Task<EmployeeDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
+        {
+            var employee = await _repository.GetByIdAsync(id, ct);
+            
+            return employee?.ToDto();
+        }
+        public async Task<EmployeeDto> CreateAsync(
             string fullName,
             string phoneNumber,
             string? notes = null,
@@ -35,10 +45,10 @@ namespace ERM.Application.Services
                 employee.AssignSeamstressRole(machineNumber); // домен создаёт Seamstress
 
             await _repository.AddAsync(employee, ct); // один SaveChanges — INSERT Employee + Seamstress
-            return employee;
+            return employee.ToDto();
         }
 
-        public async Task<Employee> EditEmployeeAsync(
+        public async Task<EmployeeDto> EditEmployeeAsync(
             Guid id,
             string fullName,
             string phoneNumber,
@@ -70,31 +80,7 @@ namespace ERM.Application.Services
 
             await _repository.UpdateAsync(employee, ct);
 
-            return employee;
-        }
-
-        public async Task<Employee> AssignSeamstressRoleAsync(Guid id, string machineNumber, CancellationToken ct = default)
-        {
-            var employee = await GetOrThrowAsync(id, ct);
-            employee.AssignSeamstressRole(machineNumber); // логика в домене
-            await _repository.UpdateAsync(employee, ct);
-            return employee;
-        }
-
-        public async Task<Employee> RevokeSeamstressRoleAsync(Guid id, CancellationToken ct = default)
-        {
-            var employee = await GetOrThrowAsync(id, ct);
-            employee.RevokeSeamstressRole(); // логика в домене
-            await _repository.UpdateAsync(employee, ct);
-            return employee;
-        }
-
-        public async Task<Employee> UpdateMachineNumberAsync(Guid id, string machineNumber, CancellationToken ct = default)
-        {
-            var employee = await GetOrThrowAsync(id, ct);
-            employee.UpdateMachineNumber(machineNumber); // логика в домене
-            await _repository.UpdateAsync(employee, ct);
-            return employee;
+            return employee.ToDto();
         }
 
         public async Task DeleteAsync(Guid id, CancellationToken ct = default)

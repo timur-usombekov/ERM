@@ -1,6 +1,6 @@
 <Solution>
   <Project Path="ERM.Application/ERM.Application.csproj" Id="281602cd-11b6-47a3-82b3-0751e3f1d1b4" />
   <Project Path="ERM.Core/ERM.Core.csproj" />
-  <Project Path="ERM.Infrastructire/ERM.Infrastructure.csproj" />
+  <Project Path="ERM.Infrastructure/ERM.Infrastructure.csproj" />
   <Project Path="ERM.UI/ERM.UI.csproj" />
 </Solution>

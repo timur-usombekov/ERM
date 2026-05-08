@@ -22,6 +22,7 @@ namespace ERM.UI.ViewModels.Base
         public bool CanExecute(object? parameter) => _canExecute?.Invoke(parameter) ?? true;
         public void Execute(object? parameter) => _execute(parameter);
     }
+    // Async версия для операций с БД
     public class AsyncRelayCommand<T> : ICommand
     {
         private readonly Func<T?, Task> _execute;
@@ -58,7 +59,6 @@ namespace ERM.UI.ViewModels.Base
             }
         }
     }
-    // Async версия для операций с БД
     public class AsyncRelayCommand : ICommand
     {
         private readonly Func<object?, Task> _execute;

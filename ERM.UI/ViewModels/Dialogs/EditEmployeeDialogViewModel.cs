@@ -1,4 +1,4 @@
-﻿using ERM.Core.Domain.Entities;
+﻿using ERM.Application.DTOs;
 using ERM.UI.ViewModels.Base;
 
 namespace ERM.UI.ViewModels.Dialogs
@@ -48,14 +48,14 @@ namespace ERM.UI.ViewModels.Dialogs
             (!IsSeamstress || !string.IsNullOrWhiteSpace(MachineNumber));
 
         // Принимаем существующего сотрудника и заполняем поля его данными
-        public EditEmployeeDialogViewModel(Employee employee)
+        public EditEmployeeDialogViewModel(EmployeeDto employee)
         {
             EmployeeId = employee.Id;
             _fullName = employee.FullName;
             _phoneNumber = employee.PhoneNumber;
             _notes = employee.Notes;
             _isSeamstress = employee.IsSeamstress;
-            _machineNumber = employee.Seamstress?.MachineNumber ?? string.Empty;
+            _machineNumber = employee.MachineNumber ?? string.Empty;
         }
     }
 }

@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ERM.Infrastructire\ERM.Infrastructure.csproj" />
+    <ProjectReference Include="..\ERM.Infrastructure\ERM.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

@@ -18,7 +18,7 @@
                     Background="{DynamicResource MaterialDesignDarkBackground}">
                 <StackPanel Margin="8">
                     <TextBlock Text="ERM"
-                               Foreground="White"
+                               Foreground="DimGray"
                                FontSize="20"
                                FontWeight="Bold"
                                Margin="8,16,8,24" />
@@ -26,7 +26,14 @@
                     <Button Content="Сотрудники"
                             Command="{Binding NavigateToEmployeesCommand}"
                             Style="{StaticResource MaterialDesignFlatButton}"
-                            Foreground="White"
+                            Foreground="DarkGray"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Left"
+                            Margin="0,2" />
+                    <Button Content="Одежда"
+                            Command="{Binding NavigateToEmployeesCommand}"
+                            Style="{StaticResource MaterialDesignFlatButton}"
+                            Foreground="DarkGray"
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Left"
                             Margin="0,2" />

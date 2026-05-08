@@ -17,7 +17,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ERM.Application\ERM.Application.csproj" />
-    <ProjectReference Include="..\ERM.Core\ERM.Core.csproj" />
   </ItemGroup>
 
 </Project>
