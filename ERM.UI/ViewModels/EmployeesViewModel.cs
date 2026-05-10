@@ -106,5 +106,6 @@ namespace ERM.UI.ViewModels
 
             await LoadEmployeesAsync();
         }
+
     }
 }

@@ -11,14 +11,20 @@ namespace ERM.Infrastructure.Configurations
             builder.HasKey(a => a.Id);
 
             builder.Property(a => a.Size).IsRequired().HasMaxLength(20);
-            builder.Property(a => a.Color).HasMaxLength(50);
+            builder.Property(a => a.Quantity).IsRequired();
 
             builder.HasOne(a => a.Seamstress)
                 .WithMany()
                 .HasForeignKey(a => a.SeamstressId)
-                .OnDelete(DeleteBehavior.Restrict); // Что бы случайно не удалить выполненый пошив
+                .OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasIndex(a => new { a.WeekNumber, a.Year }); // частый запрос — индекс
+            builder.HasOne(a => a.CutBatchItem)
+                .WithMany()
+                .HasForeignKey(a => a.CutBatchItemId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasIndex(a => new { a.WeekNumber, a.Year });
+            builder.HasIndex(a => a.AssignedDate);
         }
     }
 }

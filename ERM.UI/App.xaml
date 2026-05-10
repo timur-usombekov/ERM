@@ -45,6 +45,14 @@
                 <dialogs:EditClothingModelDialog />
             </DataTemplate>
 
+            <DataTemplate DataType="{x:Type vm:CutBatchesViewModel}">
+                <views:CutBatchesView />
+            </DataTemplate>
+
+            <DataTemplate DataType="{x:Type vmDialogs:AddCutBatchItemDialogViewModel}">
+                <dialogs:AddCutBatchItemDialog />
+            </DataTemplate>
+
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
             <converters:BoolToYesNoConverter x:Key="BoolToYesNo" />
         </ResourceDictionary>

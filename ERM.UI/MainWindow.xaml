@@ -21,6 +21,8 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                        <!-- Для справочников внизу -->
                     </Grid.RowDefinitions>
 
                     <StackPanel Grid.Row="0" Margin="24,32,24,32" Orientation="Horizontal">
@@ -28,24 +30,54 @@
                         <TextBlock Text="ERM System" FontSize="22" FontWeight="Bold" Margin="16,0,0,0" VerticalAlignment="Center"/>
                     </StackPanel>
 
+                    <!-- ГЛАВНОЕ МЕНЮ (РАБОТА) -->
                     <StackPanel Grid.Row="1" Margin="12,0">
-                        <Button Command="{Binding NavigateToEmployeesCommand}"
+                        <TextBlock Text="РАБОЧАЯ СМЕНА" FontSize="12" FontWeight="Bold" Foreground="Gray" Margin="16,8,0,8"/>
+
+                        <!-- Тут будет биндинг на Dashboard -->
+                        <Button Command="{Binding NavigateToDashboardCommand}" 
                                 Style="{StaticResource MaterialDesignFlatButton}"
                                 HorizontalContentAlignment="Left" Height="50" Margin="0,4"
                                 Foreground="{DynamicResource MaterialDesignBody}">
                             <StackPanel Orientation="Horizontal">
-                                <md:PackIcon Kind="AccountGroup" Width="24" Height="24" Margin="0,0,16,0" Opacity="0.7"/>
-                                <TextBlock Text="Сотрудники" FontSize="15" VerticalAlignment="Center"/>
+                                <md:PackIcon Kind="ClipboardTextClockOutline" Width="24" Height="24" Margin="0,0,16,0" Opacity="0.8"/>
+                                <TextBlock Text="Выдача рулонов" FontSize="15" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
 
-                        <Button Command="{Binding NavigateToClothingModelsCommand}"
+                        <Button Command="{Binding NavigateToCutBatchesCommand}"
                                 Style="{StaticResource MaterialDesignFlatButton}"
                                 HorizontalContentAlignment="Left" Height="50" Margin="0,4"
                                 Foreground="{DynamicResource MaterialDesignBody}">
                             <StackPanel Orientation="Horizontal">
-                                <md:PackIcon Kind="TshirtCrew" Width="24" Height="24" Margin="0,0,16,0" Opacity="0.7"/>
-                                <TextBlock Text="Модели одежды" FontSize="15" VerticalAlignment="Center"/>
+                                <md:PackIcon Kind="Fabric" Width="24" Height="24" Margin="0,0,16,0" Opacity="0.5"/>
+                                <TextBlock Text="Ввод кроя" FontSize="15" VerticalAlignment="Center" Opacity="0.5"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+
+                    <!-- СПРАВОЧНИКИ (В САМОМ НИЗУ) -->
+                    <StackPanel Grid.Row="2" Margin="12,0,12,24">
+                        <Border BorderBrush="{DynamicResource MaterialDesignDivider}" BorderThickness="0,1,0,0" Margin="0,0,0,8"/>
+                        <TextBlock Text="НАСТРОЙКИ" FontSize="12" FontWeight="Bold" Foreground="Gray" Margin="16,8,0,8"/>
+
+                        <Button Command="{Binding NavigateToClothingModelsCommand}"
+                                Style="{StaticResource MaterialDesignFlatButton}"
+                                HorizontalContentAlignment="Left" Height="40"
+                                Foreground="{DynamicResource MaterialDesignBody}">
+                            <StackPanel Orientation="Horizontal">
+                                <md:PackIcon Kind="TshirtCrew" Width="20" Height="20" Margin="0,0,16,0" Opacity="0.7"/>
+                                <TextBlock Text="Модели одежды" FontSize="14" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button Command="{Binding NavigateToEmployeesCommand}"
+                                Style="{StaticResource MaterialDesignFlatButton}"
+                                HorizontalContentAlignment="Left" Height="40"
+                                Foreground="{DynamicResource MaterialDesignBody}">
+                            <StackPanel Orientation="Horizontal">
+                                <md:PackIcon Kind="AccountGroup" Width="20" Height="20" Margin="0,0,16,0" Opacity="0.7"/>
+                                <TextBlock Text="Сотрудники" FontSize="14" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
                     </StackPanel>

@@ -10,6 +10,8 @@ namespace ERM.Application
         {
             services.AddScoped<IEmployeeService, EmployeeService>();
             services.AddScoped<IClothingModelService, ClothingModelService>();
+            services.AddScoped<ICutBatchService, CutBatchService>();
+
             return services;
         }
     }

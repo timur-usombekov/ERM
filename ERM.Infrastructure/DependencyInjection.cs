@@ -22,6 +22,7 @@ namespace ERM.Infrastructure
 
             services.AddScoped<IEmployeeRepository, EmployeeRepository>();
             services.AddScoped<IClothingModelRepository, ClothingModelRepository>();
+            services.AddScoped<ICutBatchRepository, CutBatchRepository>();
 
             return services;
         }

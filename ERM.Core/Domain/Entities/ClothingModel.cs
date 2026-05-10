@@ -7,10 +7,6 @@ namespace ERM.Core.Domain.Entities
         public string Name { get; private set; } = null!;
         public string? Description { get; private set; }
 
-        public IReadOnlyCollection<WorkAssignment> Assignments =>
-            _assignments.AsReadOnly();
-        private readonly List<WorkAssignment> _assignments = [];
-
         protected ClothingModel() { }
 
         public ClothingModel(string name, string? description = null)

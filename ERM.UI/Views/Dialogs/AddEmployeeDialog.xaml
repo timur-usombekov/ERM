@@ -63,7 +63,7 @@
                             Command="{x:Static md:DialogHost.CloseDialogCommand}" CommandParameter="{x:Null}"
                             Foreground="{DynamicResource MaterialDesignBody}" Margin="0,0,8,0" Width="100"/>
                     <Button Content="Сохранить" Style="{StaticResource MaterialDesignRaisedButton}"
-                            Command="{x:Static md:DialogHost.CloseDialogCommand}" CommandParameter="{Binding}" Width="120"/>
+                            Command="{x:Static md:DialogHost.CloseDialogCommand}" CommandParameter="{Binding}" Width="120" IsEnabled="{Binding IsValid}"/>
                 </StackPanel>
             </StackPanel>
         </ScrollViewer>

@@ -16,11 +16,6 @@ namespace ERM.Infrastructure.Configurations
 
             builder.Property(m => m.Description)
                 .HasMaxLength(1000);
-
-            builder.HasMany(m => m.Assignments)
-                .WithOne(a => a.ClothingModel)
-                .HasForeignKey(a => a.ClothingModelId)
-                .OnDelete(DeleteBehavior.Restrict); // что бы не удалить пошив при удалении модели одежды
         }
     }
 }
