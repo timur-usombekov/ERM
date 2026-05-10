@@ -10,6 +10,8 @@ namespace ERM.Application.Mappers
             Id = b.Id,
             Title = b.Title,
             Date = b.Date,
+            DeclaredQuantity = b.DeclaredQuantity,
+            UnallocatedQuantity = b.UnallocatedQuantity,
             Items = b.Items.Select(i => new CutBatchItemDto
             {
                 Id = i.Id,

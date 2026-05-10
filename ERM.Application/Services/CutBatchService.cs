@@ -18,12 +18,13 @@ namespace ERM.Application.Services
             return batches.Select(b => b.ToDto()).ToList();
         }
 
-        public async Task<CutBatchDto> CreateAsync(string title, DateOnly date, CancellationToken ct = default)
+        public async Task<CutBatchDto> CreateAsync(string title, DateOnly date, int declaredQuantity, CancellationToken ct = default)
         {
-            var batch = new CutBatch(title, date);
+            var batch = new CutBatch(title, date, declaredQuantity);
             await _repo.AddAsync(batch, ct);
             return batch.ToDto();
         }
+
 
         public async Task AddItemToBatchAsync(Guid batchId, Guid modelId, string color, int quantity, CancellationToken ct = default)
         {

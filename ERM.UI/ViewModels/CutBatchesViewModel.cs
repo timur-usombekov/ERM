@@ -3,7 +3,10 @@ using ERM.Application.Interfaces.Services;
 using ERM.UI.ViewModels.Base;
 using ERM.UI.ViewModels.Dialogs;
 using MaterialDesignThemes.Wpf;
+using System;
 using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace ERM.UI.ViewModels
 {
@@ -30,8 +33,9 @@ namespace ERM.UI.ViewModels
 
         public AsyncRelayCommand LoadCommand { get; }
         public AsyncRelayCommand AddBatchCommand { get; }
-        public AsyncRelayCommand DeleteBatchCommand { get; }
         public AsyncRelayCommand AddItemCommand { get; }
+
+        public AsyncRelayCommand<CutBatchDto> DeleteBatchCommand { get; }
 
         public CutBatchesViewModel(ICutBatchService cutBatchService, IClothingModelService clothingModelService)
         {
@@ -40,8 +44,10 @@ namespace ERM.UI.ViewModels
 
             LoadCommand = new AsyncRelayCommand(_ => LoadAsync());
             AddBatchCommand = new AsyncRelayCommand(_ => AddBatchAsync());
-            DeleteBatchCommand = new AsyncRelayCommand(DeleteBatchAsync, _ => SelectedBatch is not null);
-            AddItemCommand = new AsyncRelayCommand(AddItemAsync, _ => SelectedBatch is not null);
+
+            AddItemCommand = new AsyncRelayCommand(_ => AddItemAsync(), _ => SelectedBatch is not null);
+
+            DeleteBatchCommand = new AsyncRelayCommand<CutBatchDto>(DeleteBatchAsync);
 
             _ = LoadAsync();
         }
@@ -62,45 +68,48 @@ namespace ERM.UI.ViewModels
 
         private async Task AddBatchAsync()
         {
-            // Позже можно вынести в диалоговое окно
-            var newBatch = await _cutBatchService.CreateAsync($"Крой от {DateTime.Now:dd.MM.yyyy HH:mm}", DateOnly.FromDateTime(DateTime.Today));
+            var dialogVm = new AddCutBatchDialogViewModel();
+            var result = await DialogHost.Show(dialogVm, "RootDialog");
+
+            if (result is not AddCutBatchDialogViewModel vm || !vm.IsValid) return;
+
+            var dateOnly = DateOnly.FromDateTime(vm.Date);
+            var newBatch = await _cutBatchService.CreateAsync(vm.Title, dateOnly, vm.DeclaredQuantity);
+
             Batches.Insert(0, newBatch);
             SelectedBatch = newBatch;
         }
 
-        private async Task DeleteBatchAsync(object? parameter)
+        private async Task DeleteBatchAsync(CutBatchDto? batch)
         {
-            if (SelectedBatch is null) return;
+            if (batch is null) return;
 
-            var confirmed = await DialogHost.Show(new ConfirmDialogViewModel($"Удалить {SelectedBatch.Title}?"), "RootDialog");
+            var confirmed = await DialogHost.Show(new ConfirmDialogViewModel($"Удалить документ «{batch.Title}»?"), "RootDialog");
             if (confirmed?.ToString() != "True") return;
 
-            await _cutBatchService.DeleteAsync(SelectedBatch.Id);
-            Batches.Remove(SelectedBatch);
+            await _cutBatchService.DeleteAsync(batch.Id);
+            Batches.Remove(batch);
             SelectedBatch = Batches.FirstOrDefault();
         }
 
-        private async Task AddItemAsync(object? parameter)
+        private async Task AddItemAsync()
         {
             if (SelectedBatch is null) return;
 
             var models = await _clothingModelService.GetAllAsync();
-            if (!models.Any())
-            {
-                // Тут в идеале показать сообщение "Сначала создайте модели одежды"
-                return;
-            }
+            if (!models.Any()) return;
 
             var vm = new AddCutBatchItemDialogViewModel(models);
             var result = await DialogHost.Show(vm, "RootDialog");
 
             if (result is not AddCutBatchItemDialogViewModel r || !r.IsValid) return;
 
-            await _cutBatchService.AddItemToBatchAsync(SelectedBatch.Id, r.SelectedModel!.Id, r.Color, r.Quantity);
+
+            if (!await ExecuteSafeAsync(() =>
+                _cutBatchService.AddItemToBatchAsync(SelectedBatch.Id, r.SelectedModel!.Id, r.Color, r.Quantity)
+            )) return; // если факап, то прерываем метод.
 
             await LoadAsync();
-
-            // Восстанавливаем выбор (т.к. LoadAsync сбросит его)
             SelectedBatch = Batches.FirstOrDefault(b => b.Id == SelectedBatch.Id);
         }
     }

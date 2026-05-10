@@ -69,7 +69,9 @@
                         <TextBlock Text="{Binding SelectedBatch.Title}" FontSize="20" FontWeight="Medium" VerticalAlignment="Center"/>
 
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                            <Button Style="{StaticResource MaterialDesignToolButton}" ToolTip="Удалить документ" Command="{Binding DeleteBatchCommand}">
+                            <Button Style="{StaticResource MaterialDesignToolButton}" 
+                                    ToolTip="Удалить документ" Command="{Binding DeleteBatchCommand}" 
+                                    CommandParameter="{Binding SelectedBatch}">
                                 <md:PackIcon Kind="TrashCanOutline" Foreground="#E53935" Width="20" Height="20"/>
                             </Button>
                         </StackPanel>

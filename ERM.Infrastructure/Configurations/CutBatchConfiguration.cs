@@ -17,6 +17,8 @@ namespace ERM.Infrastructure.Configurations
                 .WithOne(i => i.CutBatch)
                 .HasForeignKey(i => i.CutBatchId)
                 .OnDelete(DeleteBehavior.Cascade); // Пока что каскадное удаление от кроя, можно изменить при необходимости
+
+            builder.Property(b => b.DeclaredQuantity).IsRequired();
         }
     }
 }

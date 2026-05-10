@@ -30,6 +30,7 @@ namespace ERM.Core.Domain.Entities
             SeamstressId = seamstressId;
             CutBatchItemId = cutBatchItemId;
             Size = size;
+
             Quantity = quantity;
 
             AssignedDate = DateOnly.FromDateTime(DateTime.Today);

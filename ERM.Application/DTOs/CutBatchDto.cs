@@ -5,6 +5,8 @@
         public Guid Id { get; set; }
         public string Title { get; set; } = string.Empty;
         public DateOnly Date { get; set; }
+        public int DeclaredQuantity { get; set; }
+        public int UnallocatedQuantity { get; set; } // Для UI
 
         public List<CutBatchItemDto> Items { get; set; } = [];
     }

@@ -41,7 +41,7 @@
                                 Foreground="{DynamicResource MaterialDesignBody}">
                             <StackPanel Orientation="Horizontal">
                                 <md:PackIcon Kind="ClipboardTextClockOutline" Width="24" Height="24" Margin="0,0,16,0" Opacity="0.8"/>
-                                <TextBlock Text="Выдача рулонов" FontSize="15" VerticalAlignment="Center"/>
+                                <TextBlock Text="Выдача кроя" FontSize="15" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
 
@@ -51,7 +51,7 @@
                                 Foreground="{DynamicResource MaterialDesignBody}">
                             <StackPanel Orientation="Horizontal">
                                 <md:PackIcon Kind="Fabric" Width="24" Height="24" Margin="0,0,16,0" Opacity="0.5"/>
-                                <TextBlock Text="Ввод кроя" FontSize="15" VerticalAlignment="Center" Opacity="0.5"/>
+                                <TextBlock Text="Крой(закройщик)" FontSize="15" VerticalAlignment="Center" Opacity="0.5"/>
                             </StackPanel>
                         </Button>
                     </StackPanel>

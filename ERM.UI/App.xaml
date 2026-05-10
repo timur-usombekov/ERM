@@ -61,6 +61,14 @@
                 <dialogs:AddWorkAssignmentDialog />
             </DataTemplate>
 
+            <DataTemplate DataType="{x:Type vmDialogs:AddCutBatchDialogViewModel}">
+                <dialogs:AddCutBatchDialog />
+            </DataTemplate>
+
+            <DataTemplate DataType="{x:Type vmDialogs:ErrorDialogViewModel}">
+                <dialogs:ErrorDialog />
+            </DataTemplate>
+
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
             <converters:BoolToYesNoConverter x:Key="BoolToYesNo" />
         </ResourceDictionary>

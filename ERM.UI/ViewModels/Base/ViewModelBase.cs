@@ -1,4 +1,6 @@
-﻿using System.ComponentModel;
+﻿using ERM.UI.ViewModels.Dialogs;
+using MaterialDesignThemes.Wpf;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
 namespace ERM.UI.ViewModels.Base
@@ -17,5 +19,30 @@ namespace ERM.UI.ViewModels.Base
             OnPropertyChanged(propertyName);
             return true;
         }
+
+        protected async Task<bool> ExecuteSafeAsync(Func<Task> action)
+        {
+            try
+            {
+                await action();
+                return true; // Успех
+            }
+            catch (InvalidOperationException ex) //  ошибки бизнес-логики
+            {
+                await DialogHost.Show(new ErrorDialogViewModel(ex.Message), "RootDialog");
+                return false;
+            }
+            catch (ArgumentException ex) //  ошибки валидации домена
+            {
+                await DialogHost.Show(new ErrorDialogViewModel(ex.Message), "RootDialog");
+                return false;
+            }
+            catch (Exception ex) //  всё остальное (БД упала и тд)
+            {
+                await DialogHost.Show(new ErrorDialogViewModel($"Критическая ошибка: {ex.Message}"), "RootDialog");
+                return false;
+            }
+        }
+
     }
 }

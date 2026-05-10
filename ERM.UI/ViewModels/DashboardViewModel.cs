@@ -56,7 +56,6 @@ namespace ERM.UI.ViewModels
 
         private async Task IssueWorkAsync()
         {
-            // Грузим швей
             var allEmployees = await _employeeService.GetAllAsync();
             var seamstresses = allEmployees.Where(e => e.IsSeamstress).ToList();
 

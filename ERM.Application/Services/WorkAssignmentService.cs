@@ -23,6 +23,7 @@ namespace ERM.Application.Services
         public async Task<WorkAssignmentDto> IssueWorkAsync(Guid seamstressId, Guid cutBatchItemId, string size, int quantity, CancellationToken ct = default)
         {
             var assignment = new WorkAssignment(seamstressId, cutBatchItemId, size, quantity);
+
             await _repo.AddAsync(assignment, ct);
 
             return assignment.ToDto();
