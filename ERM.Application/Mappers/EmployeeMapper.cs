@@ -17,6 +17,7 @@ namespace ERM.Application.Mappers
                 Notes = employee.Notes,
 
                 IsSeamstress = employee.IsSeamstress,
+                SeamstressId = employee.Seamstress?.Id,
                 MachineNumber = employee.Seamstress?.MachineNumber
             };
         }

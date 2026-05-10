@@ -27,8 +27,7 @@ namespace ERM.Application.Services
 
         public async Task AddItemToBatchAsync(Guid batchId, Guid modelId, string color, int quantity, CancellationToken ct = default)
         {
-            var batch = await GetOrThrowAsync(batchId, ct)
-                ?? throw new InvalidOperationException($"Крой с Id {batchId} не найден.");
+            var batch = await GetOrThrowAsync(batchId, ct);
 
             batch.AddItem(modelId, color, quantity);
             _repo.TrackAsNew(batch.Items.Last());
@@ -40,6 +39,6 @@ namespace ERM.Application.Services
 
         private async Task<CutBatch> GetOrThrowAsync(Guid id, CancellationToken ct)
             => await _repo.GetByIdAsync(id, ct)
-               ?? throw new InvalidOperationException($"Модель одежды с Id {id} не найдена.");
+               ?? throw new InvalidOperationException($"Крой с Id {id} не найден.");
     }
 }

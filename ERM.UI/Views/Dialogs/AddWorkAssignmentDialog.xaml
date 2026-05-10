@@ -1,0 +1,84 @@
+﻿<UserControl x:Class="ERM.UI.Views.Dialogs.AddWorkAssignmentDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+             MinWidth="400">
+    <md:Card Padding="32" UniformCornerRadius="8">
+        <StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,24">
+                <md:PackIcon Kind="ClipboardTextClockOutline" Width="28" Height="28" Foreground="{DynamicResource PrimaryHueMidBrush}" Margin="0,0,12,0"/>
+                <TextBlock Text="Выдать рулон" Style="{StaticResource MaterialDesignHeadline5TextBlock}" VerticalAlignment="Center" />
+            </StackPanel>
+
+            <!-- Выбор швеи -->
+            <ComboBox md:HintAssist.Hint="Кому выдаем (Швея)"
+                      md:HintAssist.IsFloating="True"
+                      Style="{StaticResource MaterialDesignOutlinedComboBox}"
+                      ItemsSource="{Binding Seamstresses}"
+                      SelectedItem="{Binding SelectedSeamstress}"
+                      Margin="0,0,0,16" FontSize="15">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <!-- Показываем Имя и в скобках номер машины -->
+                        <TextBlock>
+                            <Run Text="{Binding FullName}" />
+                            <Run Text=" (Маш. №" Foreground="Gray" />
+                            <Run Text="{Binding MachineNumber}" Foreground="Gray" />
+                            <Run Text=")" Foreground="Gray" />
+                        </TextBlock>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+
+            <!-- Выбор кроя -->
+            <ComboBox md:HintAssist.Hint="Что выдаем (Крой)"
+                      md:HintAssist.IsFloating="True"
+                      Style="{StaticResource MaterialDesignOutlinedComboBox}"
+                      ItemsSource="{Binding CutBatchItems}"
+                      SelectedItem="{Binding SelectedCutBatchItem}"
+                      Margin="0,0,0,16" FontSize="15">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock>
+                            <Run Text="{Binding ClothingModelName}" FontWeight="Medium" />
+                            <Run Text="—" />
+                            <Run Text="{Binding Color}" />
+                        </TextBlock>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+
+            <!-- Размер и количество в одной строке -->
+            <Grid Margin="0,0,0,24">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="16" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <TextBox Grid.Column="0" md:HintAssist.Hint="Размер"
+                         md:HintAssist.IsFloating="True"
+                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                         Text="{Binding Size, UpdateSourceTrigger=PropertyChanged}"
+                         FontSize="15" />
+
+                <TextBox Grid.Column="2" md:HintAssist.Hint="Количество (шт)"
+                         md:HintAssist.IsFloating="True"
+                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                         Text="{Binding QuantityText, UpdateSourceTrigger=PropertyChanged}"
+                         FontSize="15" />
+            </Grid>
+
+            <!-- Кнопки -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="Отмена" Style="{StaticResource MaterialDesignFlatButton}"
+                        Command="{x:Static md:DialogHost.CloseDialogCommand}" CommandParameter="{x:Null}"
+                        Foreground="{DynamicResource MaterialDesignBody}" Margin="0,0,8,0" />
+
+                <!-- При нажатии передаем саму ViewModel -->
+                <Button Content="Выдать" Style="{StaticResource MaterialDesignRaisedButton}"
+                        Command="{x:Static md:DialogHost.CloseDialogCommand}" CommandParameter="{Binding}" />
+            </StackPanel>
+        </StackPanel>
+    </md:Card>
+</UserControl>

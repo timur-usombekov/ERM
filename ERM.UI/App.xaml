@@ -53,6 +53,14 @@
                 <dialogs:AddCutBatchItemDialog />
             </DataTemplate>
 
+            <DataTemplate DataType="{x:Type vm:DashboardViewModel}">
+                <views:DashboardView />
+            </DataTemplate>
+
+            <DataTemplate DataType="{x:Type vmDialogs:AddWorkAssignmentDialogViewModel}">
+                <dialogs:AddWorkAssignmentDialog />
+            </DataTemplate>
+
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
             <converters:BoolToYesNoConverter x:Key="BoolToYesNo" />
         </ResourceDictionary>
