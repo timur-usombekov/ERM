@@ -24,11 +24,11 @@ namespace ERM.UI
                     services.AddTransient<MainWindow>();
                     services.AddTransient<MainViewModel>();
 
-                    // все ViewModels как Transient (чтобы экран каждый раз был свежим)
-                    services.AddTransient<EmployeesViewModel>();
-                    services.AddTransient<ClothingModelsViewModel>();
-                    services.AddTransient<CutBatchesViewModel>();
-                    services.AddTransient<DashboardViewModel>();
+                    // все ViewModels как Singleton что бы не забывать контекст
+                    services.AddSingleton<EmployeesViewModel>();
+                    services.AddSingleton<ClothingModelsViewModel>();
+                    services.AddSingleton<CutBatchesViewModel>();
+                    services.AddSingleton<DashboardViewModel>();
 
                     // фабрики (Func). Что бы DI мог отдавать новые вьюмодели по запросу
                     services.AddSingleton<Func<EmployeesViewModel>>(sp => () => sp.GetRequiredService<EmployeesViewModel>());

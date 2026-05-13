@@ -8,8 +8,10 @@ namespace ERM.Application.DTOs
         public string FullName { get; set; } = string.Empty;
         public string PhoneNumber { get; set; } = string.Empty;
         public string? Notes { get; set; }
-
         public bool IsSeamstress { get; set; }
         public string? MachineNumber { get; set; }
+
+        public string DisplayInfo => IsSeamstress ? $"№{MachineNumber} — {FullName}" : FullName;
     }
+
 }

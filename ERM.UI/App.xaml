@@ -57,10 +57,6 @@
                 <views:DashboardView />
             </DataTemplate>
 
-            <DataTemplate DataType="{x:Type vmDialogs:AddWorkAssignmentDialogViewModel}">
-                <dialogs:AddWorkAssignmentDialog />
-            </DataTemplate>
-
             <DataTemplate DataType="{x:Type vmDialogs:AddCutBatchDialogViewModel}">
                 <dialogs:AddCutBatchDialog />
             </DataTemplate>

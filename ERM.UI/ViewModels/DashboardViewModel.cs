@@ -1,8 +1,6 @@
 ﻿using ERM.Application.DTOs;
 using ERM.Application.Interfaces.Services;
 using ERM.UI.ViewModels.Base;
-using ERM.UI.ViewModels.Dialogs;
-using MaterialDesignThemes.Wpf;
 using System.Collections.ObjectModel;
 
 namespace ERM.UI.ViewModels
@@ -13,8 +11,47 @@ namespace ERM.UI.ViewModels
         private readonly IEmployeeService _employeeService;
         private readonly ICutBatchService _cutBatchService;
 
+        #region Списки данных
         public ObservableCollection<WorkAssignmentDto> TodayAssignments { get; } = [];
+        public ObservableCollection<EmployeeDto> Seamstresses { get; } = [];
+        public ObservableCollection<CutBatchItemDto> AvailableCutItems { get; } = [];
 
+        public IReadOnlyList<string> AvailableSizes { get; } =
+            [ "42", "44", "46", "48", "50", "52", "54", "56", "58", "60",
+              "XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL", "5XL", "Универсальный" ];
+        #endregion
+
+        #region Поля быстрой выдачи (Липкие)
+        private EmployeeDto? _selectedSeamstress;
+        public EmployeeDto? SelectedSeamstress
+        {
+            get => _selectedSeamstress;
+            set { SetField(ref _selectedSeamstress, value); ClearError(); }
+        }
+
+        private CutBatchItemDto? _selectedCutItem;
+        public CutBatchItemDto? SelectedCutItem
+        {
+            get => _selectedCutItem;
+            set { SetField(ref _selectedCutItem, value); ClearError(); }
+        }
+
+        private string? _selectedSize;
+        public string? SelectedSize
+        {
+            get => _selectedSize;
+            set { SetField(ref _selectedSize, value); ClearError(); }
+        }
+
+        private string _quantityText = string.Empty;
+        public string QuantityText
+        {
+            get => _quantityText;
+            set { SetField(ref _quantityText, value); ClearError(); }
+        }
+        #endregion
+
+        #region Состояния UI
         private bool _isLoading;
         public bool IsLoading
         {
@@ -22,9 +59,19 @@ namespace ERM.UI.ViewModels
             set => SetField(ref _isLoading, value);
         }
 
+        private string? _errorMessage;
+        public string? ErrorMessage
+        {
+            get => _errorMessage;
+            private set => SetField(ref _errorMessage, value);
+        }
+        #endregion
+
+        #region Команды
         public AsyncRelayCommand LoadCommand { get; }
         public AsyncRelayCommand IssueWorkCommand { get; }
         public AsyncRelayCommand<WorkAssignmentDto> DeleteAssignmentCommand { get; }
+        #endregion
 
         public DashboardViewModel(
             IWorkAssignmentService workService,
@@ -50,60 +97,69 @@ namespace ERM.UI.ViewModels
                 var assignments = await _workService.GetTodayAssignmentsAsync();
                 TodayAssignments.Clear();
                 foreach (var a in assignments) TodayAssignments.Add(a);
+
+                var employees = await _employeeService.GetAllAsync();
+                Seamstresses.Clear();
+                foreach (var s in employees.Where(e => e.IsSeamstress)) Seamstresses.Add(s);
+
+                var batches = await _cutBatchService.GetAllAsync();
+                AvailableCutItems.Clear();
+                foreach (var item in batches.SelectMany(b => b.Items).Where(i => i.AvailableQuantity > 0))
+                {
+                    AvailableCutItems.Add(item);
+                }
             }
             finally { IsLoading = false; }
         }
+
         private async Task IssueWorkAsync()
         {
-            var allEmployees = await _employeeService.GetAllAsync();
-            var seamstresses = allEmployees.Where(e => e.IsSeamstress).ToList();
+            if (SelectedSeamstress is null) { ErrorMessage = "Выберите швею"; return; }
+            if (SelectedCutItem is null) { ErrorMessage = "Выберите крой"; return; }
+            if (string.IsNullOrWhiteSpace(SelectedSize)) { ErrorMessage = "Укажите размер"; return; }
+            if (!int.TryParse(QuantityText, out int qty) || qty <= 0) { ErrorMessage = "Некорректное количество"; return; }
 
-            var batches = await _cutBatchService.GetAllAsync();
+            // ЗАПОМИНАЕМ ID ПЕРЕД ОБНОВЛЕНИЕМ
+            Guid savedSeamstressId = SelectedSeamstress.Id;
+            Guid savedCutItemId = SelectedCutItem.Id;
 
-            var availableItems = batches
-                .SelectMany(b => b.Items)
-                .Where(i => i.AvailableQuantity > 0)
-                .ToList();
+            var (isSuccess, newAssignment) = await ExecuteSafeAsync(() =>
+                _workService.IssueWorkAsync(SelectedSeamstress.SeamstressId!.Value, SelectedCutItem.Id, SelectedSize, qty));
 
-            if (!seamstresses.Any())
+            if (isSuccess && newAssignment != null)
             {
-                await DialogHost.Show(new ErrorDialogViewModel("В базе нет ни одной швеи."), "RootDialog");
-                return;
-            }
-            if (!availableItems.Any())
-            {
-                await DialogHost.Show(new ErrorDialogViewModel("Нет доступного кроя для выдачи."), "RootDialog");
-                return;
-            }
+                TodayAssignments.Insert(0, newAssignment);
+                QuantityText = string.Empty;
+                ErrorMessage = null;
 
-            var dialogVm = new AddWorkAssignmentDialogViewModel(seamstresses, availableItems);
-            var result = await DialogHost.Show(dialogVm, "RootDialog");
-
-            if (result is not AddWorkAssignmentDialogViewModel vm || !vm.IsValid) return;
-
-            var (isSuccess, _) = await ExecuteSafeAsync(() =>
-                _workService.IssueWorkAsync(
-                    vm.SelectedSeamstress!.SeamstressId!.Value,
-                    vm.SelectedCutBatchItem!.Id,
-                    vm.SelectedSize!,
-                    vm.Quantity
-                )
-            );
-
-            if (isSuccess)
+                // Дожидаемся обновления списков
                 await LoadAsync();
+
+                // ВОЗВРАЩАЕМ ВЫБРАННЫЕ ЭЛЕМЕНТЫ (Липкость)
+                SelectedSeamstress = Seamstresses.FirstOrDefault(s => s.Id == savedSeamstressId);
+                SelectedCutItem = AvailableCutItems.FirstOrDefault(c => c.Id == savedCutItemId);
+            }
         }
+
 
         private async Task DeleteAsync(WorkAssignmentDto? dto)
         {
             if (dto is null) return;
 
-            var confirmed = await DialogHost.Show(new ConfirmDialogViewModel("Удалить запись о выдаче?"), "RootDialog");
-            if (confirmed?.ToString() != "True") return;
+            // Используем ExecuteSafeAsync, чтобы поймать возможные ошибки базы
+            var (isSuccess, _) = await ExecuteSafeAsync(async () =>
+            {
+                await _workService.DeleteAsync(dto.Id);
+                return true;
+            });
 
-            if(!await ExecuteSafeAsync(() => _workService.DeleteAsync(dto.Id))) return;
-            TodayAssignments.Remove(dto);
+            if (isSuccess)
+            {
+                TodayAssignments.Remove(dto);
+                _ = LoadAsync(); // Фоново обновляем остатки кроя
+            }
         }
 
+        private void ClearError() => ErrorMessage = null;
     }
 }

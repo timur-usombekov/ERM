@@ -47,7 +47,7 @@ namespace ERM.UI.ViewModels.Base
         public async void Execute(object? parameter)
         {
             _isExecuting = true;
-            CommandManager.InvalidateRequerySuggested();
+            RaiseCanExecuteChanged();
             try
             {
                 await _execute((T?)parameter);
@@ -55,8 +55,13 @@ namespace ERM.UI.ViewModels.Base
             finally
             {
                 _isExecuting = false;
-                CommandManager.InvalidateRequerySuggested();
+                RaiseCanExecuteChanged();
             }
+        }
+
+        public void RaiseCanExecuteChanged()
+        {
+            CommandManager.InvalidateRequerySuggested();
         }
     }
     public class AsyncRelayCommand : ICommand
@@ -83,7 +88,7 @@ namespace ERM.UI.ViewModels.Base
         public async void Execute(object? parameter)
         {
             _isExecuting = true;
-            CommandManager.InvalidateRequerySuggested();
+            RaiseCanExecuteChanged();
             try
             {
                 await _execute(parameter);
@@ -91,8 +96,13 @@ namespace ERM.UI.ViewModels.Base
             finally
             {
                 _isExecuting = false;
-                CommandManager.InvalidateRequerySuggested();
+                RaiseCanExecuteChanged();
             }
+        }
+
+        public void RaiseCanExecuteChanged()
+        {
+            CommandManager.InvalidateRequerySuggested();
         }
     }
 }

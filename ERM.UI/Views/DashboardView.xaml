@@ -5,37 +5,126 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <!-- Шапка -->
             <RowDefinition Height="Auto" />
+            <!-- Панель выдачи -->
             <RowDefinition Height="*" />
+            <!-- Таблица -->
         </Grid.RowDefinitions>
 
-        <!-- Шапка -->
-        <Grid Grid.Row="0" Margin="0,0,0,24">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-
-            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+        <!-- 1. ШАПКА -->
+        <Grid Grid.Row="0" Margin="0,0,0,16">
+            <StackPanel VerticalAlignment="Center">
                 <TextBlock Text="Журнал смены" Style="{StaticResource MaterialDesignHeadline4TextBlock}" />
-                <TextBlock Text="Выданные рулоны за сегодня" Foreground="Gray" FontSize="14" Margin="0,4,0,0" />
+                <TextBlock Text="Быстрая выдача и история за сегодня" Foreground="Gray" FontSize="14" Margin="0,4,0,0" />
             </StackPanel>
 
-            <!-- ГЛАВНАЯ КНОПКА ПРИЛОЖЕНИЯ -->
-            <Button Grid.Column="1" Command="{Binding IssueWorkCommand}"
-                    Style="{StaticResource MaterialDesignRaisedButton}"
-                    Height="50" Padding="24,0">
-                <StackPanel Orientation="Horizontal">
-                    <md:PackIcon Kind="LightningBolt" Width="20" Height="20" Margin="0,0,8,0"/>
-                    <TextBlock Text="ВЫДАТЬ РУЛОН" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"/>
-                </StackPanel>
-            </Button>
+            <ProgressBar IsIndeterminate="True" Width="100" HorizontalAlignment="Right" VerticalAlignment="Center"
+                         Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}" />
         </Grid>
 
-        <ProgressBar Grid.Row="1" IsIndeterminate="True" Height="2" Margin="0,0,0,8"
-                     Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}" />
+        <!-- 2. ПАНЕЛЬ БЫСТРОЙ ВЫДАЧИ -->
+        <md:Card Grid.Row="1" Margin="0,0,0,24" Padding="24,16" md:ElevationAssist.Elevation="Dp2" UniformCornerRadius="8">
+            <StackPanel>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="16"/>
+                        
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
 
-        <!-- Таблица с выдачами -->
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*" />
+                        <ColumnDefinition Width="32" />
+                        <ColumnDefinition Width="3*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Швея -->
+                    <ComboBox Grid.Row="0" Grid.Column="0" 
+                              md:HintAssist.Hint="Швея (Поиск по № или Имени)" 
+                              ItemsSource="{Binding Seamstresses}" 
+                              SelectedItem="{Binding SelectedSeamstress}"
+                              IsEditable="True" 
+                              IsTextSearchEnabled="True" 
+                              TextSearch.TextPath="DisplayInfo"
+                              Style="{StaticResource MaterialDesignFloatingHintComboBox}" FontSize="15">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding DisplayInfo}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+
+                    <!-- Крой -->
+                    <ComboBox Grid.Row="0" Grid.Column="2" 
+                              md:HintAssist.Hint="Модель и Цвет (Остаток)" 
+                              ItemsSource="{Binding AvailableCutItems}" 
+                              SelectedItem="{Binding SelectedCutItem}"
+                              IsEditable="True" 
+                              IsTextSearchEnabled="True" 
+                              TextSearch.TextPath="ClothingModelName"
+                              Style="{StaticResource MaterialDesignFloatingHintComboBox}" FontSize="15">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock>
+                                    <Run Text="{Binding ClothingModelName}" FontWeight="Bold"/>
+                                    <Run Text=" | " Foreground="Gray"/>
+                                    <Run Text="{Binding Color}"/>
+                                    <Run Text=" (Ост: " Foreground="Teal"/>
+                                    <Run Text="{Binding AvailableQuantity}" Foreground="Teal" FontWeight="Bold"/>
+                                    <Run Text="шт)" Foreground="Teal"/>
+                                </TextBlock>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+
+                    <!-- Размер, Кол-во и Кнопка -->
+                    <Grid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1*" />
+                            <ColumnDefinition Width="32" />
+                            <ColumnDefinition Width="1*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Размер -->
+                        <ComboBox Grid.Column="0" md:HintAssist.Hint="Размер" 
+                                  ItemsSource="{Binding AvailableSizes}" 
+                                  SelectedItem="{Binding SelectedSize}"
+                                  IsEditable="True"
+                                  Style="{StaticResource MaterialDesignFloatingHintComboBox}" FontSize="15"/>
+
+                        <!-- Количество -->
+                        <TextBox Grid.Column="2" md:HintAssist.Hint="Кол-во" 
+                                 Text="{Binding QuantityText, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource MaterialDesignFloatingHintTextBox}" FontSize="15">
+                            <TextBox.InputBindings>
+                                <KeyBinding Key="Enter" Command="{Binding IssueWorkCommand}"/>
+                            </TextBox.InputBindings>
+                        </TextBox>
+
+                        <!-- Кнопка -->
+                        <Button Grid.Column="4" Command="{Binding IssueWorkCommand}" 
+                                Style="{StaticResource MaterialDesignRaisedButton}" 
+                                Height="45" Padding="24,0" VerticalAlignment="Bottom">
+                            <StackPanel Orientation="Horizontal">
+                                <md:PackIcon Kind="LightningBolt" Width="20" Height="20" Margin="0,0,8,0"/>
+                                <TextBlock Text="ВЫДАТЬ" FontSize="14" FontWeight="Bold" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                </Grid>
+
+                <!-- Ошибка валидации -->
+                <TextBlock Text="{Binding ErrorMessage}" Foreground="#E53935" FontWeight="Medium" 
+                           Margin="0,16,0,0" HorizontalAlignment="Right"
+                           Visibility="{Binding ErrorMessage, Converter={StaticResource NullToVisibility}}" />
+            </StackPanel>
+        </md:Card>
+
+        <!-- 3. ТАБЛИЦА СЕГОДНЯШНИХ ВЫДАЧ -->
         <md:Card Grid.Row="2" md:ElevationAssist.Elevation="Dp2" UniformCornerRadius="8">
             <DataGrid ItemsSource="{Binding TodayAssignments}" 
                       AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False"
@@ -43,7 +132,6 @@
                       Background="Transparent" BorderThickness="0">
                 <DataGrid.Columns>
 
-                    <!-- Швея -->
                     <DataGridTemplateColumn Header="Швея" Width="2*">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
@@ -56,11 +144,9 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
-                    <!-- Что шьет -->
                     <DataGridTextColumn Header="Модель" Binding="{Binding ClothingModelName}" Width="2*" />
                     <DataGridTextColumn Header="Цвет" Binding="{Binding Color}" Width="*" />
 
-                    <!-- Выделяем размер и количество жирным, т.к. это самое важное -->
                     <DataGridTemplateColumn Header="Размер" Width="*">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
@@ -79,7 +165,7 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
-                    <!-- Кнопка удаления (Ошиблись при вводе) -->
+                    <!-- Кнопка удаления (Отмена выдачи) -->
                     <DataGridTemplateColumn Width="80">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
