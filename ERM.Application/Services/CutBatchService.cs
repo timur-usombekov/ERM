@@ -26,11 +26,11 @@ namespace ERM.Application.Services
         }
 
 
-        public async Task AddItemToBatchAsync(Guid batchId, Guid modelId, string color, int quantity, CancellationToken ct = default)
+        public async Task AddItemToBatchAsync(Guid batchId, Guid modelId, Guid colorId, int quantity, CancellationToken ct = default)
         {
             var batch = await GetOrThrowAsync(batchId, ct);
 
-            batch.AddItem(modelId, color, quantity);
+            batch.AddItem(modelId, colorId, quantity);
             _repo.TrackAsNew(batch.Items.Last());
             await _repo.UpdateAsync(batch, ct);
         }

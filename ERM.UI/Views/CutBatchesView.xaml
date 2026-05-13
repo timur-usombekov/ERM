@@ -53,9 +53,7 @@
 
             <!-- ПРАВАЯ ПАНЕЛЬ: Детали выбранной партии -->
             <md:Card Grid.Column="2" md:ElevationAssist.Elevation="Dp2" UniformCornerRadius="8" 
-                     Visibility="{Binding SelectedBatch}">
-                <!-- Visibility="{Binding SelectedBatch, Converter={StaticResource NullToVisibilityConverter}-->
-                <!-- TODO: NullToVisibilityConverter нужно будет добавить, или обойтись без него (тогда пустая карточка будет видна) -->
+                Visibility="{Binding SelectedBatch, Converter={StaticResource NullToVisibility}}">
 
                 <Grid Margin="24">
                     <Grid.RowDefinitions>

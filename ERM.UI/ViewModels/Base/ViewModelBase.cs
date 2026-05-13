@@ -43,6 +43,28 @@ namespace ERM.UI.ViewModels.Base
                 return false;
             }
         }
-
+        protected async Task<(bool IsSuccess, T? Result)> ExecuteSafeAsync<T>(Func<Task<T>> action)
+        {
+            try
+            {
+                var result = await action();
+                return (true, result); // Успех
+            }
+            catch (InvalidOperationException ex) //  ошибки бизнес-логики
+            {
+                await DialogHost.Show(new ErrorDialogViewModel(ex.Message), "RootDialog");
+                return (false, default);
+            }
+            catch (ArgumentException ex) //  ошибки валидации домена
+            {
+                await DialogHost.Show(new ErrorDialogViewModel(ex.Message), "RootDialog");
+                return (false, default);
+            }
+            catch (Exception ex) //  всё остальное (БД упала и тд)
+            {
+                await DialogHost.Show(new ErrorDialogViewModel($"Критическая ошибка: {ex.Message}"), "RootDialog");
+                return (false, default);
+            }
+        }
     }
 }

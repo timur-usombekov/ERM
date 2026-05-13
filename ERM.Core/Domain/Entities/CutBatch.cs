@@ -25,7 +25,7 @@ namespace ERM.Core.Domain.Entities
             DeclaredQuantity = declaredQuantity;
         }
 
-        public void AddItem(Guid clothingModelId, string color, int quantity)
+        public void AddItem(Guid clothingModelId, Guid fabricColorId, int quantity)
         {
             if (quantity <= 0)
                 throw new ArgumentException("Количество позиции должно быть больше нуля.");
@@ -35,13 +35,12 @@ namespace ERM.Core.Domain.Entities
             if (currentlyDistributed + quantity > DeclaredQuantity)
                 throw new InvalidOperationException(
                     $"Невозможно добавить {quantity} шт. Превышен лимит от закройщика! " +
-                    $"Осталось нераспределено: {DeclaredQuantity - currentlyDistributed} шт.");
+                    $"Осталось: {DeclaredQuantity - currentlyDistributed} шт.");
 
-            _items.Add(new CutBatchItem(Id, clothingModelId, color, quantity));
+            _items.Add(new CutBatchItem(Id, clothingModelId, fabricColorId, quantity));
         }
 
-        // Доп. свойство для UI: чтобы показывать "Осталось распределить: 50 шт"
-        public int UnallocatedQuantity => DeclaredQuantity - _items.Sum(i => i.Quantity);
+
     }
 
 }

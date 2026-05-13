@@ -8,8 +8,12 @@ namespace ERM.UI.ViewModels.Dialogs
     {
         public ObservableCollection<EmployeeDto> Seamstresses { get; }
         public ObservableCollection<CutBatchItemDto> CutBatchItems { get; }
+        public IReadOnlyList<string> AvailableSizes { get; } =
+            [ "42", "44", "46", "48", "50", "52", "54", "56", "58", "60",
+              "XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL", "5XL", "Универсальный" ];
 
         private EmployeeDto? _selectedSeamstress;
+
         public EmployeeDto? SelectedSeamstress
         {
             get => _selectedSeamstress;
@@ -31,13 +35,13 @@ namespace ERM.UI.ViewModels.Dialogs
             }
         }
 
-        private string _size = string.Empty;
-        public string Size
+        private string? _selectedSize;
+        public string? SelectedSize
         {
-            get => _size;
+            get => _selectedSize;
             set
             {
-                SetField(ref _size, value);
+                SetField(ref _selectedSize, value);
                 OnPropertyChanged(nameof(IsValid));
             }
         }
@@ -56,11 +60,14 @@ namespace ERM.UI.ViewModels.Dialogs
 
         public int Quantity => int.TryParse(QuantityText, out var q) ? q : 0;
 
+
+
         public bool IsValid =>
             SelectedSeamstress is not null &&
             SelectedCutBatchItem is not null &&
-            !string.IsNullOrWhiteSpace(Size) &&
+            !string.IsNullOrWhiteSpace(SelectedSize) &&
             Quantity > 0;
+
 
         public AddWorkAssignmentDialogViewModel(IEnumerable<EmployeeDto> seamstresses, IEnumerable<CutBatchItemDto> cutBatchItems)
         {

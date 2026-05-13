@@ -69,8 +69,11 @@
                 <dialogs:ErrorDialog />
             </DataTemplate>
 
+
+            <!-- BooleanToVisibilityConverter вообще существует? -->
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
             <converters:BoolToYesNoConverter x:Key="BoolToYesNo" />
+            <converters:NullToVisibilityConverter x:Key="NullToVisibility" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

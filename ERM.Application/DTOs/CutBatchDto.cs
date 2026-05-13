@@ -18,5 +18,6 @@
         public string ClothingModelName { get; set; } = string.Empty; // Для UI
         public string Color { get; set; } = string.Empty;
         public int Quantity { get; set; }
+        public int AvailableQuantity { get; set; }
     }
 }

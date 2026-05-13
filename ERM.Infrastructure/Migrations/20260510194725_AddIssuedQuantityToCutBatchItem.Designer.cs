@@ -3,6 +3,7 @@ using System;
 using ERM.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ERM.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260510194725_AddIssuedQuantityToCutBatchItem")]
+    partial class AddIssuedQuantityToCutBatchItem
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.7");
@@ -68,10 +71,12 @@ namespace ERM.Infrastructure.Migrations
                     b.Property<Guid>("ClothingModelId")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("CutBatchId")
+                    b.Property<string>("Color")
+                        .IsRequired()
+                        .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("FabricColorId")
+                    b.Property<Guid>("CutBatchId")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("IssuedQuantity")
@@ -85,8 +90,6 @@ namespace ERM.Infrastructure.Migrations
                     b.HasIndex("ClothingModelId");
 
                     b.HasIndex("CutBatchId");
-
-                    b.HasIndex("FabricColorId");
 
                     b.ToTable("CutBatchItems");
                 });
@@ -114,25 +117,6 @@ namespace ERM.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Employees");
-                });
-
-            modelBuilder.Entity("ERM.Core.Domain.Entities.FabricColor", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Name")
-                        .IsUnique();
-
-                    b.ToTable("FabricColors");
                 });
 
             modelBuilder.Entity("ERM.Core.Domain.Entities.Seamstress", b =>
@@ -213,17 +197,9 @@ namespace ERM.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ERM.Core.Domain.Entities.FabricColor", "FabricColor")
-                        .WithMany()
-                        .HasForeignKey("FabricColorId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.Navigation("ClothingModel");
 
                     b.Navigation("CutBatch");
-
-                    b.Navigation("FabricColor");
                 });
 
             modelBuilder.Entity("ERM.Core.Domain.Entities.Seamstress", b =>

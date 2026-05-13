@@ -24,6 +24,7 @@ namespace ERM.Infrastructure
             services.AddScoped<IClothingModelRepository, ClothingModelRepository>();
             services.AddScoped<ICutBatchRepository, CutBatchRepository>();
             services.AddScoped<IWorkAssignmentRepository, WorkAssignmentRepository>();
+            services.AddScoped<IFabricColorRepository, FabricColorRepository>();
 
             return services;
         }

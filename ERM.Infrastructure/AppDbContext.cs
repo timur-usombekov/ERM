@@ -11,12 +11,27 @@ namespace ERM.Infrastructure
         public DbSet<WorkAssignment> WorkAssignments { get; set; } = null!;
         public DbSet<CutBatch> CutBatches { get; set; } = null!;
         public DbSet<CutBatchItem> CutBatchItems { get; set; } = null!;
+        public DbSet<FabricColor> FabricColors { get; set; } = null!;
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+        }
+
+        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                return await base.SaveChangesAsync(cancellationToken);
+            }
+            catch
+            {
+                // Если база ругнулась (например, FK Constraint), сбрасываем состояние что бы не было проблем с повторными попытками сохранения
+                ChangeTracker.Clear();
+                throw; 
+            }
         }
     }
 }

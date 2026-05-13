@@ -6,6 +6,7 @@ namespace ERM.Application.Interfaces.Repositories
     {
         Task<IReadOnlyList<CutBatch>> GetAllAsync(CancellationToken ct = default);
         Task<CutBatch?> GetByIdAsync(Guid id, CancellationToken ct = default);
+        Task<CutBatchItem?> GetItemByIdAsync(Guid itemId, CancellationToken ct = default);
         Task AddAsync(CutBatch cutBatch, CancellationToken ct = default);
         Task UpdateAsync(CutBatch cutBatch, CancellationToken ct = default);
         Task DeleteAsync(Guid id, CancellationToken ct = default);

@@ -47,16 +47,18 @@ namespace ERM.UI.ViewModels
             if (result is not EditEmployeeDialogViewModel vm || !vm.IsValid)
                 return;
 
-            await _employeeService.EditEmployeeAsync(
-                vm.EmployeeId,
-                vm.FullName,
-                vm.PhoneNumber,
-                vm.Notes,
-                vm.IsSeamstress,
-                vm.MachineNumber
+            var (isSuccess, _) = await ExecuteSafeAsync(() => 
+                _employeeService.EditEmployeeAsync(
+                    vm.EmployeeId,
+                    vm.FullName,
+                    vm.PhoneNumber,
+                    vm.Notes,
+                    vm.IsSeamstress,
+                    vm.MachineNumber
+                )
             );
-
-            await LoadEmployeesAsync();
+            if(isSuccess) 
+                await LoadEmployeesAsync();
         }
 
         private async Task DeleteEmployeeAsync(EmployeeDto? employee)
@@ -69,7 +71,7 @@ namespace ERM.UI.ViewModels
 
             if (confirmed?.ToString() != "True") return;
 
-            await _employeeService.DeleteAsync(employee.Id);
+            if(!await ExecuteSafeAsync(() => _employeeService.DeleteAsync(employee.Id))) return;
             Employees.Remove(employee); // не перегружаем весь список — просто убираем из коллекции
         }
 
@@ -98,13 +100,14 @@ namespace ERM.UI.ViewModels
             if (result is not AddEmployeeDialogViewModel vm || !vm.IsValid)
                 return;
 
-            await _employeeService.CreateAsync(
+            var (isSuccess, _) = await ExecuteSafeAsync(() => _employeeService.CreateAsync(
                    vm.FullName,
                    vm.PhoneNumber,
                    vm.Notes,
-                   vm.IsSeamstress ? vm.MachineNumber : null); // передаём номер машины если швея
+                   vm.IsSeamstress ? vm.MachineNumber : null)); // передаём номер машины если швея
 
-            await LoadEmployeesAsync();
+            if(isSuccess) 
+                await LoadEmployeesAsync();
         }
 
     }

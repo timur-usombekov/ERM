@@ -56,12 +56,15 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
-                <TextBox Grid.Column="0" md:HintAssist.Hint="Размер"
-                         md:HintAssist.IsFloating="True"
-                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                         Text="{Binding Size, UpdateSourceTrigger=PropertyChanged}"
-                         FontSize="15" />
-
+                <ComboBox Grid.Column="0" md:HintAssist.Hint="Размер"
+                          md:HintAssist.IsFloating="True"
+                          Style="{StaticResource MaterialDesignOutlinedComboBox}"
+                          ItemsSource="{Binding AvailableSizes}"
+                          SelectedItem="{Binding SelectedSize}"
+                          IsEditable="True"
+                          IsTextSearchEnabled="True"
+                          StaysOpenOnEdit="True"
+                          FontSize="15" />
                 <TextBox Grid.Column="2" md:HintAssist.Hint="Количество (шт)"
                          md:HintAssist.IsFloating="True"
                          Style="{StaticResource MaterialDesignOutlinedTextBox}"
@@ -77,7 +80,7 @@
 
                 <!-- При нажатии передаем саму ViewModel -->
                 <Button Content="Выдать" Style="{StaticResource MaterialDesignRaisedButton}"
-                        Command="{x:Static md:DialogHost.CloseDialogCommand}" CommandParameter="{Binding}" />
+                        Command="{x:Static md:DialogHost.CloseDialogCommand}" CommandParameter="{Binding}" IsEnabled="{Binding IsValid}"/>
             </StackPanel>
         </StackPanel>
     </md:Card>

@@ -3,7 +3,6 @@ using ERM.Application.Interfaces.Services;
 using ERM.Core.Domain.Entities;
 using ERM.Application.Mappers;
 using ERM.Application.DTOs;
-using System.Linq;
 
 namespace ERM.Application.Services
 {

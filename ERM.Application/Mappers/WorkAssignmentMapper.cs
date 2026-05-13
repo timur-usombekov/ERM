@@ -11,7 +11,7 @@ namespace ERM.Application.Mappers
             SeamstressName = w.Seamstress?.Employee?.FullName ?? "Неизвестно",
             MachineNumber = w.Seamstress?.MachineNumber ?? "?",
             ClothingModelName = w.CutBatchItem?.ClothingModel?.Name ?? "Неизвестно",
-            Color = w.CutBatchItem?.Color ?? "-",
+            Color = w.CutBatchItem?.FabricColor?.Name ?? "-",
             Size = w.Size,
             Quantity = w.Quantity,
             AssignedDate = w.AssignedDate

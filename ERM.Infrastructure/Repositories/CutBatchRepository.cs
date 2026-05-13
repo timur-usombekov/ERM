@@ -14,6 +14,8 @@ namespace ERM.Infrastructure.Repositories
             => await _context.CutBatches
                 .Include(b => b.Items)
                     .ThenInclude(i => i.ClothingModel)
+                .Include(b => b.Items)
+                    .ThenInclude(i => i.FabricColor)
                 .AsNoTracking()
                 .OrderByDescending(b => b.Date)
                 .ToListAsync(ct);
@@ -22,7 +24,11 @@ namespace ERM.Infrastructure.Repositories
             => await _context.CutBatches
                 .Include(b => b.Items)
                     .ThenInclude(i => i.ClothingModel)
+                .Include(b => b.Items) 
+                        .ThenInclude(i => i.FabricColor)
                 .FirstOrDefaultAsync(b => b.Id == id, ct);
+        public async Task<CutBatchItem?> GetItemByIdAsync(Guid itemId, CancellationToken ct = default)
+            => await _context.CutBatchItems.FirstOrDefaultAsync(i => i.Id == itemId, ct);
 
         public async Task AddAsync(CutBatch cutBatch, CancellationToken ct = default)
         {

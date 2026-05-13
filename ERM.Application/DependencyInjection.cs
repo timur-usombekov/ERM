@@ -12,6 +12,7 @@ namespace ERM.Application
             services.AddScoped<IClothingModelService, ClothingModelService>();
             services.AddScoped<ICutBatchService, CutBatchService>();
             services.AddScoped<IWorkAssignmentService, WorkAssignmentService>();
+            services.AddScoped<IFabricColorService, FabricColorService>();
 
             return services;
         }

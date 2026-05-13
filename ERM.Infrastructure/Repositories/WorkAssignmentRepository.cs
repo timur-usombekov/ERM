@@ -10,12 +10,17 @@ namespace ERM.Infrastructure.Repositories
 
         public WorkAssignmentRepository(AppDbContext context) => _context = context;
 
+        public async Task<WorkAssignment?> GetByIdAsync(Guid id, CancellationToken ct = default)
+            => await _context.WorkAssignments.FirstOrDefaultAsync(a => a.Id == id, ct);
+
         public async Task<IReadOnlyList<WorkAssignment>> GetByDateAsync(DateOnly date, CancellationToken ct = default)
             => await _context.WorkAssignments
                 .Include(a => a.Seamstress)
                     .ThenInclude(s => s.Employee)
                 .Include(a => a.CutBatchItem)
                     .ThenInclude(i => i.ClothingModel)
+                .Include(a => a.CutBatchItem)
+                    .ThenInclude(i => i.FabricColor)
                 .Where(a => a.AssignedDate == date)
                 .AsNoTracking()
                 .ToListAsync(ct);

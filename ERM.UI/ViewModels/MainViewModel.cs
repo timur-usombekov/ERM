@@ -10,6 +10,7 @@ namespace ERM.UI.ViewModels
         private readonly IClothingModelService _clothingModelService;
         private readonly ICutBatchService _cutBatchService;
         private readonly IWorkAssignmentService _workAssignmentService;
+        private readonly IFabricColorService _fabricColorService;
 
 
         private ViewModelBase _currentViewModel = null!;
@@ -28,12 +29,14 @@ namespace ERM.UI.ViewModels
             IEmployeeService employeeService, 
             IClothingModelService clothingModelService, 
             ICutBatchService cutBatchService,
-            IWorkAssignmentService workAssignmentService)
+            IWorkAssignmentService workAssignmentService,
+            IFabricColorService fabricColorService)
         {
             _employeeService = employeeService;
             _clothingModelService = clothingModelService;
             _cutBatchService = cutBatchService;
             _workAssignmentService = workAssignmentService;
+            _fabricColorService = fabricColorService;
 
             NavigateToEmployeesCommand = new RelayCommand(_ =>
                 CurrentViewModel = new EmployeesViewModel(_employeeService));
@@ -42,7 +45,7 @@ namespace ERM.UI.ViewModels
                 CurrentViewModel = new ClothingModelsViewModel(_clothingModelService));
 
             NavigateToCutBatchesCommand = new RelayCommand(_ => 
-                CurrentViewModel = new CutBatchesViewModel(_cutBatchService, _clothingModelService));
+                CurrentViewModel = new CutBatchesViewModel(_cutBatchService, _clothingModelService, _fabricColorService));
             NavigateToDashboardCommand = new RelayCommand(_ =>
                 CurrentViewModel = new DashboardViewModel(_workAssignmentService, _employeeService, _cutBatchService));
 

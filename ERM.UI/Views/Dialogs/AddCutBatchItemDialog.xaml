@@ -17,11 +17,14 @@
                       Margin="0,0,0,16" FontSize="15" />
 
             <!-- Ввод цвета -->
-            <TextBox md:HintAssist.Hint="Цвет (например: Черный)"
-                     md:HintAssist.IsFloating="True"
-                     Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                     Text="{Binding Color, UpdateSourceTrigger=PropertyChanged}"
-                     Margin="0,0,0,16" FontSize="15" />
+            <ComboBox md:HintAssist.Hint="Цвет (Выберите или впишите новый)"
+                      md:HintAssist.IsFloating="True"
+                      Style="{StaticResource MaterialDesignOutlinedComboBox}"
+                      IsEditable="True"
+                      ItemsSource="{Binding AvailableColors}"
+                      DisplayMemberPath="Name"
+                      Text="{Binding ColorText, UpdateSourceTrigger=PropertyChanged}"
+                      Margin="0,0,0,16" FontSize="15" />
 
             <!-- Ввод количества -->
             <TextBox md:HintAssist.Hint="Количество (шт)"

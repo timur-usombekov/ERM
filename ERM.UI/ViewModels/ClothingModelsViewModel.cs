@@ -55,7 +55,9 @@ namespace ERM.UI.ViewModels
 
             if (result is not AddClothingModelDialogViewModel r || !r.IsValid) return;
 
-            await _service.CreateAsync(r.Name, r.Description);
+            var (isSuccess, _) = await ExecuteSafeAsync(() => _service.CreateAsync(r.Name, r.Description));
+            if (!isSuccess) return;
+
             await LoadAsync();
         }
 
@@ -68,7 +70,9 @@ namespace ERM.UI.ViewModels
 
             if (result is not EditClothingModelDialogViewModel r || !r.IsValid) return;
 
-            await _service.EditAsync(r.ModelId, r.Name, r.Description);
+            var (isSuccess, _) = await ExecuteSafeAsync(() => _service.EditAsync(r.ModelId, r.Name, r.Description));
+            if (!isSuccess) return;
+
             await LoadAsync();
         }
 
@@ -81,7 +85,8 @@ namespace ERM.UI.ViewModels
 
             if (confirmed?.ToString() != "True") return;
 
-            await _service.DeleteAsync(dto.Id);
+            if (!await ExecuteSafeAsync(() => _service.DeleteAsync(dto.Id))) return;
+
             Models.Remove(dto);
         }
     }

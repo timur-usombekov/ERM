@@ -10,13 +10,19 @@ namespace ERM.Infrastructure.Configurations
         {
             builder.HasKey(i => i.Id);
 
-            builder.Property(i => i.Color).IsRequired().HasMaxLength(100);
             builder.Property(i => i.Quantity).IsRequired();
+            builder.Property(i => i.IssuedQuantity).IsRequired();
 
             builder.HasOne(i => i.ClothingModel)
                 .WithMany()
                 .HasForeignKey(i => i.ClothingModelId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(i => i.FabricColor)
+                .WithMany()
+                .HasForeignKey(i => i.FabricColorId)
+                .OnDelete(DeleteBehavior.Restrict);
+
         }
     }
 }

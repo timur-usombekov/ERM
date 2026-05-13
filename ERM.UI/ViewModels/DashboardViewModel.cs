@@ -53,19 +53,26 @@ namespace ERM.UI.ViewModels
             }
             finally { IsLoading = false; }
         }
-
         private async Task IssueWorkAsync()
         {
             var allEmployees = await _employeeService.GetAllAsync();
             var seamstresses = allEmployees.Where(e => e.IsSeamstress).ToList();
 
-            // Тут надо будет потом отфильтровать только те партии, которые еще не сшиты до конца. Но пока берем все актуальные.
             var batches = await _cutBatchService.GetAllAsync();
-            var availableItems = batches.SelectMany(b => b.Items).ToList();
 
-            if (!seamstresses.Any() || !availableItems.Any())
+            var availableItems = batches
+                .SelectMany(b => b.Items)
+                .Where(i => i.AvailableQuantity > 0)
+                .ToList();
+
+            if (!seamstresses.Any())
             {
-                // Не забыть показать потом, что нет швей или нет кроя
+                await DialogHost.Show(new ErrorDialogViewModel("В базе нет ни одной швеи."), "RootDialog");
+                return;
+            }
+            if (!availableItems.Any())
+            {
+                await DialogHost.Show(new ErrorDialogViewModel("Нет доступного кроя для выдачи."), "RootDialog");
                 return;
             }
 
@@ -74,14 +81,17 @@ namespace ERM.UI.ViewModels
 
             if (result is not AddWorkAssignmentDialogViewModel vm || !vm.IsValid) return;
 
-            await _workService.IssueWorkAsync(
-                vm.SelectedSeamstress!.SeamstressId!.Value,
-                vm.SelectedCutBatchItem!.Id,
-                vm.Size,
-                vm.Quantity
+            var (isSuccess, _) = await ExecuteSafeAsync(() =>
+                _workService.IssueWorkAsync(
+                    vm.SelectedSeamstress!.SeamstressId!.Value,
+                    vm.SelectedCutBatchItem!.Id,
+                    vm.SelectedSize!,
+                    vm.Quantity
+                )
             );
 
-            await LoadAsync();
+            if (isSuccess)
+                await LoadAsync();
         }
 
         private async Task DeleteAsync(WorkAssignmentDto? dto)
@@ -91,8 +101,9 @@ namespace ERM.UI.ViewModels
             var confirmed = await DialogHost.Show(new ConfirmDialogViewModel("Удалить запись о выдаче?"), "RootDialog");
             if (confirmed?.ToString() != "True") return;
 
-            await _workService.DeleteAsync(dto.Id);
+            if(!await ExecuteSafeAsync(() => _workService.DeleteAsync(dto.Id))) return;
             TodayAssignments.Remove(dto);
         }
+
     }
 }
