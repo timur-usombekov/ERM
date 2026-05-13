@@ -11,10 +11,10 @@ namespace ERM.UI.ViewModels
             set => SetField(ref _currentViewModel, value);
         }
 
-        public RelayCommand NavigateToEmployeesCommand { get; }
-        public RelayCommand NavigateToClothingModelsCommand { get; }
-        public RelayCommand NavigateToCutBatchesCommand { get; }
-        public RelayCommand NavigateToDashboardCommand { get; }
+        public AsyncRelayCommand NavigateToEmployeesCommand { get; }
+        public AsyncRelayCommand NavigateToClothingModelsCommand { get; }
+        public AsyncRelayCommand NavigateToCutBatchesCommand { get; }
+        public AsyncRelayCommand NavigateToDashboardCommand { get; }
 
         public MainViewModel(
             Func<EmployeesViewModel> employeesVmFactory,
@@ -22,13 +22,24 @@ namespace ERM.UI.ViewModels
             Func<CutBatchesViewModel> cutBatchesVmFactory,
             Func<DashboardViewModel> dashboardVmFactory)
         {
-            NavigateToEmployeesCommand = new RelayCommand(_ => CurrentViewModel = employeesVmFactory());
-            NavigateToClothingModelsCommand = new RelayCommand(_ => CurrentViewModel = clothingModelsVmFactory());
-            NavigateToCutBatchesCommand = new RelayCommand(_ => CurrentViewModel = cutBatchesVmFactory());
-            NavigateToDashboardCommand = new RelayCommand(_ => CurrentViewModel = dashboardVmFactory());
+            NavigateToEmployeesCommand = new AsyncRelayCommand(_ => NavigateAsync(employeesVmFactory()));
+            NavigateToClothingModelsCommand = new AsyncRelayCommand(_ => NavigateAsync(clothingModelsVmFactory()));
+            NavigateToCutBatchesCommand = new AsyncRelayCommand(_ => NavigateAsync(cutBatchesVmFactory()));
+            NavigateToDashboardCommand = new AsyncRelayCommand(_ => NavigateAsync(dashboardVmFactory()));
 
-            //  дефолтный экран при запуске
-            CurrentViewModel = dashboardVmFactory();
+            _ = NavigateAsync(dashboardVmFactory());
         }
+
+        private async Task NavigateAsync(ViewModelBase viewModel)
+        {
+            CurrentViewModel = viewModel;
+
+            // Если ViewModel поддерживает обновление при навигации — обновляем её данные желательно не теряя контекста (например, выбранного элемента)
+            if (CurrentViewModel is INavigationAware navAwareVM)
+            {
+                await navAwareVM.OnNavigatedToAsync();
+            }
+        }
+
     }
 }

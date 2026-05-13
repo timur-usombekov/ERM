@@ -5,7 +5,7 @@ using System.Collections.ObjectModel;
 
 namespace ERM.UI.ViewModels
 {
-    public class DashboardViewModel : ViewModelBase
+    public class DashboardViewModel : ViewModelBase, INavigationAware
     {
         private readonly IWorkAssignmentService _workService;
         private readonly IEmployeeService _employeeService;
@@ -89,11 +89,19 @@ namespace ERM.UI.ViewModels
             _ = LoadAsync();
         }
 
+        public async Task OnNavigatedToAsync()
+        {
+            await LoadAsync();
+        }
         private async Task LoadAsync()
         {
             IsLoading = true;
             try
             {
+                Guid? savedSeamstressId = SelectedSeamstress?.Id;
+                Guid? savedCutItemId = SelectedCutItem?.Id;
+                string? savedSize = SelectedSize;
+
                 var assignments = await _workService.GetTodayAssignmentsAsync();
                 TodayAssignments.Clear();
                 foreach (var a in assignments) TodayAssignments.Add(a);
@@ -108,9 +116,21 @@ namespace ERM.UI.ViewModels
                 {
                     AvailableCutItems.Add(item);
                 }
+
+                // возврат выбранных элементов
+                if (savedSeamstressId.HasValue)
+                {
+                    SelectedSeamstress = Seamstresses.FirstOrDefault(s => s.Id == savedSeamstressId.Value);
+                }
+                if (savedCutItemId.HasValue)
+                {
+                    SelectedCutItem = AvailableCutItems.FirstOrDefault(c => c.Id == savedCutItemId.Value);
+                }
+                SelectedSize = savedSize;
             }
             finally { IsLoading = false; }
         }
+
 
         private async Task IssueWorkAsync()
         {
@@ -119,7 +139,6 @@ namespace ERM.UI.ViewModels
             if (string.IsNullOrWhiteSpace(SelectedSize)) { ErrorMessage = "Укажите размер"; return; }
             if (!int.TryParse(QuantityText, out int qty) || qty <= 0) { ErrorMessage = "Некорректное количество"; return; }
 
-            // ЗАПОМИНАЕМ ID ПЕРЕД ОБНОВЛЕНИЕМ
             Guid savedSeamstressId = SelectedSeamstress.Id;
             Guid savedCutItemId = SelectedCutItem.Id;
 
@@ -132,10 +151,8 @@ namespace ERM.UI.ViewModels
                 QuantityText = string.Empty;
                 ErrorMessage = null;
 
-                // Дожидаемся обновления списков
                 await LoadAsync();
 
-                // ВОЗВРАЩАЕМ ВЫБРАННЫЕ ЭЛЕМЕНТЫ (Липкость)
                 SelectedSeamstress = Seamstresses.FirstOrDefault(s => s.Id == savedSeamstressId);
                 SelectedCutItem = AvailableCutItems.FirstOrDefault(c => c.Id == savedCutItemId);
             }
@@ -161,5 +178,6 @@ namespace ERM.UI.ViewModels
         }
 
         private void ClearError() => ErrorMessage = null;
+
     }
 }
