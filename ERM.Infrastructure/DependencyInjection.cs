@@ -1,5 +1,4 @@
-﻿using ERM.Application.Interfaces.Repositories;
-using ERM.Infrastructure.Repositories;
+﻿using ERM.Application.Interfaces.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -17,16 +16,13 @@ namespace ERM.Infrastructure
 
             Directory.CreateDirectory(Path.GetDirectoryName(dbPath)!);
 
-            services.AddDbContext<AppDbContext>(options =>
+            services.AddDbContextFactory<AppDbContext>(options =>
                 options.UseSqlite($"Data Source={dbPath}"));
+            services.AddSingleton<IAppDbContextFactory, AppDbContextFactoryWrapper>();
 
-            services.AddScoped<IEmployeeRepository, EmployeeRepository>();
-            services.AddScoped<IClothingModelRepository, ClothingModelRepository>();
-            services.AddScoped<ICutBatchRepository, CutBatchRepository>();
-            services.AddScoped<IWorkAssignmentRepository, WorkAssignmentRepository>();
-            services.AddScoped<IFabricColorRepository, FabricColorRepository>();
 
             return services;
         }
+
     }
 }

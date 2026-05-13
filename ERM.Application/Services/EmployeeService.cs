@@ -1,30 +1,39 @@
-﻿using ERM.Application.Interfaces.Repositories;
+﻿using ERM.Application.Interfaces.Data;
 using ERM.Application.Interfaces.Services;
 using ERM.Core.Domain.Entities;
 using ERM.Application.Mappers;
 using ERM.Application.DTOs;
+using Microsoft.EntityFrameworkCore;
 
 namespace ERM.Application.Services
 {
     public class EmployeeService : IEmployeeService
     {
-        private readonly IEmployeeRepository _repository;
+        private readonly IAppDbContextFactory _contextFactory;
 
-        public EmployeeService(IEmployeeRepository repository)
+        public EmployeeService(IAppDbContextFactory contextFactory)
         {
-            _repository = repository;
+            _contextFactory = contextFactory;
         }
 
         public async Task<IReadOnlyList<EmployeeDto>> GetAllAsync(CancellationToken ct = default)
         {
-            var employees = await _repository.GetAllAsync(ct);
+            await using var context = await _contextFactory.CreateDbContextAsync(ct);
+            var employees = await context.Employees
+                .Include(e => e.Seamstress)
+                .AsNoTracking().ToListAsync(ct);
 
             return employees.Select(e => e.ToDto()).ToList();
         }
 
         public async Task<EmployeeDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
         {
-            var employee = await _repository.GetByIdAsync(id, ct);
+            await using var context = await _contextFactory.CreateDbContextAsync(ct);
+            var employee = await context.Employees
+                .Include(e => e.Seamstress)
+                .FirstOrDefaultAsync(e => e.Id == id, ct);
+            if (employee is null)
+                throw new InvalidOperationException($"Сотрудник с Id {id} не найден.");
             
             return employee?.ToDto();
         }
@@ -35,6 +44,8 @@ namespace ERM.Application.Services
             string? machineNumber = null,
             CancellationToken ct = default)
         {
+            await using var context = await _contextFactory.CreateDbContextAsync(ct);
+
             var employee = new Employee(fullName, phoneNumber);
 
             if (!string.IsNullOrWhiteSpace(notes))
@@ -43,7 +54,8 @@ namespace ERM.Application.Services
             if (!string.IsNullOrWhiteSpace(machineNumber))
                 employee.AssignSeamstressRole(machineNumber); // домен создаёт Seamstress
 
-            await _repository.AddAsync(employee, ct); // один SaveChanges — INSERT Employee + Seamstress
+            context.Employees.Add(employee);
+            await context.SaveChangesAsync(ct); // один SaveChanges — INSERT Employee + Seamstress
             return employee.ToDto();
         }
 
@@ -56,7 +68,11 @@ namespace ERM.Application.Services
             string? machineNumber,
             CancellationToken ct = default)
         {
-            var employee = await GetOrThrowAsync(id, ct);
+            await using var context = await _contextFactory.CreateDbContextAsync(ct);
+
+            var employee = await context.Employees.Include(e => e.Seamstress).FirstOrDefaultAsync(e => e.Id == id, ct);
+            if (employee is null)
+                throw new InvalidOperationException($"Сотрудник с Id {id} не найден.");
 
             employee.UpdateContacts(fullName, phoneNumber);
             employee.UpdateNotes(notes);
@@ -64,7 +80,7 @@ namespace ERM.Application.Services
             if (!employee.IsSeamstress && isSeamstress)
             {
                 employee.AssignSeamstressRole(machineNumber!);
-                _repository.TrackAsNew(employee.Seamstress!);
+                context.Seamstresses.Add(employee.Seamstress!); // домен уже создал Seamstress, нужно только добавить в контекст
             }
             else if (employee.IsSeamstress && !isSeamstress)
             {
@@ -77,17 +93,19 @@ namespace ERM.Application.Services
                 employee.UpdateMachineNumber(machineNumber!);
             }
 
-            await _repository.UpdateAsync(employee, ct);
+            await context.SaveChangesAsync(ct);
 
             return employee.ToDto();
         }
 
         public async Task DeleteAsync(Guid id, CancellationToken ct = default)
-            => await _repository.DeleteAsync(id, ct);
-
-        //  приватный хелпер шоб не дублировать "?? throw"
-        private async Task<Employee> GetOrThrowAsync(Guid id, CancellationToken ct)
-            => await _repository.GetByIdAsync(id, ct)
-               ?? throw new InvalidOperationException($"Сотрудник с Id {id} не найден.");
+        {
+            await using var context = await _contextFactory.CreateDbContextAsync(ct);
+            var employee = await context.Employees.FirstOrDefaultAsync(e => e.Id == id, ct);
+            if (employee is null)
+                throw new InvalidOperationException($"Сотрудник с Id {id} не найден.");
+            context.Employees.Remove(employee);
+            await context.SaveChangesAsync(ct);
+        }
     }
 }

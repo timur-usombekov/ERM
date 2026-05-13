@@ -8,11 +8,11 @@ namespace ERM.Application
     {
         public static IServiceCollection AddApplication(this IServiceCollection services)
         {
-            services.AddScoped<IEmployeeService, EmployeeService>();
-            services.AddScoped<IClothingModelService, ClothingModelService>();
-            services.AddScoped<ICutBatchService, CutBatchService>();
-            services.AddScoped<IWorkAssignmentService, WorkAssignmentService>();
-            services.AddScoped<IFabricColorService, FabricColorService>();
+            services.AddTransient<IEmployeeService, EmployeeService>();
+            services.AddTransient<IClothingModelService, ClothingModelService>();
+            services.AddTransient<ICutBatchService, CutBatchService>();
+            services.AddTransient<IWorkAssignmentService, WorkAssignmentService>();
+            services.AddTransient<IFabricColorService, FabricColorService>();
 
             return services;
         }

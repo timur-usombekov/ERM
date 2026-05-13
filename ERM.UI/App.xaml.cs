@@ -1,10 +1,11 @@
 ﻿using ERM.Application;
 using ERM.Infrastructure;
 using ERM.UI.ViewModels;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Windows;
+using ERM.Application.Interfaces.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace ERM.UI
 {
@@ -19,8 +20,21 @@ namespace ERM.UI
                 {
                     services.AddInfrastructure();
                     services.AddApplication();
-                    services.AddTransient<MainViewModel>();
+
                     services.AddTransient<MainWindow>();
+                    services.AddTransient<MainViewModel>();
+
+                    // все ViewModels как Transient (чтобы экран каждый раз был свежим)
+                    services.AddTransient<EmployeesViewModel>();
+                    services.AddTransient<ClothingModelsViewModel>();
+                    services.AddTransient<CutBatchesViewModel>();
+                    services.AddTransient<DashboardViewModel>();
+
+                    // фабрики (Func). Что бы DI мог отдавать новые вьюмодели по запросу
+                    services.AddSingleton<Func<EmployeesViewModel>>(sp => () => sp.GetRequiredService<EmployeesViewModel>());
+                    services.AddSingleton<Func<ClothingModelsViewModel>>(sp => () => sp.GetRequiredService<ClothingModelsViewModel>());
+                    services.AddSingleton<Func<CutBatchesViewModel>>(sp => () => sp.GetRequiredService<CutBatchesViewModel>());
+                    services.AddSingleton<Func<DashboardViewModel>>(sp => () => sp.GetRequiredService<DashboardViewModel>());
                 })
                 .Build();
         }
@@ -29,13 +43,19 @@ namespace ERM.UI
         {
             await _host.StartAsync();
 
-            // Применяем миграции при каждом запуске
+            // Безопасное применение миграций через фабрику
             using var scope = _host.Services.CreateScope();
-            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            await context.Database.MigrateAsync();
+            var factory = scope.ServiceProvider.GetRequiredService<IAppDbContextFactory>();
+            await using (var context = await factory.CreateDbContextAsync())
+            {
+                // Приводим интерфейс к конкретному типу для вызова Migrate
+                if (context is DbContext efContext)
+                {
+                    await efContext.Database.MigrateAsync();
+                }
+            }
 
             _host.Services.GetRequiredService<MainWindow>().Show();
-
             base.OnStartup(e);
         }
 

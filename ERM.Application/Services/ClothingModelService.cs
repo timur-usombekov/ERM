@@ -1,44 +1,59 @@
 ﻿using ERM.Application.DTOs;
-using ERM.Application.Interfaces.Repositories;
+using ERM.Application.Interfaces.Data;
 using ERM.Application.Interfaces.Services;
 using ERM.Application.Mappers;
 using ERM.Core.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace ERM.Application.Services
 {
     public class ClothingModelService : IClothingModelService
     {
-        private readonly IClothingModelRepository _repo;
+        private readonly IAppDbContextFactory _contextFactory;
 
-        public ClothingModelService(IClothingModelRepository repo) => _repo = repo;
+        public ClothingModelService(IAppDbContextFactory contextFactory) => _contextFactory = contextFactory;
 
         public async Task<IReadOnlyList<ClothingModelDto>> GetAllAsync(CancellationToken ct = default)
         {
-            var models = await _repo.GetAllAsync(ct);
+            await using var context = await _contextFactory.CreateDbContextAsync(ct);
+            var models = await context.ClothingModels.AsNoTracking().ToListAsync(ct);
             return models.Select(m => m.ToDto()).ToList();
         }
 
         public async Task<ClothingModelDto> CreateAsync(string name, string? description, CancellationToken ct = default)
         {
+            await using var context = await _contextFactory.CreateDbContextAsync(ct);
+
             var model = new ClothingModel(name, description);
-            await _repo.AddAsync(model, ct);
+
+            context.ClothingModels.Add(model);
+            await context.SaveChangesAsync(ct);
             return model.ToDto();
         }
 
         public async Task<ClothingModelDto> EditAsync(Guid id, string name, string? description, CancellationToken ct = default)
         {
-            var model = await GetOrThrowAsync(id, ct);
+            await using var context = await _contextFactory.CreateDbContextAsync(ct);
+            var model = await context.ClothingModels.FirstOrDefaultAsync(m => m.Id == id, ct);
+            if (model is null)
+                throw new InvalidOperationException($"Модель одежды с Id {id} не найдена.");
+
             model.Update(name, description);
-            await _repo.UpdateAsync(model, ct);
+            context.ClothingModels.Update(model);
+
+            await context.SaveChangesAsync(ct);
             return model.ToDto();
         }
 
         public async Task DeleteAsync(Guid id, CancellationToken ct = default)
-            => await _repo.DeleteAsync(id, ct);
+        {
+            await using var context = await _contextFactory.CreateDbContextAsync(ct);
+            var model = await context.ClothingModels.FirstOrDefaultAsync(m => m.Id == id, ct);
+            if (model is null)
+                throw new InvalidOperationException($"Модель одежды с Id {id} не найдена.");
 
-        // Помагашка
-        private async Task<ClothingModel> GetOrThrowAsync(Guid id, CancellationToken ct)
-            => await _repo.GetByIdAsync(id, ct)
-               ?? throw new InvalidOperationException($"Модель одежды с Id {id} не найдена.");
+            context.ClothingModels.Remove(model);
+            await context.SaveChangesAsync(ct);
+        }
     }
 }

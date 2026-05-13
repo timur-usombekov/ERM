@@ -1,51 +1,73 @@
 ﻿using ERM.Application.DTOs;
-using ERM.Application.Interfaces.Repositories;
+using ERM.Application.Interfaces.Data;
 using ERM.Application.Interfaces.Services;
 using ERM.Application.Mappers;
 using ERM.Core.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ERM.Application.Services
 {
     public class WorkAssignmentService : IWorkAssignmentService
     {
-        private readonly IWorkAssignmentRepository _repo;
-        private readonly ICutBatchRepository _cutBatchRepo;
-        public WorkAssignmentService(IWorkAssignmentRepository repo, ICutBatchRepository cutBatchRepo)
+        private readonly IAppDbContextFactory _contextFactory;
+
+        public WorkAssignmentService(IAppDbContextFactory contextFactory)
         {
-            _repo = repo;
-            _cutBatchRepo = cutBatchRepo;
+            _contextFactory = contextFactory;
         }
 
         public async Task<IReadOnlyList<WorkAssignmentDto>> GetTodayAssignmentsAsync(CancellationToken ct = default)
         {
+            await using var context = await _contextFactory.CreateDbContextAsync(ct);
+
             var today = DateOnly.FromDateTime(DateTime.Today);
-            var assignments = await _repo.GetByDateAsync(today, ct);
+            var assignments = await context.WorkAssignments
+                .Include(a => a.Seamstress)
+                    .ThenInclude(s => s.Employee)
+                .Include(a => a.CutBatchItem)
+                    .ThenInclude(i => i.ClothingModel)
+                .Include(a => a.CutBatchItem)
+                    .ThenInclude(i => i.FabricColor)
+                .Where(a => a.AssignedDate == today)
+                .AsNoTracking()
+                .ToListAsync(ct);
             return assignments.Select(a => a.ToDto()).OrderByDescending(a => a.AssignedDate).ToList();
         }
 
         public async Task<WorkAssignmentDto> IssueWorkAsync(Guid seamstressId, Guid cutBatchItemId, string size, int quantity, CancellationToken ct = default)
         {
-            var cutItem = await _cutBatchRepo.GetItemByIdAsync(cutBatchItemId, ct)
+            await using var context = await _contextFactory.CreateDbContextAsync(ct);
+
+            var cutItem = await context.CutBatchItems
+                .FirstOrDefaultAsync(c => c.Id == cutBatchItemId, ct)
                 ?? throw new InvalidOperationException("Партия кроя не найдена.");
 
             cutItem.Issue(quantity);
 
             var assignment = new WorkAssignment(seamstressId, cutBatchItemId, size, quantity);
-            await _repo.AddAsync(assignment, ct);
+            context.WorkAssignments.Add(assignment);
+
+            await context.SaveChangesAsync(ct);
 
             return assignment.ToDto();
         }
 
         public async Task DeleteAsync(Guid id, CancellationToken ct = default)
         {
-            var assignment = await _repo.GetByIdAsync(id, ct);
+            await using var context = await _contextFactory.CreateDbContextAsync(ct);
+
+            var assignment = await context.WorkAssignments
+                .FirstOrDefaultAsync(a => a.Id == id, ct);
             if (assignment is null) return;
 
+            var cutItem = await context.CutBatchItems
+                .FirstOrDefaultAsync(c => c.Id == assignment.CutBatchItemId, ct);
             // Возвращаем баланс крою при отмене выдачи
-            var cutItem = await _cutBatchRepo.GetItemByIdAsync(assignment.CutBatchItemId, ct);
             cutItem?.CancelIssue(assignment.Quantity);
 
-            await _repo.DeleteAsync(id, ct);
+            context.WorkAssignments.Remove(assignment);
+            await context.SaveChangesAsync(ct);
         }
     }
 }

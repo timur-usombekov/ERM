@@ -1,9 +1,10 @@
-﻿using ERM.Core.Domain.Entities;
+﻿using ERM.Application.Interfaces.Data;
+using ERM.Core.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace ERM.Infrastructure
 {
-    public class AppDbContext : DbContext
+    public class AppDbContext : DbContext, IAppDbContext
     {
         public DbSet<Employee> Employees { get; set; } = null!;
         public DbSet<Seamstress> Seamstresses { get; set; } = null!;
@@ -18,20 +19,6 @@ namespace ERM.Infrastructure
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
-        }
-
-        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-        {
-            try
-            {
-                return await base.SaveChangesAsync(cancellationToken);
-            }
-            catch
-            {
-                // Если база ругнулась (например, FK Constraint), сбрасываем состояние что бы не было проблем с повторными попытками сохранения
-                ChangeTracker.Clear();
-                throw; 
-            }
         }
     }
 }
