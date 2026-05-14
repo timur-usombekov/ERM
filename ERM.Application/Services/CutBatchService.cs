@@ -38,7 +38,7 @@ namespace ERM.Application.Services
         }
 
 
-        public async Task AddItemToBatchAsync(Guid batchId, Guid modelId, Guid colorId, int quantity, CancellationToken ct = default)
+        public async Task<CutBatchItemDto> AddItemToBatchAsync(Guid batchId, Guid modelId, Guid colorId, int quantity, CancellationToken ct = default)
         {
             await using var context = await _contextFactory.CreateDbContextAsync(ct);
 
@@ -55,6 +55,8 @@ namespace ERM.Application.Services
                 context.CutBatchItems.Entry(batch.Items.Last()).State = EntityState.Added;
 
             await context.SaveChangesAsync(ct);
+
+            return batch.Items.Last().ToDto();
         }
 
         public async Task DeleteAsync(Guid id, CancellationToken ct = default)

@@ -13,15 +13,7 @@ namespace ERM.Application.Mappers
             DeclaredQuantity = b.DeclaredQuantity,
             UnallocatedQuantity = b.DeclaredQuantity - b.Items.Sum(i => i.Quantity),
 
-            Items = b.Items.Select(i => new CutBatchItemDto
-            {
-                Id = i.Id,
-                ClothingModelId = i.ClothingModelId,
-                ClothingModelName = i.ClothingModel?.Name ?? "Неизвестно",
-                Color = i.FabricColor?.Name ?? "Неизвестно",
-                Quantity = i.Quantity,
-                AvailableQuantity = i.Quantity - i.IssuedQuantity
-            }).ToList()
+            Items = b.Items.Select(i => i.ToDto()).ToList()
 
         };
     }

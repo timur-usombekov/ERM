@@ -204,32 +204,60 @@
                             </StackPanel>
 
                             <!-- Кнопки действий -->
-                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
-                                <Button Style="{StaticResource MaterialDesignOutlinedButton}"
-                                        Command="{Binding AddItemCommand}"
-                                        Height="38" Padding="16,0"
-                                        md:ButtonAssist.CornerRadius="8"
-                                        Margin="0,0,10,0">
-                                    <StackPanel Orientation="Horizontal">
-                                        <md:PackIcon Kind="Plus" Width="16" Height="16"
-                                                     VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                        <TextBlock Text="Добавить" VerticalAlignment="Center" FontSize="13"/>
-                                    </StackPanel>
-                                </Button>
+                            <StackPanel Grid.Column="1" Orientation="Vertical" VerticalAlignment="Top">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right">
+                                    <Button Style="{StaticResource MaterialDesignOutlinedButton}"
+                                            Command="{Binding AddItemCommand}"
+                                            Height="38" Padding="16,0"
+                                            md:ButtonAssist.CornerRadius="8"
+                                            Margin="0,0,10,0">
+                                        <StackPanel Orientation="Horizontal">
+                                            <md:PackIcon Kind="Plus" Width="16" Height="16"
+                                                         VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                            <TextBlock Text="Добавить" VerticalAlignment="Center" FontSize="13"/>
+                                        </StackPanel>
+                                    </Button>
 
-                                <!-- Кнопка удаления -->
-                                <Button Style="{StaticResource MaterialDesignOutlinedButton}"
-                                        Command="{Binding DeleteBatchCommand}"
-                                        CommandParameter="{Binding SelectedBatch}"
-                                        MinWidth="0" Width="38" Height="38"
-                                        Padding="8"
-                                        md:ButtonAssist.CornerRadius="8"
-                                        BorderBrush="#FFCDD2"
-                                        ToolTip="Удалить документ">
-                                    <md:PackIcon Kind="TrashCanOutline"
-                                                 Foreground="#D32F2F"
-                                                 Width="18" Height="18"/>
-                                </Button>
+                                    <!-- Кнопка удаления -->
+                                    <Button Style="{StaticResource MaterialDesignOutlinedButton}"
+                                            Command="{Binding DeleteBatchCommand}"
+                                            CommandParameter="{Binding SelectedBatch}"
+                                            MinWidth="0" Width="38" Height="38"
+                                            Padding="8"
+                                            md:ButtonAssist.CornerRadius="8"
+                                            BorderBrush="#FFCDD2"
+                                            ToolTip="Удалить документ">
+                                        <md:PackIcon Kind="TrashCanOutline"
+                                                     Foreground="#D32F2F"
+                                                     Width="18" Height="18"/>
+                                    </Button>
+                                </StackPanel>
+                                <!-- Сообщение об ошибке -->
+                                <Border CornerRadius="8" Padding="12,8" Margin="5"
+                                        VerticalAlignment="Center">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background" Value="Transparent"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding ErrorMessage, Converter={StaticResource NullToBool}}" Value="True">
+                                                    <Setter Property="Background" Value="#FFEBEE"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <StackPanel Orientation="Horizontal"
+                                            Visibility="{Binding ErrorMessage, Converter={StaticResource NullToVisibility}}">
+                                        <md:PackIcon Kind="AlertCircleOutline"
+                                            Width="15" Height="15"
+                                            Foreground="#E53935"
+                                            VerticalAlignment="Center"
+                                            Margin="0,0,6,0"/>
+                                        <TextBlock Text="{Binding ErrorMessage}"
+                                            Foreground="#E53935"
+                                            FontSize="13" FontWeight="Medium"
+                                            VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
                             </StackPanel>
                         </Grid>
                     </Border>
@@ -245,10 +273,12 @@
                                                  Background="{DynamicResource MaterialDesignCardBackground}">
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
+                                                    <!-- Акцентная левая полоса -->
                                                     <ColumnDefinition Width="4"/>
                                                     <ColumnDefinition Width="*"/>
                                                 </Grid.ColumnDefinitions>
 
+                                                <!-- Цветная полоса слева карточки (primary) -->
                                                 <Rectangle Grid.Column="0"
                                                            Fill="{DynamicResource PrimaryHueMidBrush}"/>
 
@@ -260,9 +290,11 @@
                                                         <ColumnDefinition Width="*"/>
                                                     </Grid.ColumnDefinitions>
 
+                                                    <!-- ── Левая секция: модель + итого ── -->
                                                     <Border Grid.Column="0" Padding="24,20" VerticalAlignment="Top">
                                                         <StackPanel VerticalAlignment="Top">
 
+                                                            <!-- Лейбл МОДЕЛЬ -->
                                                             <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                                                                 <md:PackIcon Kind="TshirtCrewOutline"
                                                                              Width="13" Height="13"
@@ -284,6 +316,7 @@
                                                                        Background="{DynamicResource MaterialDesignDivider}"
                                                                        Opacity="0.5"/>
 
+                                                            <!-- Итого — главный акцент -->
                                                             <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
                                                                 <md:PackIcon Kind="Counter"
                                                                              Width="13" Height="13"
@@ -332,7 +365,7 @@
                                                             </StackPanel>
 
                                                             <!-- Строки цветов -->
-                                                            <ItemsControl ItemsSource="{Binding Colors}">
+                                                            <ItemsControl ItemsSource="{Binding CutBatchItems}">
                                                                 <ItemsControl.ItemTemplate>
                                                                     <DataTemplate>
                                                                         <Border Margin="0,3" Padding="10,8"
@@ -359,6 +392,7 @@
                                                                                                Foreground="{DynamicResource MaterialDesignBody}"/>
                                                                                 </StackPanel>
 
+                                                                                <!-- Количество — выровнено правее, с чипом -->
                                                                                 <Border Grid.Column="1"
                                                                                         Background="{DynamicResource PrimaryHueLightBrush}"
                                                                                         CornerRadius="5"

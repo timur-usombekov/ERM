@@ -36,6 +36,13 @@ namespace ERM.UI.ViewModels
             set => SetField(ref _isLoading, value);
         }
 
+        private string? _errorMessage;
+        public string? ErrorMessage
+        {
+            get => _errorMessage;
+            private set => SetField(ref _errorMessage, value);
+        }
+
         public AsyncRelayCommand LoadCommand { get; }
         public AsyncRelayCommand AddBatchCommand { get; }
         public AsyncRelayCommand AddItemCommand { get; }
@@ -87,7 +94,7 @@ namespace ERM.UI.ViewModels
                 {
                     ModelName = g.Key,
                     TotalQuantity = g.Sum(x => x.Quantity),
-                    Colors = new ObservableCollection<CutBatchItemDto>(g)
+                    CutBatchItems = new ObservableCollection<CutBatchItemDto>(g)
                 });
 
             foreach (var group in groups)
@@ -128,7 +135,16 @@ namespace ERM.UI.ViewModels
             if (SelectedBatch is null) return;
 
             var models = await _clothingModelService.GetAllAsync();
-            if (!models.Any()) return;
+            if (!models.Any())
+            {
+                // по хорошему нужно будет заменить на окно либо баннер с предложением создать модель
+                //await ExecuteSafeAsync(() => throw new InvalidOperationException("Нет ни одной модели одежды. Создайте модель перед разделением кроя."));
+                // Нужно будет добавить наблюдатель за ClothingModels и сбрасывать ErrorMessage при появлении моделей, но для простоты пока так
+                ErrorMessage = "Нет ни одной модели одежды.";
+                return;
+            }
+            ErrorMessage = null; // что бы не висела постоянно
+
             var colors = await _fabricColorService.GetAllAsync();
 
             var vm = new AddCutBatchItemDialogViewModel(models, colors);
@@ -139,11 +155,12 @@ namespace ERM.UI.ViewModels
             var (isColorSuccess, colorDto) = await ExecuteSafeAsync(() => _fabricColorService.GetOrCreateAsync(r.ColorText));
             if (!isColorSuccess || colorDto is null) return;
 
-            var isSuccess = await ExecuteSafeAsync(() =>
+            var (isSuccess, newItem) = await ExecuteSafeAsync(() =>
                 _cutBatchService.AddItemToBatchAsync(SelectedBatch.Id, r.SelectedModel!.Id, colorDto.Id, r.Quantity)
             );
 
-            if (isSuccess) await LoadAsync(); // LoadAsync сам вызовет UpdateGroups через Setter
+            if (!isSuccess || newItem is null) return;
+             await LoadAsync(); // LoadAsync сам вызовет UpdateGroups через Setter
         }
     }
 
@@ -152,6 +169,6 @@ namespace ERM.UI.ViewModels
     {
         public string ModelName { get; set; } = string.Empty;
         public int TotalQuantity { get; set; }
-        public ObservableCollection<CutBatchItemDto> Colors { get; set; } = [];
+        public ObservableCollection<CutBatchItemDto> CutBatchItems { get; set; } = [];
     }
 }
