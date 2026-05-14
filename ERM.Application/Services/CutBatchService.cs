@@ -44,16 +44,16 @@ namespace ERM.Application.Services
 
             var batch = await context.CutBatches
                 .Include(b => b.Items)
-                    .ThenInclude(i => i.ClothingModel)
-                .Include(b => b.Items) 
-                    .ThenInclude(i => i.FabricColor)
                 .FirstOrDefaultAsync(b => b.Id == batchId, ct);
+
             if (batch is null)
                 throw new InvalidOperationException($"Крой с Id {batchId} не найден.");
 
-            batch.AddItem(modelId, colorId, quantity);
-            context.CutBatchItems.Add(batch.Items.Last());
-            context.CutBatches.Update(batch);
+            var isNewItem = batch.AddItem(modelId, colorId, quantity);
+
+            if (isNewItem) // Проверка на добавление нового элемента
+                context.CutBatchItems.Entry(batch.Items.Last()).State = EntityState.Added;
+
             await context.SaveChangesAsync(ct);
         }
 

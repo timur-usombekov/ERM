@@ -9,96 +9,382 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!-- Шапка -->
-        <Grid Grid.Row="0" Margin="0,0,0,24">
+        <Grid Grid.Row="0" Margin="0,0,0,28">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <TextBlock Grid.Column="0" Text="Управление кроем (от закройщика)" Style="{StaticResource MaterialDesignHeadline4TextBlock}" VerticalAlignment="Center"/>
+            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                <TextBlock Text="Управление кроем"
+                           Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+                           FontWeight="Bold" />
+                <TextBlock Text="Документы раскроя и позиции по моделям"
+                           Foreground="{DynamicResource MaterialDesignBodyLight}"
+                           FontSize="13" Margin="0,2,0,0" Opacity="0.7"/>
+            </StackPanel>
 
-            <Button Grid.Column="1" Command="{Binding AddBatchCommand}"
+            <Button Grid.Column="1"
+                    Command="{Binding AddBatchCommand}"
                     Style="{StaticResource MaterialDesignRaisedButton}"
-                    Content="Новый крой (Документ)" Height="40" />
+                    Height="42" Padding="24,0"
+                    md:ButtonAssist.CornerRadius="8">
+                <StackPanel Orientation="Horizontal">
+                    <md:PackIcon Kind="PlusCircleOutline" Width="18" Height="18"
+                                 VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <TextBlock Text="Новый документ" FontWeight="Medium" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
         </Grid>
 
         <ProgressBar Grid.Row="1" IsIndeterminate="True" Height="2" Margin="0,0,0,8"
                      Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}" />
 
-        <!-- Основная рабочая область (Слева списки, справа детали) -->
         <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="300" />
-                <ColumnDefinition Width="16" />
-                <!-- Разделитель -->
+                <ColumnDefinition Width="240" />
+                <ColumnDefinition Width="20" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <!-- ЛЕВАЯ ПАНЕЛЬ: Список партий (бумажек) -->
-            <md:Card Grid.Column="0" md:ElevationAssist.Elevation="Dp2" UniformCornerRadius="8">
-                <ListBox ItemsSource="{Binding Batches}" 
-                         SelectedItem="{Binding SelectedBatch}"
-                         HorizontalContentAlignment="Stretch">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Margin="8">
-                                <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="15"/>
-                                <TextBlock Text="{Binding Date, StringFormat=dd.MM.yyyy}" Foreground="Gray" FontSize="12" Margin="0,4,0,0"/>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
+            <md:Card Grid.Column="0"
+                     md:ElevationAssist.Elevation="Dp1"
+                     UniformCornerRadius="10"
+                     Background="{DynamicResource MaterialDesignCardBackground}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Заголовок панели -->
+                    <Border Grid.Row="0" Padding="16,14,16,10"
+                            BorderBrush="{DynamicResource MaterialDesignDivider}"
+                            BorderThickness="0,0,0,1">
+                        <StackPanel Orientation="Horizontal">
+                            <md:PackIcon Kind="FileDocumentOutline"
+                                         Width="16" Height="16"
+                                         Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                         VerticalAlignment="Center" Margin="0,0,8,0" Opacity="0.7"/>
+                            <TextBlock Text="ДОКУМЕНТЫ"
+                                       FontSize="11" FontWeight="Bold" 
+                                       Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                       VerticalAlignment="Center" Opacity="0.7"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Список -->
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <ListBox ItemsSource="{Binding Batches}"
+                                 SelectedItem="{Binding SelectedBatch}"
+                                 HorizontalContentAlignment="Stretch"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 Padding="8">
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="ListBoxItem" BasedOn="{StaticResource MaterialDesignListBoxItem}">
+                                    <Setter Property="Padding" Value="0"/>
+                                    <Setter Property="Margin" Value="0,2"/>
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="ListBoxItem">
+                                                <Border x:Name="ItemBorder"
+                                                        CornerRadius="8" Padding="0"
+                                                        Background="Transparent">
+                                                    <!-- Левый акцентный бордюр (видим только при выборе) -->
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="3"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <Border x:Name="Accent"
+                                                                Grid.Column="0"
+                                                                CornerRadius="3,0,0,3"
+                                                                Background="{DynamicResource PrimaryHueMidBrush}"
+                                                                Opacity="0"/>
+                                                        <ContentPresenter Grid.Column="1" Margin="0"/>
+                                                    </Grid>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsSelected" Value="True">
+                                                        <Setter TargetName="ItemBorder" Property="Background"
+                                                                Value="{DynamicResource PrimaryHueLightBrush}"/>
+                                                        <Setter TargetName="Accent" Property="Opacity" Value="1"/>
+                                                    </Trigger>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="ItemBorder" Property="Background"
+                                                                Value="{DynamicResource MaterialDesignDivider}"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </ListBox.ItemContainerStyle>
+
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Padding="14,12" CornerRadius="8">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0">
+                                                <TextBlock Text="{Binding Title}"
+                                                           FontWeight="SemiBold" FontSize="13"
+                                                           TextWrapping="Wrap"
+                                                           Foreground="{DynamicResource MaterialDesignBody}"/>
+                                                <TextBlock Text="{Binding Date, StringFormat=dd.MM.yyyy}"
+                                                           Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                                           FontSize="11" Margin="0,3,0,0" Opacity="0.7"/>
+                                            </StackPanel>
+                                            <!-- Бейдж с количеством -->
+                                            <Border Grid.Column="1"
+                                                    Background="{DynamicResource MaterialDesignDivider}"
+                                                    CornerRadius="10" Padding="6,2"
+                                                    VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding DeclaredQuantity}"
+                                                           FontSize="11" FontWeight="Bold"
+                                                           Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                                            </Border>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </ScrollViewer>
+                </Grid>
             </md:Card>
 
-            <!-- ПРАВАЯ ПАНЕЛЬ: Детали выбранной партии -->
-            <md:Card Grid.Column="2" md:ElevationAssist.Elevation="Dp2" UniformCornerRadius="8" 
-                Visibility="{Binding SelectedBatch, Converter={StaticResource NullToVisibility}}">
-
-                <Grid Margin="24">
+            <md:Card Grid.Column="2"
+                     md:ElevationAssist.Elevation="Dp2"
+                     UniformCornerRadius="10"
+                     Visibility="{Binding SelectedBatch, Converter={StaticResource NullToVisibility}}">
+                <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
-                    <!-- Шапка документа -->
-                    <Grid Grid.Row="0" Margin="0,0,0,16">
-                        <TextBlock Text="{Binding SelectedBatch.Title}" FontSize="20" FontWeight="Medium" VerticalAlignment="Center"/>
+                    <Border Grid.Row="0"
+                            BorderBrush="{DynamicResource MaterialDesignDivider}"
+                            BorderThickness="0,0,0,1">
+                        <Grid Margin="32,24,24,20">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
 
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                            <Button Style="{StaticResource MaterialDesignToolButton}" 
-                                    ToolTip="Удалить документ" Command="{Binding DeleteBatchCommand}" 
-                                    CommandParameter="{Binding SelectedBatch}">
-                                <md:PackIcon Kind="TrashCanOutline" Foreground="#E53935" Width="20" Height="20"/>
-                            </Button>
-                        </StackPanel>
-                    </Grid>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="{Binding SelectedBatch.Title}"
+                                           FontSize="24" FontWeight="Bold"
+                                           Foreground="{DynamicResource MaterialDesignBody}"/>
 
-                    <Separator Grid.Row="1" Margin="0,0,0,16" Background="{DynamicResource MaterialDesignDivider}"/>
+                                <!-- Бейдж «Заявлено» -->
+                                <StackPanel Orientation="Horizontal" Margin="0,10,0,0" VerticalAlignment="Center">
+                                    <Border Background="{DynamicResource PrimaryHueLightBrush}"
+                                            CornerRadius="6" Padding="10,4">
+                                        <StackPanel Orientation="Horizontal">
+                                            <md:PackIcon Kind="PackageVariantClosed"
+                                                         Width="14" Height="14"
+                                                         Foreground="{DynamicResource PrimaryHueMidBrush}"
+                                                         VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                            <TextBlock Text="Заявлено:"
+                                                       Foreground="{DynamicResource PrimaryHueMidBrush}"
+                                                       FontSize="13" VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding SelectedBatch.DeclaredQuantity, StringFormat=' {0} шт'}"
+                                                       FontWeight="Bold" FontSize="13"
+                                                       Foreground="{DynamicResource PrimaryHueMidBrush}"
+                                                       VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </StackPanel>
 
-                    <!-- Таблица с моделями и цветами -->
-                    <Grid Grid.Row="2">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
+                            <!-- Кнопки действий -->
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
+                                <Button Style="{StaticResource MaterialDesignOutlinedButton}"
+                                        Command="{Binding AddItemCommand}"
+                                        Height="38" Padding="16,0"
+                                        md:ButtonAssist.CornerRadius="8"
+                                        Margin="0,0,10,0">
+                                    <StackPanel Orientation="Horizontal">
+                                        <md:PackIcon Kind="Plus" Width="16" Height="16"
+                                                     VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                        <TextBlock Text="Добавить" VerticalAlignment="Center" FontSize="13"/>
+                                    </StackPanel>
+                                </Button>
 
-                        <DataGrid Grid.Row="0" ItemsSource="{Binding SelectedBatch.Items}" 
-                                  AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False"
-                                  Style="{StaticResource MaterialDesignDataGrid}">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="Модель одежды" Binding="{Binding ClothingModelName}" Width="*" />
-                                <DataGridTextColumn Header="Цвет" Binding="{Binding Color}" Width="150" />
-                                <DataGridTextColumn Header="Количество (шт)" Binding="{Binding Quantity}" Width="150" />
-                            </DataGrid.Columns>
-                        </DataGrid>
+                                <!-- Кнопка удаления -->
+                                <Button Style="{StaticResource MaterialDesignOutlinedButton}"
+                                        Command="{Binding DeleteBatchCommand}"
+                                        CommandParameter="{Binding SelectedBatch}"
+                                        MinWidth="0" Width="38" Height="38"
+                                        Padding="8"
+                                        md:ButtonAssist.CornerRadius="8"
+                                        BorderBrush="#FFCDD2"
+                                        ToolTip="Удалить документ">
+                                    <md:PackIcon Kind="TrashCanOutline"
+                                                 Foreground="#D32F2F"
+                                                 Width="18" Height="18"/>
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
 
-                        <!-- Кнопка добавления новой строчки -->
-                        <Button Grid.Row="1" Command="{Binding AddItemCommand}"
-                                Style="{StaticResource MaterialDesignOutlinedButton}"
-                                Content="+ Добавить позицию" Margin="0,16,0,0" HorizontalAlignment="Left" />
-                    </Grid>
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <Border Padding="28">
+                            <ItemsControl ItemsSource="{Binding GroupedItems}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <md:Card md:ElevationAssist.Elevation="Dp2"
+                                                 UniformCornerRadius="10"
+                                                 Margin="0,0,0,18"
+                                                 Background="{DynamicResource MaterialDesignCardBackground}">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="4"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <Rectangle Grid.Column="0"
+                                                           Fill="{DynamicResource PrimaryHueMidBrush}"/>
+
+                                                <!-- Контент карточки -->
+                                                <Grid Grid.Column="1">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="196"/>
+                                                        <ColumnDefinition Width="1"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <Border Grid.Column="0" Padding="24,20" VerticalAlignment="Top">
+                                                        <StackPanel VerticalAlignment="Top">
+
+                                                            <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                                                <md:PackIcon Kind="TshirtCrewOutline"
+                                                                             Width="13" Height="13"
+                                                                             Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                                                             VerticalAlignment="Center"
+                                                                             Margin="0,0,5,0" Opacity="0.6"/>
+                                                                <TextBlock Text="МОДЕЛЬ"
+                                                                           FontSize="10" FontWeight="Bold"
+                                                                           Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                                                           Opacity="0.6" VerticalAlignment="Center"/>
+                                                            </StackPanel>
+
+                                                            <TextBlock Text="{Binding ModelName}"
+                                                                       FontSize="17" FontWeight="SemiBold"
+                                                                       TextWrapping="Wrap"
+                                                                       Foreground="{DynamicResource MaterialDesignBody}"/>
+
+                                                            <Separator Margin="0,16,0,16"
+                                                                       Background="{DynamicResource MaterialDesignDivider}"
+                                                                       Opacity="0.5"/>
+
+                                                            <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                                                <md:PackIcon Kind="Counter"
+                                                                             Width="13" Height="13"
+                                                                             Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                                                             VerticalAlignment="Center"
+                                                                             Margin="0,0,5,0" Opacity="0.6"/>
+                                                                <TextBlock Text="ИТОГО"
+                                                                           FontSize="10" FontWeight="Bold"
+                                                                           Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                                                           Opacity="0.6" VerticalAlignment="Center"/>
+                                                            </StackPanel>
+
+                                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                                <TextBlock Text="{Binding TotalQuantity}"
+                                                                           FontSize="30" FontWeight="Bold"
+                                                                           Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+                                                                <TextBlock Text=" шт"
+                                                                           FontSize="16" FontWeight="Medium"
+                                                                           Foreground="{DynamicResource PrimaryHueMidBrush}"
+                                                                           VerticalAlignment="Bottom"
+                                                                           Margin="2,0,0,4"/>
+                                                            </StackPanel>
+                                                        </StackPanel>
+                                                    </Border>
+
+                                                    <!-- Вертикальный разделитель -->
+                                                    <Border Grid.Column="1"
+                                                            Background="{DynamicResource MaterialDesignDivider}"
+                                                            Margin="0,16" Opacity="0.6"/>
+
+                                                    <!-- ── Правая секция: цвета ── -->
+                                                    <Border Grid.Column="2" Padding="24,20">
+                                                        <StackPanel>
+
+                                                            <!-- Заголовок ЦВЕТА -->
+                                                            <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                                                <md:PackIcon Kind="PaletteOutline"
+                                                                             Width="13" Height="13"
+                                                                             Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                                                             VerticalAlignment="Center"
+                                                                             Margin="0,0,5,0" Opacity="0.6"/>
+                                                                <TextBlock Text="ЦВЕТА"
+                                                                           FontSize="10" FontWeight="Bold"
+                                                                           Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                                                           Opacity="0.6" VerticalAlignment="Center"/>
+                                                            </StackPanel>
+
+                                                            <!-- Строки цветов -->
+                                                            <ItemsControl ItemsSource="{Binding Colors}">
+                                                                <ItemsControl.ItemTemplate>
+                                                                    <DataTemplate>
+                                                                        <Border Margin="0,3" Padding="10,8"
+                                                                                CornerRadius="6"
+                                                                                Background="{DynamicResource MaterialDesignToolBarBackground}">
+                                                                            <Grid>
+                                                                                <Grid.ColumnDefinitions>
+                                                                                    <ColumnDefinition Width="*"/>
+                                                                                    <ColumnDefinition Width="Auto"/>
+                                                                                </Grid.ColumnDefinitions>
+
+                                                                                <!-- Название цвета -->
+                                                                                <StackPanel Orientation="Horizontal" Grid.Column="0"
+                                                                                            VerticalAlignment="Center">
+                                                                                    <!-- Цветной индикатор-кружок -->
+                                                                                    <Ellipse Width="10" Height="10"
+                                                                                             Fill="{DynamicResource PrimaryHueMidBrush}"
+                                                                                             Opacity="0.4"
+                                                                                             VerticalAlignment="Center"
+                                                                                             Margin="0,0,10,0"/>
+                                                                                    <TextBlock Text="{Binding Color}"
+                                                                                               FontSize="14"
+                                                                                               VerticalAlignment="Center"
+                                                                                               Foreground="{DynamicResource MaterialDesignBody}"/>
+                                                                                </StackPanel>
+
+                                                                                <Border Grid.Column="1"
+                                                                                        Background="{DynamicResource PrimaryHueLightBrush}"
+                                                                                        CornerRadius="5"
+                                                                                        Padding="8,3"
+                                                                                        VerticalAlignment="Center">
+                                                                                    <TextBlock Text="{Binding Quantity, StringFormat='{}{0} шт'}"
+                                                                                               FontSize="13" FontWeight="Bold"
+                                                                                               Foreground="{DynamicResource PrimaryHueMidBrush}"
+                                                                                               VerticalAlignment="Center"/>
+                                                                                </Border>
+                                                                            </Grid>
+                                                                        </Border>
+                                                                    </DataTemplate>
+                                                                </ItemsControl.ItemTemplate>
+                                                            </ItemsControl>
+                                                        </StackPanel>
+                                                    </Border>
+                                                </Grid>
+                                            </Grid>
+                                        </md:Card>
+
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Border>
+                    </ScrollViewer>
                 </Grid>
             </md:Card>
         </Grid>

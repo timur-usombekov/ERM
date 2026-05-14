@@ -70,6 +70,7 @@
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
             <converters:BoolToYesNoConverter x:Key="BoolToYesNo" />
             <converters:NullToVisibilityConverter x:Key="NullToVisibility" />
+            <converters:NullToBoolConverter x:Key="NullToBool" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

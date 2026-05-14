@@ -2,36 +2,90 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
-             MinWidth="350">
-    <md:Card Padding="32" UniformCornerRadius="8">
+             MinWidth="380" MaxWidth="480">
+
+    <md:Card UniformCornerRadius="10" md:ElevationAssist.Elevation="Dp4">
         <StackPanel>
-            <TextBlock Text="Новый крой (от закройщика)" Style="{StaticResource MaterialDesignHeadline6TextBlock}" Margin="0,0,0,24" />
 
-            <TextBox md:HintAssist.Hint="Название (например: Батал от 10.05)"
-                     md:HintAssist.IsFloating="True"
-                     Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                     Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
-                     Margin="0,0,0,16" FontSize="15" />
+            <!-- ── ШАПКА ── -->
+            <Border Padding="28,24,28,20"
+                    BorderBrush="{DynamicResource MaterialDesignDivider}"
+                    BorderThickness="0,0,0,1">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
 
-            <DatePicker md:HintAssist.Hint="Дата кроя"
-                        md:HintAssist.IsFloating="True"
-                        Style="{StaticResource MaterialDesignOutlinedDatePicker}"
-                        SelectedDate="{Binding Date}"
-                        Margin="0,0,0,16" FontSize="15" />
+                    <Border Grid.Column="0"
+                            Background="{DynamicResource PrimaryHueLightBrush}"
+                            CornerRadius="8" Width="44" Height="44"
+                            Margin="0,0,16,0">
+                        <md:PackIcon Kind="ScissorsCutting"
+                                     Width="22" Height="22"
+                                     Foreground="{DynamicResource PrimaryHueMidBrush}"
+                                     HorizontalAlignment="Center"
+                                     VerticalAlignment="Center"/>
+                    </Border>
 
-            <TextBox md:HintAssist.Hint="Общее кол-во (заявлено)"
-                     md:HintAssist.IsFloating="True"
-                     Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                     Text="{Binding DeclaredQuantityText, UpdateSourceTrigger=PropertyChanged}"
-                     Margin="0,0,0,24" FontSize="15" />
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="Новый документ кроя"
+                                   FontSize="18" FontWeight="Bold"
+                                   Foreground="{DynamicResource MaterialDesignBody}"/>
+                        <TextBlock Text="Укажите параметры партии раскроя"
+                                   FontSize="12"
+                                   Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                   Opacity="0.7" Margin="0,2,0,0"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
 
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                <Button Content="Отмена" Style="{StaticResource MaterialDesignFlatButton}"
-                        Command="{x:Static md:DialogHost.CloseDialogCommand}" CommandParameter="{x:Null}"
-                        Foreground="{DynamicResource MaterialDesignBody}" Margin="0,0,8,0" />
-                <Button Content="Создать" Style="{StaticResource MaterialDesignRaisedButton}"
-                        Command="{x:Static md:DialogHost.CloseDialogCommand}" CommandParameter="{Binding}" IsEnabled="{Binding IsValid}"/>
+            <!-- ── ПОЛЯ ── -->
+            <StackPanel Margin="28,20,28,0">
+
+                <TextBox md:HintAssist.Hint="Название (например: Батал от 10.05)"
+                         md:HintAssist.IsFloating="True"
+                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                         Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
+                         Margin="0,0,0,16" FontSize="14"/>
+
+                <DatePicker md:HintAssist.Hint="Дата кроя"
+                            md:HintAssist.IsFloating="True"
+                            Style="{StaticResource MaterialDesignOutlinedDatePicker}"
+                            SelectedDate="{Binding Date}"
+                            Margin="0,0,0,16" FontSize="14"/>
+
+                <TextBox md:HintAssist.Hint="Общее количество (заявлено, шт)"
+                         md:HintAssist.IsFloating="True"
+                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                         Text="{Binding DeclaredQuantityText, UpdateSourceTrigger=PropertyChanged}"
+                         FontSize="14"/>
+
             </StackPanel>
+
+            <!-- ── КНОПКИ ── -->
+            <Border Padding="28,16,28,24"
+                    BorderBrush="{DynamicResource MaterialDesignDivider}"
+                    BorderThickness="0,1,0,0"
+                    Margin="0,20,0,0">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="Отмена"
+                            Style="{StaticResource MaterialDesignOutlinedButton}"
+                            Command="{x:Static md:DialogHost.CloseDialogCommand}"
+                            CommandParameter="{x:Null}"
+                            Height="36" Padding="20,0"
+                            md:ButtonAssist.CornerRadius="8"
+                            Margin="0,0,10,0"/>
+                    <Button Content="Создать"
+                            Style="{StaticResource MaterialDesignRaisedButton}"
+                            Command="{x:Static md:DialogHost.CloseDialogCommand}"
+                            CommandParameter="{Binding}"
+                            IsEnabled="{Binding IsValid}"
+                            Height="36" Padding="20,0"
+                            md:ButtonAssist.CornerRadius="8"/>
+                </StackPanel>
+            </Border>
+
         </StackPanel>
     </md:Card>
 </UserControl>

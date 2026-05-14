@@ -45,5 +45,12 @@ namespace ERM.Core.Domain.Entities
 
             IssuedQuantity -= quantityToReturn;
         }
+
+        public void IncreaseQuantity(int amount)
+        {
+            if (amount <= 0) throw new ArgumentException("Количество должно быть больше нуля.");
+            Quantity += amount;
+        }
+
     }
 }

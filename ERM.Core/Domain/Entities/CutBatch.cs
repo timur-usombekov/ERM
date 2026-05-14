@@ -24,8 +24,10 @@ namespace ERM.Core.Domain.Entities
             Date = date;
             DeclaredQuantity = declaredQuantity;
         }
-
-        public void AddItem(Guid clothingModelId, Guid fabricColorId, int quantity)
+        /// <summary>
+        /// </summary>
+        /// <returns> true, если был добавлен новый элемент, false если количество было увеличено для существующего элемента </returns>
+        public bool AddItem(Guid clothingModelId, Guid fabricColorId, int quantity)
         {
             if (quantity <= 0)
                 throw new ArgumentException("Количество позиции должно быть больше нуля.");
@@ -37,8 +39,24 @@ namespace ERM.Core.Domain.Entities
                     $"Невозможно добавить {quantity} шт. Превышен лимит от закройщика! " +
                     $"Осталось: {DeclaredQuantity - currentlyDistributed} шт.");
 
-            _items.Add(new CutBatchItem(Id, clothingModelId, fabricColorId, quantity));
+            // что бы избежать дубликатов, количество может быть увеличено для уже существующей позиции 
+            // с тем же сочетанием модели одежды и цвета ткани, для того же кроя
+            var existingItem = _items.FirstOrDefault(i =>
+                i.ClothingModelId == clothingModelId &&
+                i.FabricColorId == fabricColorId);
+
+            if (existingItem != null)
+            {
+                existingItem.IncreaseQuantity(quantity);
+                return false;
+            }
+            else
+            {
+                _items.Add(new CutBatchItem(Id, clothingModelId, fabricColorId, quantity));
+                return true;
+            }
         }
+
 
 
     }

@@ -7,7 +7,7 @@ using System.Collections.ObjectModel;
 
 namespace ERM.UI.ViewModels
 {
-    public class CutBatchesViewModel : ViewModelBase
+    public class CutBatchesViewModel : ViewModelBase, INavigationAware
     {
         private readonly ICutBatchService _cutBatchService;
         private readonly IClothingModelService _clothingModelService;
@@ -15,11 +15,18 @@ namespace ERM.UI.ViewModels
 
         public ObservableCollection<CutBatchDto> Batches { get; } = [];
 
+        public ObservableCollection<CutBatchModelGroup> GroupedItems { get; } = [];
+
         private CutBatchDto? _selectedBatch;
         public CutBatchDto? SelectedBatch
         {
             get => _selectedBatch;
-            set => SetField(ref _selectedBatch, value);
+            set
+            {
+                SetField(ref _selectedBatch, value);
+                UpdateGroups();
+                AddItemCommand.RaiseCanExecuteChanged();
+            }
         }
 
         private bool _isLoading;
@@ -32,11 +39,10 @@ namespace ERM.UI.ViewModels
         public AsyncRelayCommand LoadCommand { get; }
         public AsyncRelayCommand AddBatchCommand { get; }
         public AsyncRelayCommand AddItemCommand { get; }
-
         public AsyncRelayCommand<CutBatchDto> DeleteBatchCommand { get; }
 
         public CutBatchesViewModel(
-            ICutBatchService cutBatchService, 
+            ICutBatchService cutBatchService,
             IClothingModelService clothingModelService,
             IFabricColorService fabricColorService)
         {
@@ -46,26 +52,48 @@ namespace ERM.UI.ViewModels
 
             LoadCommand = new AsyncRelayCommand(_ => LoadAsync());
             AddBatchCommand = new AsyncRelayCommand(_ => AddBatchAsync());
-
             AddItemCommand = new AsyncRelayCommand(_ => AddItemAsync(), _ => SelectedBatch is not null);
-
             DeleteBatchCommand = new AsyncRelayCommand<CutBatchDto>(DeleteBatchAsync);
-
-            _ = LoadAsync();
         }
+
+        public Task OnNavigatedToAsync() => LoadAsync();
 
         private async Task LoadAsync()
         {
             IsLoading = true;
             try
             {
+                Guid? savedId = SelectedBatch?.Id;
+
                 var batches = await _cutBatchService.GetAllAsync();
                 Batches.Clear();
                 foreach (var b in batches) Batches.Add(b);
 
-                SelectedBatch = Batches.FirstOrDefault();
+                SelectedBatch = savedId.HasValue
+                    ? Batches.FirstOrDefault(b => b.Id == savedId.Value)
+                    : Batches.FirstOrDefault();
             }
             finally { IsLoading = false; }
+        }
+
+        private void UpdateGroups()
+        {
+            GroupedItems.Clear();
+            if (SelectedBatch is null) return;
+
+            var groups = SelectedBatch.Items
+                .GroupBy(i => i.ClothingModelName)
+                .Select(g => new CutBatchModelGroup
+                {
+                    ModelName = g.Key,
+                    TotalQuantity = g.Sum(x => x.Quantity),
+                    Colors = new ObservableCollection<CutBatchItemDto>(g)
+                });
+
+            foreach (var group in groups)
+            {
+                GroupedItems.Add(group);
+            }
         }
 
         private async Task AddBatchAsync()
@@ -90,7 +118,7 @@ namespace ERM.UI.ViewModels
             var confirmed = await DialogHost.Show(new ConfirmDialogViewModel($"Удалить документ «{batch.Title}»?"), "RootDialog");
             if (confirmed?.ToString() != "True") return;
 
-            if(!await ExecuteSafeAsync(() => _cutBatchService.DeleteAsync(batch.Id))) return;
+            if (!await ExecuteSafeAsync(() => _cutBatchService.DeleteAsync(batch.Id))) return;
             Batches.Remove(batch);
             SelectedBatch = Batches.FirstOrDefault();
         }
@@ -101,7 +129,6 @@ namespace ERM.UI.ViewModels
 
             var models = await _clothingModelService.GetAllAsync();
             if (!models.Any()) return;
-
             var colors = await _fabricColorService.GetAllAsync();
 
             var vm = new AddCutBatchItemDialogViewModel(models, colors);
@@ -112,12 +139,19 @@ namespace ERM.UI.ViewModels
             var (isColorSuccess, colorDto) = await ExecuteSafeAsync(() => _fabricColorService.GetOrCreateAsync(r.ColorText));
             if (!isColorSuccess || colorDto is null) return;
 
-            if (!await ExecuteSafeAsync(() =>
+            var isSuccess = await ExecuteSafeAsync(() =>
                 _cutBatchService.AddItemToBatchAsync(SelectedBatch.Id, r.SelectedModel!.Id, colorDto.Id, r.Quantity)
-            )) return;
+            );
 
-            await LoadAsync();
-            SelectedBatch = Batches.FirstOrDefault(b => b.Id == SelectedBatch.Id);
+            if (isSuccess) await LoadAsync(); // LoadAsync сам вызовет UpdateGroups через Setter
         }
+    }
+
+    // Класс-обертка
+    public class CutBatchModelGroup
+    {
+        public string ModelName { get; set; } = string.Empty;
+        public int TotalQuantity { get; set; }
+        public ObservableCollection<CutBatchItemDto> Colors { get; set; } = [];
     }
 }

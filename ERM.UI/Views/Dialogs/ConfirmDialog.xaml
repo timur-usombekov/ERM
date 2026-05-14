@@ -3,24 +3,94 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
-             Width="380">
-    <md:Card Padding="32" UniformCornerRadius="8">
-        <StackPanel>
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                <md:PackIcon Kind="AlertCircleOutline" Width="32" Height="32" Foreground="#E53935" Margin="0,0,12,0"/>
-                <TextBlock Text="Подтверждение" Style="{StaticResource MaterialDesignHeadline6TextBlock}" VerticalAlignment="Center" />
-            </StackPanel>
+             Width="400">
 
-            <TextBlock Text="{Binding Message}" TextWrapping="Wrap" FontSize="15" Opacity="0.8" Margin="0,0,0,32" />
+    <md:Card UniformCornerRadius="10" md:ElevationAssist.Elevation="Dp4">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <!-- Левая акцентная полоса (красная — деструктивное действие) -->
+                <ColumnDefinition Width="4"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
 
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                <Button Content="Отмена" Style="{StaticResource MaterialDesignFlatButton}"
-                        Command="{x:Static md:DialogHost.CloseDialogCommand}" CommandParameter="{x:Static sys:Boolean.FalseString}"
-                        Foreground="{DynamicResource MaterialDesignBody}" Margin="0,0,8,0" />
-                <Button Content="Удалить" Style="{StaticResource MaterialDesignRaisedButton}"
-                        Background="#E53935" BorderBrush="#E53935" Foreground="White"
-                        Command="{x:Static md:DialogHost.CloseDialogCommand}" CommandParameter="{x:Static sys:Boolean.TrueString}" />
+            <Rectangle Grid.Column="0" Fill="#E53935"/>
+
+            <StackPanel Grid.Column="1">
+
+                <!-- ── ШАПКА ── -->
+                <Border Padding="24,24,24,16"
+                        BorderBrush="{DynamicResource MaterialDesignDivider}"
+                        BorderThickness="0,0,0,1">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Иконка предупреждения -->
+                        <Border Grid.Column="0"
+                                Background="#FFEBEE"
+                                CornerRadius="8" Width="44" Height="44"
+                                Margin="0,0,16,0">
+                            <md:PackIcon Kind="AlertCircleOutline"
+                                         Width="22" Height="22"
+                                         Foreground="#E53935"
+                                         HorizontalAlignment="Center"
+                                         VerticalAlignment="Center"/>
+                        </Border>
+
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Text="Подтверждение действия"
+                                       FontSize="16" FontWeight="Bold"
+                                       Foreground="{DynamicResource MaterialDesignBody}"/>
+                            <TextBlock Text="Это действие необратимо"
+                                       FontSize="12" Foreground="#E53935"
+                                       Opacity="0.8" Margin="0,2,0,0"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- ── СООБЩЕНИЕ ── -->
+                <Border Padding="24,16,24,0">
+                    <TextBlock Text="{Binding Message}"
+                               TextWrapping="Wrap"
+                               FontSize="14"
+                               LineHeight="22"
+                               Foreground="{DynamicResource MaterialDesignBody}"
+                               Opacity="0.85"/>
+                </Border>
+
+                <!-- ── КНОПКИ ── -->
+                <Border Padding="24,16,24,24"
+                        BorderBrush="{DynamicResource MaterialDesignDivider}"
+                        BorderThickness="0,1,0,0"
+                        Margin="0,16,0,0">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Content="Отмена"
+                                Style="{StaticResource MaterialDesignOutlinedButton}"
+                                Command="{x:Static md:DialogHost.CloseDialogCommand}"
+                                CommandParameter="{x:Static sys:Boolean.FalseString}"
+                                Height="36" Padding="20,0"
+                                md:ButtonAssist.CornerRadius="8"
+                                Margin="0,0,10,0"/>
+                        <Button Style="{StaticResource MaterialDesignRaisedButton}"
+                                Command="{x:Static md:DialogHost.CloseDialogCommand}"
+                                CommandParameter="{x:Static sys:Boolean.TrueString}"
+                                Background="#E53935" BorderBrush="#E53935" Foreground="White"
+                                Height="36" Padding="20,0"
+                                md:ButtonAssist.CornerRadius="8">
+                            <StackPanel Orientation="Horizontal">
+                                <md:PackIcon Kind="TrashCanOutline"
+                                             Width="16" Height="16"
+                                             VerticalAlignment="Center"
+                                             Margin="0,0,6,0"/>
+                                <TextBlock Text="Удалить" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Border>
+
             </StackPanel>
-        </StackPanel>
+        </Grid>
     </md:Card>
 </UserControl>
