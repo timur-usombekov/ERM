@@ -19,7 +19,9 @@
                         </Grid.ColumnDefinitions>
 
                         <Border Grid.Column="0"
-                                Background="{DynamicResource PrimaryHueLightBrush}"
+                                Background="Transparent"
+                                BorderBrush="{DynamicResource PrimaryHueLightBrush}"
+                                BorderThickness="1"
                                 CornerRadius="8" Width="44" Height="44"
                                 Margin="0,0,16,0">
                             <md:PackIcon Kind="AccountEditOutline"

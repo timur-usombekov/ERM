@@ -46,7 +46,9 @@
                             BorderBrush="{DynamicResource MaterialDesignDivider}"
                             BorderThickness="0,0,0,1">
                         <StackPanel Orientation="Horizontal">
-                            <Border Background="{DynamicResource PrimaryHueLightBrush}"
+                            <Border Background="Transparent"
+                                    BorderBrush="{DynamicResource PrimaryHueLightBrush}"
+                                    BorderThickness="1"
                                     CornerRadius="6" Width="32" Height="32"
                                     Margin="0,0,12,0">
                                 <md:PackIcon Kind="LightningBolt"
@@ -142,7 +144,6 @@
 
                                                 <!-- Остаток в бейдже -->
                                                 <Border Grid.Column="1"
-                                                        Background="{DynamicResource PrimaryHueLightBrush}"
                                                         CornerRadius="5" Padding="6,2"
                                                         VerticalAlignment="Center"
                                                         Margin="12,0,4,0">
@@ -298,7 +299,7 @@
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Border Background="{DynamicResource PrimaryHueLightBrush}"
+                                    <Border 
                                             CornerRadius="6" Width="28" Height="28"
                                             Margin="0,0,10,0">
                                         <md:PackIcon Kind="AccountOutline"
@@ -355,11 +356,11 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
-                    <!-- Количество — акцентный бейдж -->
+                    <!-- Количество -->
                     <DataGridTemplateColumn Header="Кол-во" Width="100">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <Border Background="{DynamicResource PrimaryHueLightBrush}"
+                                <Border 
                                         CornerRadius="6" Padding="10,4"
                                         HorizontalAlignment="Left" VerticalAlignment="Center">
                                     <TextBlock Text="{Binding Quantity, StringFormat='{}{0} шт'}"

@@ -13,6 +13,10 @@ namespace ERM.Infrastructure.Configurations
             builder.Property(a => a.Size).IsRequired().HasMaxLength(20);
             builder.Property(a => a.Quantity).IsRequired();
 
+            builder.Property(a => a.PricePerUnit)
+                .IsRequired()
+                .HasColumnType("decimal(18,2)");
+
             builder.HasOne(a => a.Seamstress)
                 .WithMany()
                 .HasForeignKey(a => a.SeamstressId)

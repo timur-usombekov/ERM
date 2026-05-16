@@ -12,6 +12,10 @@ namespace ERM.Core.Domain.Entities
         public string Size { get; private set; } = null!; // "52", "XL"
         public int Quantity { get; private set; }
 
+        public decimal PricePerUnit { get; private set; }
+        public decimal TotalPrice => Quantity * PricePerUnit;
+
+
         public DateOnly AssignedDate { get; private set; }
         public int WeekNumber { get; private set; }
         public int Year { get; private set; }
@@ -25,13 +29,15 @@ namespace ERM.Core.Domain.Entities
             Guid seamstressId,
             Guid cutBatchItemId,
             string size,
-            int quantity)
+            int quantity,
+            decimal pricePerUnit)
         {
             SeamstressId = seamstressId;
             CutBatchItemId = cutBatchItemId;
             Size = size;
 
             Quantity = quantity;
+            PricePerUnit = pricePerUnit;
 
             AssignedDate = DateOnly.FromDateTime(DateTime.Today);
 

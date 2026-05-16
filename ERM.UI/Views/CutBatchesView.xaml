@@ -89,31 +89,28 @@
                                     <Setter Property="Template">
                                         <Setter.Value>
                                             <ControlTemplate TargetType="ListBoxItem">
-                                                <Border x:Name="ItemBorder"
-                                                        CornerRadius="8" Padding="0"
+                                                <Border x:Name="ItemBackground"
+                                                        CornerRadius="8"
                                                         Background="Transparent">
-                                                    <!-- Левый акцентный бордюр (видим только при выборе) -->
                                                     <Grid>
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="3"/>
-                                                            <ColumnDefinition Width="*"/>
-                                                        </Grid.ColumnDefinitions>
                                                         <Border x:Name="Accent"
-                                                                Grid.Column="0"
-                                                                CornerRadius="3,0,0,3"
-                                                                Background="{DynamicResource PrimaryHueMidBrush}"
-                                                                Opacity="0"/>
-                                                        <ContentPresenter Grid.Column="1" Margin="0"/>
+                                                                HorizontalAlignment="Left"
+                                                                Width="16" 
+                                                                BorderBrush="{DynamicResource MaterialDesign.Brush.Primary}"
+                                                                BorderThickness="4,1.5,0,1.5" 
+                                                                CornerRadius="8,0,0,8"
+                                                                Opacity="0"/>                                       
+                                                        <ContentPresenter Margin="0"/>
                                                     </Grid>
                                                 </Border>
                                                 <ControlTemplate.Triggers>
                                                     <Trigger Property="IsSelected" Value="True">
-                                                        <Setter TargetName="ItemBorder" Property="Background"
-                                                                Value="{DynamicResource PrimaryHueLightBrush}"/>
+                                                        <Setter TargetName="ItemBackground" Property="Background"
+                                                                Value="{DynamicResource MaterialDesignSelection}"/>
                                                         <Setter TargetName="Accent" Property="Opacity" Value="1"/>
                                                     </Trigger>
                                                     <Trigger Property="IsMouseOver" Value="True">
-                                                        <Setter TargetName="ItemBorder" Property="Background"
+                                                        <Setter TargetName="ItemBackground" Property="Background"
                                                                 Value="{DynamicResource MaterialDesignDivider}"/>
                                                     </Trigger>
                                                 </ControlTemplate.Triggers>
@@ -178,14 +175,24 @@
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Grid.Column="0">
-                                <TextBlock Text="{Binding SelectedBatch.Title}"
-                                           FontSize="24" FontWeight="Bold"
-                                           Foreground="{DynamicResource MaterialDesignBody}"/>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding SelectedBatch.Title}"
+                                               FontSize="24" FontWeight="Bold"
+                                               Foreground="{DynamicResource MaterialDesignBody}"/>
+
+                                    <!-- БЕЙДЖ АРХИВА (Показывается только если IsClosed = True) -->
+                                    <Border Background="#EEEEEE" CornerRadius="6" Padding="8,4" Margin="12,0,0,0"
+                                            Visibility="{Binding SelectedBatch.IsClosed, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <md:PackIcon Kind="ArchiveLockOutline" Width="14" Height="14" Foreground="#757575" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                            <TextBlock Text="В АРХИВЕ" Foreground="#757575" FontSize="11" FontWeight="Bold" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
 
                                 <!-- Бейдж «Заявлено» -->
                                 <StackPanel Orientation="Horizontal" Margin="0,10,0,0" VerticalAlignment="Center">
-                                    <Border Background="{DynamicResource PrimaryHueLightBrush}"
-                                            CornerRadius="6" Padding="10,4">
+                                    <Border CornerRadius="6" Padding="10,4">
                                         <StackPanel Orientation="Horizontal">
                                             <md:PackIcon Kind="PackageVariantClosed"
                                                          Width="14" Height="14"
@@ -206,14 +213,22 @@
                             <!-- Кнопки действий -->
                             <StackPanel Grid.Column="1" Orientation="Vertical" VerticalAlignment="Top">
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right">
+
+                                    <!-- КНОПКА: АРХИВИРОВАТЬ -->
+                                    <Button Style="{StaticResource MaterialDesignOutlinedButton}"
+                                            Command="{Binding ToggleBatchStatusCommand}"
+                                            CommandParameter="{Binding SelectedBatch}"
+                                            Height="38" Padding="12,0" md:ButtonAssist.CornerRadius="8" Margin="0,0,10,0"
+                                            BorderBrush="Gray" Foreground="Gray" ToolTip="Закрыть партию (убрать из выдачи)">
+                                        <md:PackIcon Kind="ArchiveOutline" Width="18" Height="18"/>
+                                    </Button>
+
                                     <Button Style="{StaticResource MaterialDesignOutlinedButton}"
                                             Command="{Binding AddItemCommand}"
-                                            Height="38" Padding="16,0"
-                                            md:ButtonAssist.CornerRadius="8"
-                                            Margin="0,0,10,0">
+                                            Height="38" Padding="16,0" md:ButtonAssist.CornerRadius="8" Margin="0,0,10,0"
+                                            IsEnabled="{Binding SelectedBatch.IsClosed, Converter={StaticResource InverseBool}}">
                                         <StackPanel Orientation="Horizontal">
-                                            <md:PackIcon Kind="Plus" Width="16" Height="16"
-                                                         VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                            <md:PackIcon Kind="Plus" Width="16" Height="16" VerticalAlignment="Center" Margin="0,0,6,0"/>
                                             <TextBlock Text="Добавить" VerticalAlignment="Center" FontSize="13"/>
                                         </StackPanel>
                                     </Button>
@@ -222,42 +237,11 @@
                                     <Button Style="{StaticResource MaterialDesignOutlinedButton}"
                                             Command="{Binding DeleteBatchCommand}"
                                             CommandParameter="{Binding SelectedBatch}"
-                                            MinWidth="0" Width="38" Height="38"
-                                            Padding="8"
-                                            md:ButtonAssist.CornerRadius="8"
-                                            BorderBrush="#FFCDD2"
-                                            ToolTip="Удалить документ">
-                                        <md:PackIcon Kind="TrashCanOutline"
-                                                     Foreground="#D32F2F"
-                                                     Width="18" Height="18"/>
+                                            MinWidth="0" Width="38" Height="38" Padding="8"
+                                            md:ButtonAssist.CornerRadius="8" BorderBrush="#FFCDD2" ToolTip="Удалить документ">
+                                        <md:PackIcon Kind="TrashCanOutline" Foreground="#D32F2F" Width="18" Height="18"/>
                                     </Button>
                                 </StackPanel>
-                                <!-- Сообщение об ошибке -->
-                                <Border CornerRadius="8" Padding="12,8" Margin="5"
-                                        VerticalAlignment="Center">
-                                    <Border.Style>
-                                        <Style TargetType="Border">
-                                            <Setter Property="Background" Value="Transparent"/>
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding ErrorMessage, Converter={StaticResource NullToBool}}" Value="True">
-                                                    <Setter Property="Background" Value="#FFEBEE"/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Border.Style>
-                                    <StackPanel Orientation="Horizontal"
-                                            Visibility="{Binding ErrorMessage, Converter={StaticResource NullToVisibility}}">
-                                        <md:PackIcon Kind="AlertCircleOutline"
-                                            Width="15" Height="15"
-                                            Foreground="#E53935"
-                                            VerticalAlignment="Center"
-                                            Margin="0,0,6,0"/>
-                                        <TextBlock Text="{Binding ErrorMessage}"
-                                            Foreground="#E53935"
-                                            FontSize="13" FontWeight="Medium"
-                                            VerticalAlignment="Center"/>
-                                    </StackPanel>
-                                </Border>
                             </StackPanel>
                         </Grid>
                     </Border>
@@ -316,7 +300,7 @@
                                                                        Background="{DynamicResource MaterialDesignDivider}"
                                                                        Opacity="0.5"/>
 
-                                                            <!-- Итого — главный акцент -->
+                                                            <!-- Итого -->
                                                             <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
                                                                 <md:PackIcon Kind="Counter"
                                                                              Width="13" Height="13"
@@ -394,7 +378,6 @@
 
                                                                                 <!-- Количество — выровнено правее, с чипом -->
                                                                                 <Border Grid.Column="1"
-                                                                                        Background="{DynamicResource PrimaryHueLightBrush}"
                                                                                         CornerRadius="5"
                                                                                         Padding="8,3"
                                                                                         VerticalAlignment="Center">

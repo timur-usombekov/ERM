@@ -15,17 +15,20 @@ namespace ERM.UI.ViewModels
         public AsyncRelayCommand NavigateToClothingModelsCommand { get; }
         public AsyncRelayCommand NavigateToCutBatchesCommand { get; }
         public AsyncRelayCommand NavigateToDashboardCommand { get; }
+        public AsyncRelayCommand NavigateToPayrollCommand { get; }
 
         public MainViewModel(
             Func<EmployeesViewModel> employeesVmFactory,
             Func<ClothingModelsViewModel> clothingModelsVmFactory,
             Func<CutBatchesViewModel> cutBatchesVmFactory,
-            Func<DashboardViewModel> dashboardVmFactory)
+            Func<DashboardViewModel> dashboardVmFactory,
+            Func<PayrollViewModel> payrollVmFactory)
         {
             NavigateToEmployeesCommand = new AsyncRelayCommand(_ => NavigateAsync(employeesVmFactory()));
             NavigateToClothingModelsCommand = new AsyncRelayCommand(_ => NavigateAsync(clothingModelsVmFactory()));
             NavigateToCutBatchesCommand = new AsyncRelayCommand(_ => NavigateAsync(cutBatchesVmFactory()));
             NavigateToDashboardCommand = new AsyncRelayCommand(_ => NavigateAsync(dashboardVmFactory()));
+            NavigateToPayrollCommand = new AsyncRelayCommand(async _ => await NavigateAsync(payrollVmFactory()));
 
             _ = NavigateAsync(dashboardVmFactory());
         }

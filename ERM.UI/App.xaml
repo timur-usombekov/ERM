@@ -13,7 +13,8 @@
                 <md:BundledTheme BaseTheme="Light"
                                  PrimaryColor="BlueGrey"
                                  SecondaryColor="Teal" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesign2.Defaults.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesign3.Defaults.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ObsoleteBrushes.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <!-- Связка ViewModel → View -->
@@ -65,12 +66,18 @@
                 <dialogs:ErrorDialog />
             </DataTemplate>
 
+            <DataTemplate DataType="{x:Type vm:PayrollViewModel}">
+                <views:PayrollView />
+            </DataTemplate>
+
 
             <!-- BooleanToVisibilityConverter вообще существует? -->
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
             <converters:BoolToYesNoConverter x:Key="BoolToYesNo" />
             <converters:NullToVisibilityConverter x:Key="NullToVisibility" />
             <converters:NullToBoolConverter x:Key="NullToBool" />
+            <converters:InverseBoolConverter x:Key="InverseBool" />
+            <converters:VisibilityToBoolConverter x:Key="VisibilityToBool" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

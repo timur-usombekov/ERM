@@ -14,8 +14,13 @@ namespace ERM.Infrastructure.Configurations
                 .IsRequired()
                 .HasMaxLength(200);
 
+            builder.Property(m => m.SewingPrice)
+                .IsRequired()
+                .HasColumnType("decimal(18,2)"); // формат для денег
+
             builder.Property(m => m.Description)
                 .HasMaxLength(1000);
+
         }
     }
 }

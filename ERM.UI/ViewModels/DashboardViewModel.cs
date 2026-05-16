@@ -104,7 +104,7 @@ namespace ERM.UI.ViewModels
 
                 var assignments = await _workService.GetTodayAssignmentsAsync();
                 TodayAssignments.Clear();
-                foreach (var a in assignments) TodayAssignments.Add(a);
+                foreach (var a in assignments) TodayAssignments.Insert(0,a);
 
                 var employees = await _employeeService.GetAllAsync();
                 Seamstresses.Clear();
@@ -112,7 +112,13 @@ namespace ERM.UI.ViewModels
 
                 var batches = await _cutBatchService.GetAllAsync();
                 AvailableCutItems.Clear();
-                foreach (var item in batches.SelectMany(b => b.Items).Where(i => i.AvailableQuantity > 0))
+
+                var activeItems = batches
+                    .Where(b => !b.IsClosed)
+                    .SelectMany(b => b.Items)
+                    .Where(i => i.AvailableQuantity > 0);
+
+                foreach (var item in activeItems)
                 {
                     AvailableCutItems.Add(item);
                 }

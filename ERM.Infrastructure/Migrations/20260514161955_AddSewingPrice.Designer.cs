@@ -3,6 +3,7 @@ using System;
 using ERM.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ERM.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260514161955_AddSewingPrice")]
+    partial class AddSewingPrice
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.7");
@@ -50,9 +53,6 @@ namespace ERM.Infrastructure.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<int>("DeclaredQuantity")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("IsClosed")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Title")

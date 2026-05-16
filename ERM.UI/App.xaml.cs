@@ -29,12 +29,15 @@ namespace ERM.UI
                     services.AddSingleton<ClothingModelsViewModel>();
                     services.AddSingleton<CutBatchesViewModel>();
                     services.AddSingleton<DashboardViewModel>();
+                    services.AddSingleton<PayrollViewModel>();
 
                     // фабрики (Func). Что бы DI мог отдавать новые вьюмодели по запросу
                     services.AddSingleton<Func<EmployeesViewModel>>(sp => () => sp.GetRequiredService<EmployeesViewModel>());
                     services.AddSingleton<Func<ClothingModelsViewModel>>(sp => () => sp.GetRequiredService<ClothingModelsViewModel>());
                     services.AddSingleton<Func<CutBatchesViewModel>>(sp => () => sp.GetRequiredService<CutBatchesViewModel>());
                     services.AddSingleton<Func<DashboardViewModel>>(sp => () => sp.GetRequiredService<DashboardViewModel>());
+                    services.AddSingleton<Func<PayrollViewModel>>(sp => () => sp.GetRequiredService<PayrollViewModel>());
+
                 })
                 .Build();
         }

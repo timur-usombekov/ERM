@@ -11,6 +11,7 @@ namespace ERM.Application.Mappers
             Title = b.Title,
             Date = b.Date,
             DeclaredQuantity = b.DeclaredQuantity,
+            IsClosed = b.IsClosed,
             UnallocatedQuantity = b.DeclaredQuantity - b.Items.Sum(i => i.Quantity),
 
             Items = b.Items.Select(i => i.ToDto()).ToList()

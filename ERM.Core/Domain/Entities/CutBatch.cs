@@ -7,6 +7,8 @@ namespace ERM.Core.Domain.Entities
         public string Title { get; private set; } = null!;
         public DateOnly Date { get; private set; }
 
+        public bool IsClosed { get; private set; }
+
         public int DeclaredQuantity { get; private set; }
 
         public IReadOnlyCollection<CutBatchItem> Items => _items.AsReadOnly();
@@ -23,6 +25,7 @@ namespace ERM.Core.Domain.Entities
             Title = title;
             Date = date;
             DeclaredQuantity = declaredQuantity;
+            IsClosed = false;
         }
         /// <summary>
         /// </summary>
@@ -57,8 +60,8 @@ namespace ERM.Core.Domain.Entities
             }
         }
 
-
-
+        public void Close() => IsClosed = true;
+        public void Open() => IsClosed = false;
     }
 
 }

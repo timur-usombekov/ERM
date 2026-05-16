@@ -40,12 +40,15 @@ namespace ERM.Application.Services
             await using var context = await _contextFactory.CreateDbContextAsync(ct);
 
             var cutItem = await context.CutBatchItems
+                .Include(c => c.ClothingModel)
                 .FirstOrDefaultAsync(c => c.Id == cutBatchItemId, ct)
                 ?? throw new InvalidOperationException("Партия кроя не найдена.");
 
             cutItem.Issue(quantity);
 
-            var assignment = new WorkAssignment(seamstressId, cutBatchItemId, size, quantity);
+            decimal currentPrice = cutItem.ClothingModel.SewingPrice;
+
+            var assignment = new WorkAssignment(seamstressId, cutBatchItemId, size, quantity, currentPrice);
             context.WorkAssignments.Add(assignment);
 
             await context.SaveChangesAsync(ct);
@@ -69,5 +72,46 @@ namespace ERM.Application.Services
             context.WorkAssignments.Remove(assignment);
             await context.SaveChangesAsync(ct);
         }
+
+        public async Task<IReadOnlyList<SeamstressPayrollDto>> GetPayrollAsync(DateOnly startDate, DateOnly endDate, CancellationToken ct = default)
+        {
+            await using var context = await _contextFactory.CreateDbContextAsync(ct);
+
+            // Все выдачи за указанный период
+            var assignments = await context.WorkAssignments
+                .Include(a => a.Seamstress).ThenInclude(s => s.Employee)
+                .Include(a => a.CutBatchItem).ThenInclude(i => i.ClothingModel)
+                .Where(a => a.AssignedDate >= startDate && a.AssignedDate <= endDate)
+                .AsNoTracking()
+                .ToListAsync(ct);
+
+            // Группировка
+            var payroll = assignments
+                .GroupBy(a => new { a.SeamstressId, a.Seamstress.Employee.FullName, a.Seamstress.MachineNumber })
+                .Select(g => new SeamstressPayrollDto
+                {
+                    SeamstressId = g.Key.SeamstressId,
+                    SeamstressName = g.Key.FullName,
+                    MachineNumber = g.Key.MachineNumber,
+                    TotalItemsSewn = g.Sum(a => a.Quantity),
+                    TotalSalary = g.Sum(a => a.Quantity * a.PricePerUnit),
+
+                    // Детализация 
+                    Details = g.GroupBy(a => new { a.CutBatchItem.ClothingModel.Name, a.PricePerUnit })
+                               .Select(dg => new PayrollDetailDto
+                               {
+                                   ModelName = dg.Key.Name,
+                                   PricePerUnit = dg.Key.PricePerUnit,
+                                   Quantity = dg.Sum(x => x.Quantity)
+                               })
+                               .OrderBy(d => d.ModelName)
+                               .ToList()
+                })
+                .OrderBy(p => p.SeamstressName)
+                .ToList();
+
+            return payroll;
+        }
+
     }
 }

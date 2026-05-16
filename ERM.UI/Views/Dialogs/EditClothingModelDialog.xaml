@@ -19,7 +19,9 @@
                         </Grid.ColumnDefinitions>
 
                         <Border Grid.Column="0"
-                                Background="{DynamicResource PrimaryHueLightBrush}"
+                                Background="Transparent"
+                                BorderBrush="{DynamicResource PrimaryHueLightBrush}"
+                                BorderThickness="1"
                                 CornerRadius="8" Width="44" Height="44"
                                 Margin="0,0,16,0">
                             <md:PackIcon Kind="TshirtCrewOutline"
@@ -49,7 +51,11 @@
                              Style="{StaticResource MaterialDesignOutlinedTextBox}"
                              Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
                              Margin="0,0,0,16" FontSize="14"/>
-
+                    <TextBox md:HintAssist.Hint="Цена за пошив 1 шт (грн)"
+                             md:HintAssist.IsFloating="True"
+                             Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                             Text="{Binding SewingPriceText, UpdateSourceTrigger=PropertyChanged}"
+                             Margin="0,0,0,16" FontSize="14"/>
                     <TextBox md:HintAssist.Hint="Описание (особенности кроя, материалы)"
                              md:HintAssist.IsFloating="True"
                              Style="{StaticResource MaterialDesignOutlinedTextBox}"
@@ -74,6 +80,7 @@
                                 Height="36" Padding="20,0"
                                 md:ButtonAssist.CornerRadius="8"
                                 Margin="0,0,10,0"/>
+                        
                         <Button Content="Сохранить"
                                 Style="{StaticResource MaterialDesignRaisedButton}"
                                 Command="{x:Static md:DialogHost.CloseDialogCommand}"

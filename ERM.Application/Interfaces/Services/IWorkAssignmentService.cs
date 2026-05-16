@@ -7,5 +7,7 @@ namespace ERM.Application.Interfaces.Services
         Task<IReadOnlyList<WorkAssignmentDto>> GetTodayAssignmentsAsync(CancellationToken ct = default);
         Task<WorkAssignmentDto> IssueWorkAsync(Guid seamstressId, Guid cutBatchItemId, string size, int quantity, CancellationToken ct = default);
         Task DeleteAsync(Guid id, CancellationToken ct = default);
+        Task<IReadOnlyList<SeamstressPayrollDto>> GetPayrollAsync(DateOnly startDate, DateOnly endDate, CancellationToken ct = default);
+
     }
 }

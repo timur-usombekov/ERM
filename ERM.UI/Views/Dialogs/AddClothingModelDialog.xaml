@@ -20,14 +20,15 @@
 
                         <!-- фон иконки -->
                         <Border Grid.Column="0"
-                                Background="{DynamicResource PrimaryHueLightBrush}"
+                                BorderBrush="{DynamicResource PrimaryHueLightBrush}"
+                                BorderThickness="1"
                                 CornerRadius="8" Width="44" Height="44"
                                 Margin="0,0,16,0">
                             <md:PackIcon Kind="TshirtCrewOutline"
-                                         Width="22" Height="22"
-                                         Foreground="{DynamicResource PrimaryHueMidBrush}"
-                                         HorizontalAlignment="Center"
-                                         VerticalAlignment="Center"/>
+                                        Width="24" Height="24"
+                                        Foreground="{DynamicResource PrimaryHueMidBrush}"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"/>   
                         </Border>
 
                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
@@ -49,6 +50,11 @@
                              md:HintAssist.IsFloating="True"
                              Style="{StaticResource MaterialDesignOutlinedTextBox}"
                              Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
+                             Margin="0,0,0,16" FontSize="14"/>
+                    <TextBox md:HintAssist.Hint="Цена за пошив 1 шт (грн)"
+                             md:HintAssist.IsFloating="True"
+                             Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                             Text="{Binding SewingPriceText, UpdateSourceTrigger=PropertyChanged}"
                              Margin="0,0,0,16" FontSize="14"/>
 
                     <TextBox md:HintAssist.Hint="Описание (особенности кроя, материалы)"

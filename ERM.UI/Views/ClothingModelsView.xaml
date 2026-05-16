@@ -91,8 +91,7 @@
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                    <!-- Иконка-маркер модели -->
-                                    <Border Background="{DynamicResource PrimaryHueLightBrush}"
+                                    <Border Background="Transparent"
                                             CornerRadius="6" Width="30" Height="30"
                                             Margin="0,0,12,0">
                                         <md:PackIcon Kind="TshirtCrewOutline"
@@ -110,8 +109,30 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
+                    <!-- Цена пошива -->
+                    <DataGridTemplateColumn Header="Цена пошива" Width="140">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Border Background="#E8F5E9" 
+                                        BorderBrush="#FFCDD2"
+                                        BorderThickness="1"
+                                        CornerRadius="6" Padding="10,4"
+                                        HorizontalAlignment="Left" VerticalAlignment="Center">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding SewingPrice, StringFormat='{}{0:0.##}'}"
+                                                   FontSize="13" FontWeight="Bold"
+                                                   Foreground="#C62828"/>
+                                        <TextBlock Text=" ₴"
+                                                   FontSize="13" FontWeight="Bold"
+                                                   Foreground="#C62828" Opacity="0.8"/>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
                     <!-- Описание -->
-                    <DataGridTextColumn Header="Описание" Binding="{Binding Description}" Width="2*">
+                    <DataGridTextColumn Header="Описание" Binding="{Binding Description}" Width="1.5*">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
                                 <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
@@ -139,29 +160,16 @@
                     <DataGridTemplateColumn Width="90">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <StackPanel Orientation="Horizontal"
-                                            HorizontalAlignment="Center"
-                                            VerticalAlignment="Center">
-                                    <!-- Редактировать -->
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                                     <Button Style="{StaticResource MaterialDesignToolButton}"
                                             Command="{Binding DataContext.EditModelCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                            CommandParameter="{Binding}"
-                                            ToolTip="Редактировать"
-                                            Width="32" Height="32" Padding="0">
-                                        <md:PackIcon Kind="PencilOutline"
-                                                     Width="16" Height="16"
-                                                     Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                                            CommandParameter="{Binding}" ToolTip="Редактировать" Width="32" Height="32" Padding="0">
+                                        <md:PackIcon Kind="PencilOutline" Width="16" Height="16" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
                                     </Button>
-                                    <!-- Удалить -->
                                     <Button Style="{StaticResource MaterialDesignToolButton}"
                                             Command="{Binding DataContext.DeleteModelCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                            CommandParameter="{Binding}"
-                                            ToolTip="Удалить"
-                                            Width="32" Height="32" Padding="0"
-                                            Margin="2,0,0,0">
-                                        <md:PackIcon Kind="TrashCanOutline"
-                                                     Width="16" Height="16"
-                                                     Foreground="#E53935"/>
+                                            CommandParameter="{Binding}" ToolTip="Удалить" Width="32" Height="32" Padding="0" Margin="2,0,0,0">
+                                        <md:PackIcon Kind="TrashCanOutline" Width="16" Height="16" Foreground="#E53935"/>
                                     </Button>
                                 </StackPanel>
                             </DataTemplate>

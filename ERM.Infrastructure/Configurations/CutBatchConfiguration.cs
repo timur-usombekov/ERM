@@ -12,6 +12,7 @@ namespace ERM.Infrastructure.Configurations
 
             builder.Property(b => b.Title).IsRequired().HasMaxLength(200);
             builder.Property(b => b.Date).IsRequired();
+            builder.Property(b => b.IsClosed).IsRequired();
 
             builder.HasMany(b => b.Items)
                 .WithOne(i => i.CutBatch)

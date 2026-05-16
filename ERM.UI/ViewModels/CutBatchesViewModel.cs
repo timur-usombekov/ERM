@@ -2,6 +2,7 @@
 using ERM.Application.Interfaces.Services;
 using ERM.UI.ViewModels.Base;
 using ERM.UI.ViewModels.Dialogs;
+using ERM.UI.ViewModelDTOs;
 using MaterialDesignThemes.Wpf;
 using System.Collections.ObjectModel;
 
@@ -47,6 +48,8 @@ namespace ERM.UI.ViewModels
         public AsyncRelayCommand AddBatchCommand { get; }
         public AsyncRelayCommand AddItemCommand { get; }
         public AsyncRelayCommand<CutBatchDto> DeleteBatchCommand { get; }
+        public AsyncRelayCommand<CutBatchDto> ToggleBatchStatusCommand { get; }
+
 
         public CutBatchesViewModel(
             ICutBatchService cutBatchService,
@@ -61,6 +64,8 @@ namespace ERM.UI.ViewModels
             AddBatchCommand = new AsyncRelayCommand(_ => AddBatchAsync());
             AddItemCommand = new AsyncRelayCommand(_ => AddItemAsync(), _ => SelectedBatch is not null);
             DeleteBatchCommand = new AsyncRelayCommand<CutBatchDto>(DeleteBatchAsync);
+            ToggleBatchStatusCommand = new AsyncRelayCommand<CutBatchDto>(ToggleStatusAsync);
+
         }
 
         public Task OnNavigatedToAsync() => LoadAsync();
@@ -162,13 +167,12 @@ namespace ERM.UI.ViewModels
             if (!isSuccess || newItem is null) return;
              await LoadAsync(); // LoadAsync сам вызовет UpdateGroups через Setter
         }
-    }
+        private async Task ToggleStatusAsync(CutBatchDto? batch)
+        {
+            if (batch is null) return;
+            await ExecuteSafeAsync(() => _cutBatchService.ToggleStatusAsync(batch.Id));
+            await LoadAsync();
+        }
 
-    // Класс-обертка
-    public class CutBatchModelGroup
-    {
-        public string ModelName { get; set; } = string.Empty;
-        public int TotalQuantity { get; set; }
-        public ObservableCollection<CutBatchItemDto> CutBatchItems { get; set; } = [];
     }
 }

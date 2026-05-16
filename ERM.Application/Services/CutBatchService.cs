@@ -68,5 +68,18 @@ namespace ERM.Application.Services
             context.CutBatches.Remove(batch);
             await context.SaveChangesAsync(ct);
         }
+
+        public async Task ToggleStatusAsync(Guid id, CancellationToken ct = default)
+        {
+            await using var context = await _contextFactory.CreateDbContextAsync(ct);
+            var batch = await context.CutBatches.FirstOrDefaultAsync(b => b.Id == id, ct)
+                ?? throw new InvalidOperationException($"Крой с Id {id} не найден.");
+
+            if (batch.IsClosed) batch.Open();
+            else batch.Close();
+
+            await context.SaveChangesAsync(ct);
+        }
+
     }
 }
