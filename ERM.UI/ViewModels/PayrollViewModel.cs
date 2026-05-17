@@ -2,6 +2,8 @@
 using ERM.Application.Interfaces.Services;
 using ERM.UI.ViewModels.Base;
 using System.Collections.ObjectModel;
+using ERM.UI.ViewModels.Dialogs;
+using MaterialDesignThemes.Wpf;
 
 namespace ERM.UI.ViewModels
 {
@@ -42,11 +44,17 @@ namespace ERM.UI.ViewModels
         }
 
         // Вычисляемое свойство для общей суммы по всему цеху
-        public decimal GrandTotal => PayrollList.Sum(p => p.TotalSalary);
+        public decimal GrandTotal => PayrollList.Sum(p => p.TotalToPay);
+
+        public AsyncRelayCommand<SeamstressPayrollDto> AddAdjustmentCommand { get; }
+        public AsyncRelayCommand<SeamstressPayrollDto> PayCommand { get; }
 
         public PayrollViewModel(IWorkAssignmentService workService)
         {
             _workService = workService;
+            AddAdjustmentCommand = new AsyncRelayCommand<SeamstressPayrollDto>(AddAdjustmentAsync);
+            PayCommand = new AsyncRelayCommand<SeamstressPayrollDto>(PayAsync, dto => dto != null && dto.TotalToPay > 0);
+
         }
 
         public Task OnNavigatedToAsync() => CalculatePayrollAsync();
@@ -86,5 +94,46 @@ namespace ERM.UI.ViewModels
                 IsLoading = false;
             }
         }
+
+        private async Task AddAdjustmentAsync(SeamstressPayrollDto? seamstress)
+        {
+            if (seamstress is null) return;
+
+            var vm = new AddAdjustmentDialogViewModel(seamstress);
+            var result = await DialogHost.Show(vm, "RootDialog");
+
+            if (result is not AddAdjustmentDialogViewModel r || !r.IsValid) return;
+
+            decimal amount = decimal.Parse(r.AmountText);
+            var date = DateOnly.FromDateTime(r.SelectedDate);
+
+            var isSuccess = await ExecuteSafeAsync(() =>
+                _workService.AddAdjustmentAsync(seamstress.SeamstressId, date, amount, r.Reason));
+
+            if (isSuccess)
+                _ = CalculatePayrollAsync();
+        }
+
+        private async Task PayAsync(SeamstressPayrollDto? seamstress)
+        {
+            if (seamstress is null || seamstress.TotalToPay <= 0) return;
+
+            var confirmed = await MaterialDesignThemes.Wpf.DialogHost.Show(
+                new ConfirmDialogViewModel(
+                    $"Провести выплату {seamstress.TotalToPay:0.##} ₴ сотруднику {seamstress.SeamstressName}?",
+                    "Выплатить",
+                    false),
+                "RootDialog");
+
+
+            if (confirmed?.ToString() != "True") return;
+
+            var isSuccess = await ExecuteSafeAsync(() =>
+                _workService.PaySalaryAsync(seamstress.SeamstressId, DateOnly.FromDateTime(DateTime.Today), seamstress.TotalToPay));
+
+            if (isSuccess)
+                _ = CalculatePayrollAsync();
+        }
+
     }
 }

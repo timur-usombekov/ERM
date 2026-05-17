@@ -70,6 +70,10 @@
                 <views:PayrollView />
             </DataTemplate>
 
+            <DataTemplate DataType="{x:Type vmDialogs:AddAdjustmentDialogViewModel}">
+                <dialogs:AddAdjustmentDialog />
+            </DataTemplate>
+
 
             <!-- BooleanToVisibilityConverter вообще существует? -->
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
@@ -78,6 +82,9 @@
             <converters:NullToBoolConverter x:Key="NullToBool" />
             <converters:InverseBoolConverter x:Key="InverseBool" />
             <converters:VisibilityToBoolConverter x:Key="VisibilityToBool" />
+            <converters:ZeroToVisibilityConverter x:Key="ZeroToVisibility" />
+            <converters:ZeroToInverseVisibilityConverter x:Key="ZeroToInverseVisibility" />
+            <converters:AmountToColorConverter x:Key="AmountToColor" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

@@ -227,9 +227,7 @@
                 </Grid>
             </Border>
 
-            <!-- ═══════════════════════════════════════════════════════
-                 РАБОЧАЯ ОБЛАСТЬ
-            ═══════════════════════════════════════════════════════ -->
+            <!-- Рабочая область-->
             <Border Grid.Column="1"
                     Background="{DynamicResource MaterialDesignCardBackground}">
                 <ContentControl Content="{Binding CurrentViewModel}"

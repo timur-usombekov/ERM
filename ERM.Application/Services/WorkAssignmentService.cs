@@ -4,7 +4,6 @@ using ERM.Application.Interfaces.Services;
 using ERM.Application.Mappers;
 using ERM.Core.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ERM.Application.Services
 {
@@ -77,7 +76,7 @@ namespace ERM.Application.Services
         {
             await using var context = await _contextFactory.CreateDbContextAsync(ct);
 
-            // Все выдачи за указанный период
+            //  сдельный заработок (Пошив)
             var assignments = await context.WorkAssignments
                 .Include(a => a.Seamstress).ThenInclude(s => s.Employee)
                 .Include(a => a.CutBatchItem).ThenInclude(i => i.ClothingModel)
@@ -85,33 +84,92 @@ namespace ERM.Application.Services
                 .AsNoTracking()
                 .ToListAsync(ct);
 
-            // Группировка
-            var payroll = assignments
-                .GroupBy(a => new { a.SeamstressId, a.Seamstress.Employee.FullName, a.Seamstress.MachineNumber })
-                .Select(g => new SeamstressPayrollDto
+            //  финансовые корректировки 
+            var adjustments = await context.PayrollAdjustments
+                .Include(a => a.Seamstress).ThenInclude(s => s.Employee)
+                .Where(a => a.Date >= startDate && a.Date <= endDate)
+                .AsNoTracking()
+                .ToListAsync(ct);
+
+            // сбор уникальных швей из обоих списков
+            var allSeamstressIds = assignments.Select(a => a.SeamstressId)
+                .Union(adjustments.Select(a => a.SeamstressId))
+                .Distinct();
+
+            var result = new List<SeamstressPayrollDto>();
+
+            // выглядит страшно, но пока ничего лучше не придумалось для объединения данных по швеям из двух разных источников
+            // а ещё читается нормально
+            foreach (var seamstressId in allSeamstressIds)
+            {
+                var seamstressAssignments = assignments.Where(a => a.SeamstressId == seamstressId).ToList();
+                var seamstressAdjustments = adjustments.Where(a => a.SeamstressId == seamstressId).ToList();
+
+                var sInfo = seamstressAssignments.FirstOrDefault()?.Seamstress
+                            ?? seamstressAdjustments.FirstOrDefault()?.Seamstress;
+
+                var dto = new SeamstressPayrollDto
                 {
-                    SeamstressId = g.Key.SeamstressId,
-                    SeamstressName = g.Key.FullName,
-                    MachineNumber = g.Key.MachineNumber,
-                    TotalItemsSewn = g.Sum(a => a.Quantity),
-                    TotalSalary = g.Sum(a => a.Quantity * a.PricePerUnit),
+                    SeamstressId = seamstressId,
+                    SeamstressName = sInfo?.Employee.FullName ?? "Неизвестно",
+                    MachineNumber = sInfo?.MachineNumber ?? "?",
 
-                    // Детализация 
-                    Details = g.GroupBy(a => new { a.CutBatchItem.ClothingModel.Name, a.PricePerUnit })
-                               .Select(dg => new PayrollDetailDto
-                               {
-                                   ModelName = dg.Key.Name,
-                                   PricePerUnit = dg.Key.PricePerUnit,
-                                   Quantity = dg.Sum(x => x.Quantity)
-                               })
-                               .OrderBy(d => d.ModelName)
-                               .ToList()
-                })
-                .OrderBy(p => p.SeamstressName)
-                .ToList();
+                    TotalItemsSewn = seamstressAssignments.Sum(a => a.Quantity),
+                    EarnedBySewing = seamstressAssignments.Sum(a => a.TotalPrice),
 
-            return payroll;
+                    TotalAdjustments = seamstressAdjustments.Sum(a => a.Amount),
+
+                    // Группируем сшитое для расшифровки
+                    SewingDetails = seamstressAssignments
+                        .GroupBy(a => new { a.CutBatchItem.ClothingModel.Name, a.PricePerUnit })
+                        .Select(g => new PayrollDetailDto
+                        {
+                            ModelName = g.Key.Name,
+                            PricePerUnit = g.Key.PricePerUnit,
+                            Quantity = g.Sum(x => x.Quantity)
+                        })
+                        .OrderBy(d => d.ModelName).ToList(),
+
+                    // Добавляем расшифровку авансов
+                    AdjustmentDetails = seamstressAdjustments
+                        .Select(a => new AdjustmentDetailDto
+                        {
+                            Id = a.Id,
+                            Date = a.Date,
+                            Amount = a.Amount,
+                            Reason = a.Reason
+                        })
+                        .OrderBy(a => a.Date).ToList()
+                };
+
+                result.Add(dto);
+            }
+
+            return result.OrderBy(p => p.SeamstressName).ToList();
         }
+
+        public async Task AddAdjustmentAsync(Guid seamstressId, DateOnly date, decimal amount, string reason, CancellationToken ct = default)
+        {
+            await using var context = await _contextFactory.CreateDbContextAsync(ct);
+
+            var adjustment = new PayrollAdjustment(seamstressId, date, amount, reason);
+            context.PayrollAdjustments.Add(adjustment);
+
+            await context.SaveChangesAsync(ct);
+        }
+
+        public async Task PaySalaryAsync(Guid seamstressId, DateOnly date, decimal amount, CancellationToken ct = default)
+        {
+            if (amount <= 0) throw new ArgumentException("Сумма к выплате должна быть больше нуля.");
+
+            await using var context = await _contextFactory.CreateDbContextAsync(ct);
+
+            var adjustment = new PayrollAdjustment(seamstressId, date, -amount, "Выплата ЗП (Закрытие периода)");
+            context.PayrollAdjustments.Add(adjustment);
+
+            await context.SaveChangesAsync(ct);
+        }
+
 
     }
 }

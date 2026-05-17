@@ -8,83 +8,129 @@
     <md:Card UniformCornerRadius="10" md:ElevationAssist.Elevation="Dp4">
         <Grid>
             <Grid.ColumnDefinitions>
-                <!-- Левая акцентная полоса (красная — деструктивное действие) -->
+                <!-- Левая акцентная полоса (Меняет цвет) -->
                 <ColumnDefinition Width="4"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <Rectangle Grid.Column="0" Fill="#E53935"/>
+            <Rectangle Grid.Column="0">
+                <Rectangle.Style>
+                    <Style TargetType="Rectangle">
+                        <Setter Property="Fill" Value="{DynamicResource PrimaryHueMidBrush}"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsDestructive}" Value="True">
+                                <Setter Property="Fill" Value="#E53935"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Rectangle.Style>
+            </Rectangle>
 
             <StackPanel Grid.Column="1">
 
                 <!-- ── ШАПКА ── -->
-                <Border Padding="24,24,24,16"
-                        BorderBrush="{DynamicResource MaterialDesignDivider}"
-                        BorderThickness="0,0,0,1">
+                <Border Padding="24,24,24,16" BorderBrush="{DynamicResource MaterialDesignDivider}" BorderThickness="0,0,0,1">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
-                        <!-- Иконка предупреждения -->
-                        <Border Grid.Column="0"
-                                Background="#FFEBEE"
-                                CornerRadius="8" Width="44" Height="44"
-                                Margin="0,0,16,0">
-                            <md:PackIcon Kind="AlertCircleOutline"
-                                         Width="22" Height="22"
-                                         Foreground="#E53935"
-                                         HorizontalAlignment="Center"
-                                         VerticalAlignment="Center"/>
+                        <!-- Иконка предупреждения (Меняет фон) -->
+                        <Border Grid.Column="0" CornerRadius="8" Width="44" Height="44" Margin="0,0,16,0">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Background" Value="{DynamicResource PrimaryHueLightBrush}"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsDestructive}" Value="True">
+                                            <Setter Property="Background" Value="#FFEBEE"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+
+                            <!-- Сама иконка (Меняет вид и цвет) -->
+                            <md:PackIcon HorizontalAlignment="Center" VerticalAlignment="Center" Width="22" Height="22">
+                                <md:PackIcon.Style>
+                                    <Style TargetType="md:PackIcon">
+                                        <Setter Property="Kind" Value="HelpCircleOutline"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource PrimaryHueMidBrush}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsDestructive}" Value="True">
+                                                <Setter Property="Kind" Value="AlertCircleOutline"/>
+                                                <Setter Property="Foreground" Value="#E53935"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </md:PackIcon.Style>
+                            </md:PackIcon>
                         </Border>
 
                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                            <TextBlock Text="Подтверждение действия"
-                                       FontSize="16" FontWeight="Bold"
-                                       Foreground="{DynamicResource MaterialDesignBody}"/>
-                            <TextBlock Text="Это действие необратимо"
-                                       FontSize="12" Foreground="#E53935"
-                                       Opacity="0.8" Margin="0,2,0,0"/>
+                            <TextBlock Text="Подтверждение действия" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource MaterialDesignBody}"/>
+                            <!-- Подзаголовок (Меняет текст и цвет) -->
+                            <TextBlock FontSize="12" Opacity="0.8" Margin="0,2,0,0">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Text" Value="Пожалуйста, проверьте данные перед подтверждением"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBodyLight}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsDestructive}" Value="True">
+                                                <Setter Property="Text" Value="Это действие необратимо"/>
+                                                <Setter Property="Foreground" Value="#E53935"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
                         </StackPanel>
                     </Grid>
                 </Border>
 
                 <!-- ── СООБЩЕНИЕ ── -->
                 <Border Padding="24,16,24,0">
-                    <TextBlock Text="{Binding Message}"
-                               TextWrapping="Wrap"
-                               FontSize="14"
-                               LineHeight="22"
-                               Foreground="{DynamicResource MaterialDesignBody}"
-                               Opacity="0.85"/>
+                    <TextBlock Text="{Binding Message}" TextWrapping="Wrap" FontSize="14" LineHeight="22" Foreground="{DynamicResource MaterialDesignBody}" Opacity="0.85"/>
                 </Border>
 
                 <!-- ── КНОПКИ ── -->
-                <Border Padding="24,16,24,24"
-                        BorderBrush="{DynamicResource MaterialDesignDivider}"
-                        BorderThickness="0,1,0,0"
-                        Margin="0,16,0,0">
+                <Border Padding="24,16,24,24" BorderBrush="{DynamicResource MaterialDesignDivider}" BorderThickness="0,1,0,0" Margin="0,16,0,0">
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <Button Content="Отмена"
-                                Style="{StaticResource MaterialDesignOutlinedButton}"
-                                Command="{x:Static md:DialogHost.CloseDialogCommand}"
-                                CommandParameter="{x:Static sys:Boolean.FalseString}"
-                                Height="36" Padding="20,0"
-                                md:ButtonAssist.CornerRadius="8"
-                                Margin="0,0,10,0"/>
-                        <Button Style="{StaticResource MaterialDesignRaisedButton}"
-                                Command="{x:Static md:DialogHost.CloseDialogCommand}"
-                                CommandParameter="{x:Static sys:Boolean.TrueString}"
-                                Background="#E53935" BorderBrush="#E53935" Foreground="White"
-                                Height="36" Padding="20,0"
-                                md:ButtonAssist.CornerRadius="8">
+                        <Button Content="Отмена" Style="{StaticResource MaterialDesignOutlinedButton}"
+                                Command="{x:Static md:DialogHost.CloseDialogCommand}" CommandParameter="{x:Static sys:Boolean.FalseString}"
+                                Height="36" Padding="20,0" md:ButtonAssist.CornerRadius="8" Margin="0,0,10,0"/>
+
+                        <!-- Кнопка подтверждения (Меняет цвет и текст) -->
+                        <Button Command="{x:Static md:DialogHost.CloseDialogCommand}" CommandParameter="{x:Static sys:Boolean.TrueString}"
+                                Height="36" Padding="20,0" md:ButtonAssist.CornerRadius="8">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource MaterialDesignRaisedButton}">
+                                    <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}"/>
+                                    <Setter Property="BorderBrush" Value="{DynamicResource PrimaryHueMidBrush}"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsDestructive}" Value="True">
+                                            <Setter Property="Background" Value="#E53935"/>
+                                            <Setter Property="BorderBrush" Value="#E53935"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+
                             <StackPanel Orientation="Horizontal">
-                                <md:PackIcon Kind="TrashCanOutline"
-                                             Width="16" Height="16"
-                                             VerticalAlignment="Center"
-                                             Margin="0,0,6,0"/>
-                                <TextBlock Text="Удалить" VerticalAlignment="Center"/>
+                                <!-- Иконка в кнопке (Меняется) -->
+                                <md:PackIcon VerticalAlignment="Center" Margin="0,0,6,0" Width="16" Height="16">
+                                    <md:PackIcon.Style>
+                                        <Style TargetType="md:PackIcon">
+                                            <Setter Property="Kind" Value="CheckCircleOutline"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsDestructive}" Value="True">
+                                                    <Setter Property="Kind" Value="TrashCanOutline"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </md:PackIcon.Style>
+                                </md:PackIcon>
+                                <!-- Текст кнопки (Берется из ViewModel) -->
+                                <TextBlock Text="{Binding ConfirmButtonText}" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
                     </StackPanel>

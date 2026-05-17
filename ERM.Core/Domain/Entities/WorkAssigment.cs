@@ -13,7 +13,7 @@ namespace ERM.Core.Domain.Entities
         public int Quantity { get; private set; }
 
         public decimal PricePerUnit { get; private set; }
-        public decimal TotalPrice => Quantity * PricePerUnit;
+        public decimal TotalPrice => Quantity * PricePerUnit; // Это не хранится в базе, а вычисляется при запросе
 
 
         public DateOnly AssignedDate { get; private set; }

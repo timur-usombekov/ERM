@@ -13,6 +13,7 @@ namespace ERM.Infrastructure
         public DbSet<CutBatch> CutBatches { get; set; } = null!;
         public DbSet<CutBatchItem> CutBatchItems { get; set; } = null!;
         public DbSet<FabricColor> FabricColors { get; set; } = null!;
+        public DbSet<PayrollAdjustment> PayrollAdjustments { get; set; } = null!;
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 

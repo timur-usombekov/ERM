@@ -12,6 +12,7 @@ namespace ERM.Application.Interfaces.Data
         DbSet<CutBatch> CutBatches { get; }
         DbSet<CutBatchItem> CutBatchItems { get; }
         DbSet<FabricColor> FabricColors { get; }
+        DbSet<PayrollAdjustment> PayrollAdjustments { get; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }

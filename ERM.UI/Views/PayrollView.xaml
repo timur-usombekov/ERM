@@ -17,50 +17,77 @@
             </Grid.ColumnDefinitions>
 
             <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                <TextBlock Text="Зарплаты и Аналитика" Style="{StaticResource MaterialDesignHeadline4TextBlock}" FontWeight="Bold"/>
-                <TextBlock Text="Расчет выплат швеям на основе выданного кроя" Foreground="{DynamicResource MaterialDesignBodyLight}" FontSize="13" Margin="0,2,0,0" Opacity="0.7"/>
+                <TextBlock Text="Зарплаты и Аналитика"
+                           Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+                           FontWeight="Bold"/>
+                <TextBlock Text="Расчет выплат швеям на основе выданного кроя"
+                           Foreground="{DynamicResource MaterialDesignBodyLight}"
+                           FontSize="13" Margin="0,2,0,0" Opacity="0.7"/>
             </StackPanel>
 
             <!-- ФИЛЬТРЫ -->
-            <md:Card Grid.Column="1" md:ElevationAssist.Elevation="Dp1" UniformCornerRadius="8" Padding="16,8">
+            <md:Card Grid.Column="1"
+                     md:ElevationAssist.Elevation="Dp1"
+                     UniformCornerRadius="8"
+                     Padding="16,8">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <md:PackIcon Kind="CalendarRangeOutline" Width="20" Height="20" Foreground="Gray" VerticalAlignment="Center" Margin="0,0,12,0"/>
-
+                    <md:PackIcon Kind="CalendarRangeOutline"
+                                 Width="20" Height="20"
+                                 Foreground="Gray"
+                                 VerticalAlignment="Center"
+                                 Margin="0,0,12,0"/>
                     <DatePicker md:HintAssist.Hint="С"
                                 Style="{StaticResource MaterialDesignOutlinedDatePicker}"
                                 SelectedDate="{Binding StartDate}"
-                                Width="120" Margin="0,0,12,0"/>
-
-                    <TextBlock Text="—" VerticalAlignment="Center" FontWeight="Bold" Foreground="Gray" Margin="0,0,12,0"/>
-
+                                Width="130" Margin="0,0,12,0"/>
+                    <TextBlock Text="—" VerticalAlignment="Center"
+                               FontWeight="Bold" Foreground="Gray" Margin="0,0,12,0"/>
                     <DatePicker md:HintAssist.Hint="ПО"
                                 Style="{StaticResource MaterialDesignOutlinedDatePicker}"
                                 SelectedDate="{Binding EndDate}"
-                                Width="120"/>
+                                Width="130"/>
                 </StackPanel>
             </md:Card>
         </Grid>
 
         <!-- ПРОГРЕСС -->
-        <ProgressBar Grid.Row="1" IsIndeterminate="True" Height="2" Margin="0,0,0,8" Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}" />
+        <ProgressBar Grid.Row="1"
+                     IsIndeterminate="True"
+                     Height="2" Margin="0,0,0,8"
+                     Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"/>
 
         <!-- КОНТЕНТ -->
         <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="300"/>
+                <ColumnDefinition Width="280"/>
             </Grid.ColumnDefinitions>
 
             <!-- ТАБЛИЦА -->
-            <md:Card Grid.Column="0" md:ElevationAssist.Elevation="Dp2" UniformCornerRadius="10" Margin="0,0,24,0">
-                <DataGrid ItemsSource="{Binding PayrollList}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False"
-                          HeadersVisibility="Column" BorderThickness="0" Background="Transparent" RowHeight="56"
-                          RowDetailsVisibilityMode="Collapsed" 
-                          SelectionUnit="FullRow" FocusVisualStyle="{x:Null}"
-                          Style="{StaticResource MaterialDesignDataGrid}" md:DataGridAssist.ColumnHeaderPadding="16,14" md:DataGridAssist.CellPadding="16,0">
+            <md:Card Grid.Column="0"
+                     md:ElevationAssist.Elevation="Dp2"
+                     UniformCornerRadius="10"
+                     Margin="0,0,20,0">
+                <DataGrid ItemsSource="{Binding PayrollList}"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          CanUserAddRows="False"
+                          CanUserResizeColumns="False"
+                          HeadersVisibility="Column"
+                          BorderThickness="0"
+                          Background="Transparent"
+                          RowHeight="56"
+                          RowDetailsVisibilityMode="Collapsed"
+                          SelectionUnit="FullRow"
+                          FocusVisualStyle="{x:Null}"
+                          Style="{StaticResource MaterialDesignDataGrid}"
+                          md:DataGridAssist.ColumnHeaderPadding="12,14"
+                          md:DataGridAssist.CellPadding="12,0">
 
+                    <!-- ЗАГОЛОВКИ -->
                     <DataGrid.ColumnHeaderStyle>
-                        <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource MaterialDesignDataGridColumnHeader}">
+                        <Style TargetType="DataGridColumnHeader"
+                               BasedOn="{StaticResource MaterialDesignDataGridColumnHeader}">
                             <Setter Property="FontSize" Value="11"/>
                             <Setter Property="FontWeight" Value="Bold"/>
                             <Setter Property="Opacity" Value="0.6"/>
@@ -69,36 +96,75 @@
                         </Style>
                     </DataGrid.ColumnHeaderStyle>
 
+                    <!-- ЯЧЕЙКИ -->
                     <DataGrid.CellStyle>
-                        <Style TargetType="DataGridCell" BasedOn="{StaticResource MaterialDesignDataGridCell}">
+                        <Style TargetType="DataGridCell"
+                               BasedOn="{StaticResource MaterialDesignDataGridCell}">
                             <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
                             <Setter Property="BorderThickness" Value="0"/>
                         </Style>
                     </DataGrid.CellStyle>
 
-
                     <DataGrid.Columns>
 
                         <!-- РАСКРЫТИЕ -->
-                        <DataGridTemplateColumn Width="50">
+                        <DataGridTemplateColumn Width="Auto" CanUserSort="False">
+
+                            <DataGridTemplateColumn.CellStyle>
+                                <Style TargetType="DataGridCell" BasedOn="{StaticResource MaterialDesignDataGridCell}">
+                                    <Setter Property="Padding" Value="4,0"/>
+                                    <Setter Property="BorderThickness" Value="0"/>
+                                    <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                                </Style>
+                            </DataGridTemplateColumn.CellStyle>
+
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <ToggleButton Style="{StaticResource MaterialDesignExpandCollapseToggleStyle}"
-                                                  IsChecked="{Binding Path=DetailsVisibility, RelativeSource={RelativeSource AncestorType=DataGridRow}, Converter={StaticResource VisibilityToBool}}"
-                                                  Width="24" Height="24" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                                    <ToggleButton
+                                        HorizontalAlignment="Center"
+                                        IsChecked="{Binding Path=DetailsVisibility,
+                                                    RelativeSource={RelativeSource AncestorType=DataGridRow},
+                                                    Converter={StaticResource VisibilityToBool}}"
+                                        Width="32" Height="32"
+                                        Style="{StaticResource MaterialDesignIconButton}"
+                                        Foreground="{DynamicResource MaterialDesignBodyLight}">
+                                        <md:PackIcon Width="18" Height="18">
+                                            <md:PackIcon.Style>
+                                                <Style TargetType="md:PackIcon">
+                                                    <Setter Property="Kind" Value="ChevronRight"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsChecked,
+                                                                RelativeSource={RelativeSource AncestorType=ToggleButton}}"
+                                                                Value="True">
+                                                            <Setter Property="Kind" Value="ChevronDown"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </md:PackIcon.Style>
+                                        </md:PackIcon>
+                                    </ToggleButton>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
                         <!-- ШВЕЯ -->
-                        <DataGridTemplateColumn Header="Швея" Width="2*">
+                        <DataGridTemplateColumn Header="Швея" Width="*" MinWidth="130">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                        <md:PackIcon Kind="AccountOutline" Width="20" Height="20" Margin="0,0,12,0" Foreground="{DynamicResource MaterialDesignBodyLight}" VerticalAlignment="Center"/>
-                                        <StackPanel VerticalAlignment="Center">
-                                            <TextBlock Text="{Binding SeamstressName}" FontWeight="Bold" FontSize="14"/>
-                                            <TextBlock Text="{Binding MachineNumber, StringFormat='Машина №{0}'}" Foreground="{DynamicResource MaterialDesignBodyLight}" FontSize="12" Opacity="0.8"/>
+                                        <md:PackIcon Kind="AccountOutline"
+                                                     Width="18" Height="18"
+                                                     Margin="0,0,8,0"
+                                                     Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                                     VerticalAlignment="Center"/>
+                                        <StackPanel VerticalAlignment="Center" MinWidth="0">
+                                            <TextBlock Text="{Binding SeamstressName}"
+                                                       FontWeight="Bold" FontSize="14"
+                                                       TextTrimming="CharacterEllipsis"/>
+                                            <TextBlock Text="{Binding MachineNumber, StringFormat='Машина №{0}'}"
+                                                       Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                                       FontSize="12" Opacity="0.8"
+                                                       TextTrimming="CharacterEllipsis"/>
                                         </StackPanel>
                                     </StackPanel>
                                 </DataTemplate>
@@ -106,7 +172,22 @@
                         </DataGridTemplateColumn>
 
                         <!-- КОЛИЧЕСТВО -->
-                        <DataGridTextColumn Header="Сшито единиц" Binding="{Binding TotalItemsSewn, StringFormat='{}{0} шт'}" Width="*">
+                        <DataGridTextColumn Header="Сшито"
+                                            Binding="{Binding TotalItemsSewn, StringFormat='{}{0} шт'}"
+                                            Width="80">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="FontSize" Value="13"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBodyLight}"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <!-- СДЕЛЬНО -->
+                        <DataGridTextColumn Header="Сдельно"
+                                            Binding="{Binding EarnedBySewing, StringFormat='{}{0:0.##} ₴'}"
+                                            Width="110">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="VerticalAlignment" Value="Center"/>
@@ -117,16 +198,54 @@
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <!-- СУММА -->
-                        <DataGridTemplateColumn Header="Итого к выплате" Width="140">
+                        <!-- ДОПЛАТЫ -->
+                        <DataGridTextColumn Header="Доплаты" Binding="{Binding TotalAdjustments, StringFormat='{}{0:0.##} ₴'}" Width="*">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="FontSize" Value="14"/>
+                                    <Setter Property="FontWeight" Value="Medium"/>
+                                    <!-- Динамический цвет: минус=красный, плюс=зеленый, ноль=серый -->
+                                    <Setter Property="Foreground" Value="{Binding TotalAdjustments, Converter={StaticResource AmountToColor}, ConverterParameter='Foreground'}"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <!-- СУММА К ВЫДАЧЕ И КНОПКА ВЫПЛАТЫ -->
+                        <DataGridTemplateColumn Header="К выплате" Width="180">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Border Background="#E8F5E9" CornerRadius="6" Padding="12,6" HorizontalAlignment="Left" VerticalAlignment="Center">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{Binding TotalSalary, StringFormat='{}{0:0.##}'}" FontSize="14" FontWeight="Bold" Foreground="#2E7D32"/>
-                                            <TextBlock Text=" ₴" FontSize="14" FontWeight="Bold" Foreground="#2E7D32" Opacity="0.8"/>
-                                        </StackPanel>
-                                    </Border>
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+
+                                        <!-- Бейдж с суммой -->
+                                        <!-- Фон бейджа зависит от суммы -->
+                                        <Border Background="{Binding TotalToPay, Converter={StaticResource AmountToColor}, ConverterParameter='Background'}" 
+                                                CornerRadius="6" Padding="12,6" Margin="0,0,12,0">
+                                            <StackPanel Orientation="Horizontal">
+                                                <!-- Цвет текста зависит от суммы -->
+                                                <TextBlock Text="{Binding TotalToPay, StringFormat='{}{0:0.##}'}" FontSize="14" FontWeight="Bold" 
+                                                           Foreground="{Binding TotalToPay, Converter={StaticResource AmountToColor}, ConverterParameter='Foreground'}"/>
+                                                <TextBlock Text=" ₴" FontSize="14" FontWeight="Bold" Opacity="0.8"
+                                                           Foreground="{Binding TotalToPay, Converter={StaticResource AmountToColor}, ConverterParameter='Foreground'}"/>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <!-- КНОПКА: Показывается, если мы должны денег (> 0) -->
+                                        <Button Style="{StaticResource MaterialDesignOutlinedButton}"
+                                                Command="{Binding DataContext.PayCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                CommandParameter="{Binding}"
+                                                Visibility="{Binding TotalToPay, Converter={StaticResource ZeroToVisibility}}"
+                                                ToolTip="Провести выплату" Height="30" Padding="8,0" md:ButtonAssist.CornerRadius="6">
+                                            <md:PackIcon Kind="CheckAll" Width="16" Height="16"/>
+                                        </Button>
+
+                                        <!-- ГАЛОЧКА: Показывается, если долгов нет (0) -->
+                                        <md:PackIcon Kind="CheckCircle" Width="20" Height="20" Foreground="#4CAF50" 
+                                                     VerticalAlignment="Center" Margin="8,0,0,0"
+                                                     Visibility="{Binding TotalToPay, Converter={StaticResource ZeroToInverseVisibility}}"
+                                                     ToolTip="Расчет произведен"/>
+
+                                    </StackPanel>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
@@ -136,48 +255,166 @@
                     <!-- ДЕТАЛИ -->
                     <DataGrid.RowDetailsTemplate>
                         <DataTemplate>
-                            <Border Background="{DynamicResource MaterialDesignToolBarBackground}" Padding="16,12,16,16" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource MaterialDesignDivider}">
-                                <StackPanel>
-                                    <TextBlock Text="РАСШИФРОВКА НАЧИСЛЕНИЙ:" FontSize="11" FontWeight="Bold" Foreground="Gray" Margin="0,0,0,12"/>
-                                    <ItemsControl ItemsSource="{Binding Details}">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <Grid Margin="0,6">
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="200"/>
-                                                        <ColumnDefinition Width="100"/>
-                                                        <ColumnDefinition Width="100"/>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                    </Grid.ColumnDefinitions>
-                                                    <TextBlock Grid.Column="0" Text="{Binding ModelName}" FontWeight="Medium" Foreground="{DynamicResource MaterialDesignBody}"/>
-                                                    <TextBlock Grid.Column="1" Text="{Binding Quantity, StringFormat='{}{0} шт'}" Foreground="Gray" FontWeight="Medium"/>
-                                                    <TextBlock Grid.Column="2" Text="{Binding PricePerUnit, StringFormat='x {0} ₴'}" Foreground="Gray"/>
-                                                    <TextBlock Grid.Column="3" Text="{Binding Sum, StringFormat='= {0:0.##} ₴'}" FontWeight="Bold" Foreground="{DynamicResource PrimaryHueMidBrush}"/>
-                                                </Grid>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                </StackPanel>
+                            <Border Background="{DynamicResource MaterialDesignToolBarBackground}"
+                                    Padding="20,16,20,20"
+                                    BorderThickness="0,0,0,1"
+                                    BorderBrush="{DynamicResource MaterialDesignDivider}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="1"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- НАЧИСЛЕНИЯ -->
+                                    <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                        <TextBlock Text="РАСШИФРОВКА НАЧИСЛЕНИЙ:"
+                                                   FontSize="11" FontWeight="Bold"
+                                                   Foreground="Gray" Margin="0,0,0,10"/>
+                                        <ItemsControl ItemsSource="{Binding SewingDetails}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Grid Margin="0,5">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*" MinWidth="80"/>
+                                                            <ColumnDefinition Width="60"/>
+                                                            <ColumnDefinition Width="65"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBlock Grid.Column="0"
+                                                                   Text="{Binding ModelName}"
+                                                                   FontWeight="Medium"
+                                                                   TextTrimming="CharacterEllipsis"
+                                                                   Foreground="{DynamicResource MaterialDesignBody}"/>
+                                                        <TextBlock Grid.Column="1"
+                                                                   Text="{Binding Quantity, StringFormat='{}{0} шт'}"
+                                                                   Foreground="Gray" FontWeight="Medium"/>
+                                                        <TextBlock Grid.Column="2"
+                                                                   Text="{Binding PricePerUnit, StringFormat='x {0} ₴'}"
+                                                                   Foreground="Gray"/>
+                                                        <TextBlock Grid.Column="3"
+                                                                   Text="{Binding Sum, StringFormat='{}{0:0.##} ₴'}"
+                                                                   FontWeight="Bold"
+                                                                   Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+
+                                    <!-- РАЗДЕЛИТЕЛЬ -->
+                                    <Border Grid.Column="1"
+                                            Background="{DynamicResource MaterialDesignDivider}"
+                                            Width="1" Margin="0,4"/>
+
+                                    <!-- ОПЕРАЦИИ -->
+                                    <StackPanel Grid.Column="2" Margin="16,0,0,0">
+                                        <Grid Margin="0,0,0,10">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <StackPanel Grid.Column="0"
+                                                        Orientation="Horizontal"
+                                                        VerticalAlignment="Center">
+                                                <md:PackIcon Kind="SwapVertical"
+                                                             Width="16" Height="16"
+                                                             Foreground="Gray"
+                                                             VerticalAlignment="Center"
+                                                             Margin="0,0,6,0"/>
+                                                <TextBlock Text="ФИНАНСОВЫЕ ОПЕРАЦИИ"
+                                                           FontSize="11" FontWeight="Bold"
+                                                           Foreground="Gray"
+                                                           VerticalAlignment="Center"/>
+                                            </StackPanel>
+
+                                            <Button Grid.Column="1"
+                                                    Command="{Binding DataContext.AddAdjustmentCommand,
+                                                        RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                    CommandParameter="{Binding}"
+                                                    Style="{StaticResource MaterialDesignOutlinedButton}"
+                                                    Height="28" Padding="10,0"
+                                                    md:ButtonAssist.CornerRadius="6">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <md:PackIcon Kind="Plus"
+                                                                 Width="14" Height="14"
+                                                                 Margin="0,0,4,0"/>
+                                                    <TextBlock Text="Добавить" FontSize="11"/>
+                                                </StackPanel>
+                                            </Button>
+                                        </Grid>
+
+                                        <ItemsControl ItemsSource="{Binding AdjustmentDetails}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Grid Margin="0,5">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="80"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBlock Grid.Column="0"
+                                                                   Text="{Binding Date, StringFormat=dd.MM.yyyy}"
+                                                                   Foreground="Gray" FontSize="12"
+                                                                   VerticalAlignment="Center"/>
+                                                        <TextBlock Grid.Column="1"
+                                                                   Text="{Binding Reason}"
+                                                                   FontWeight="Medium"
+                                                                   Foreground="{DynamicResource MaterialDesignBody}"
+                                                                   TextWrapping="Wrap"
+                                                                   Margin="0,0,12,0"/>
+                                                        <TextBlock Grid.Column="2"
+                                                                   Text="{Binding Amount, StringFormat='{}{0:0.##} ₴'}"
+                                                                   FontWeight="Bold"
+                                                                   Foreground="{DynamicResource PrimaryHueMidBrush}"
+                                                                   VerticalAlignment="Center"/>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+
+                                </Grid>
                             </Border>
                         </DataTemplate>
                     </DataGrid.RowDetailsTemplate>
+
                 </DataGrid>
             </md:Card>
 
             <!-- ИТОГИ -->
-            <md:Card Grid.Column="1" md:ElevationAssist.Elevation="Dp2" UniformCornerRadius="10" VerticalAlignment="Top">
+            <md:Card Grid.Column="1"
+                     md:ElevationAssist.Elevation="Dp2"
+                     UniformCornerRadius="10"
+                     VerticalAlignment="Top">
                 <Border Padding="24">
                     <StackPanel>
-                        <md:PackIcon Kind="CashMultiple" Width="32" Height="32" Foreground="{DynamicResource PrimaryHueMidBrush}" Margin="0,0,0,16"/>
-                        <TextBlock Text="ОБЩИЙ ФОНД ЗП" FontSize="11" FontWeight="Bold" Foreground="Gray" Margin="0,0,0,4"/>
-                        <TextBlock Text="Сумма к выплате всем швеям за выбранный период" TextWrapping="Wrap" FontSize="12" Foreground="Gray" Opacity="0.8" Margin="0,0,0,16"/>
+                        <md:PackIcon Kind="CashMultiple"
+                                     Width="32" Height="32"
+                                     Foreground="{DynamicResource PrimaryHueMidBrush}"
+                                     Margin="0,0,0,16"/>
+                        <TextBlock Text="ОБЩИЙ ФОНД ЗП"
+                                   FontSize="11" FontWeight="Bold"
+                                   Foreground="Gray" Margin="0,0,0,4"/>
+                        <TextBlock Text="Сумма к выплате всем швеям за выбранный период"
+                                   TextWrapping="Wrap" FontSize="12"
+                                   Foreground="Gray" Opacity="0.8"
+                                   Margin="0,0,0,16"/>
                         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                            <TextBlock Text="{Binding GrandTotal, StringFormat='{}{0:0.##}'}" FontSize="36" FontWeight="Bold" Foreground="{DynamicResource PrimaryHueMidBrush}"/>
-                            <TextBlock Text=" ₴" FontSize="20" FontWeight="Medium" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Bottom" Margin="4,0,0,6"/>
+                            <TextBlock Text="{Binding GrandTotal, StringFormat='{}{0:0.##}'}"
+                                       FontSize="36" FontWeight="Bold"
+                                       Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+                            <TextBlock Text=" ₴"
+                                       FontSize="20" FontWeight="Medium"
+                                       Foreground="{DynamicResource PrimaryHueMidBrush}"
+                                       VerticalAlignment="Bottom"
+                                       Margin="4,0,0,6"/>
                         </StackPanel>
                     </StackPanel>
                 </Border>
             </md:Card>
+
         </Grid>
     </Grid>
 </UserControl>

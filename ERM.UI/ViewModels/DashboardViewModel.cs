@@ -169,7 +169,6 @@ namespace ERM.UI.ViewModels
         {
             if (dto is null) return;
 
-            // Используем ExecuteSafeAsync, чтобы поймать возможные ошибки базы
             var (isSuccess, _) = await ExecuteSafeAsync(async () =>
             {
                 await _workService.DeleteAsync(dto.Id);
