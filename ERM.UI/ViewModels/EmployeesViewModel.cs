@@ -47,14 +47,12 @@ namespace ERM.UI.ViewModels
             if (result is not EditEmployeeDialogViewModel vm || !vm.IsValid)
                 return;
 
-            var (isSuccess, _) = await ExecuteSafeAsync(() => 
+            var (isSuccess, _) = await ExecuteSafeAsync(() =>
                 _employeeService.EditEmployeeAsync(
                     vm.EmployeeId,
-                    vm.FullName,
-                    vm.PhoneNumber,
-                    vm.Notes,
-                    vm.IsSeamstress,
-                    vm.MachineNumber
+                    vm.FullName, vm.PhoneNumber, vm.Notes,
+                    vm.IsSeamstress, vm.MachineNumber,
+                    vm.IsCutter, string.IsNullOrWhiteSpace(vm.CutterPercentageText) ? null : decimal.Parse(vm.CutterPercentageText)
                 )
             );
             if(isSuccess) 
@@ -101,10 +99,10 @@ namespace ERM.UI.ViewModels
                 return;
 
             var (isSuccess, _) = await ExecuteSafeAsync(() => _employeeService.CreateAsync(
-                   vm.FullName,
-                   vm.PhoneNumber,
-                   vm.Notes,
-                   vm.IsSeamstress ? vm.MachineNumber : null)); // передаём номер машины если швея
+                vm.FullName, vm.PhoneNumber, vm.Notes,
+                vm.IsSeamstress, vm.MachineNumber,
+                vm.IsCutter, string.IsNullOrWhiteSpace(vm.CutterPercentageText) ? null : decimal.Parse(vm.CutterPercentageText))
+            );
 
             if(isSuccess) 
                 await LoadEmployeesAsync();

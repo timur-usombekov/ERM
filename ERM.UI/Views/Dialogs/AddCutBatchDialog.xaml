@@ -61,7 +61,15 @@
                          md:HintAssist.IsFloating="True"
                          Style="{StaticResource MaterialDesignOutlinedTextBox}"
                          Text="{Binding DeclaredQuantityText, UpdateSourceTrigger=PropertyChanged}"
-                         FontSize="14"/>
+                         Margin="0,0,0,16" FontSize="14"/>
+                
+                <ComboBox md:HintAssist.Hint="Кто кроил (Закройщик)"
+                          md:HintAssist.IsFloating="True"
+                          Style="{StaticResource MaterialDesignOutlinedComboBox}"
+                          ItemsSource="{Binding Cutters}"
+                          SelectedItem="{Binding SelectedCutter}"
+                          DisplayMemberPath="FullName"
+                          FontSize="14"/>
 
             </StackPanel>
 

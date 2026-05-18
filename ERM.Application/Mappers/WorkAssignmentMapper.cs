@@ -8,11 +8,11 @@ namespace ERM.Application.Mappers
         public static WorkAssignmentDto ToDto(this WorkAssignment w) => new()
         {
             Id = w.Id,
-            SeamstressName = w.Seamstress?.Employee?.FullName ?? "Неизвестно",
-            MachineNumber = w.Seamstress?.MachineNumber ?? "?",
-            ClothingModelName = w.CutBatchItem?.ClothingModel?.Name ?? "Неизвестно",
+            EmployeeName = w.Employee?.FullName ?? "Неизвестно",
+            MachineNumber = w.Employee?.Seamstress?.MachineNumber ?? "?",
+            ClothingModelName = w.CutBatchItem?.ClothingModel?.Name ?? "-",
             Color = w.CutBatchItem?.FabricColor?.Name ?? "-",
-            Size = w.Size,
+            Size = w.Size ?? "-", 
             Quantity = w.Quantity,
             AssignedDate = w.AssignedDate
         };

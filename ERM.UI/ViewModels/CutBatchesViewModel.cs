@@ -1,8 +1,8 @@
 ﻿using ERM.Application.DTOs;
 using ERM.Application.Interfaces.Services;
+using ERM.UI.ViewModelDTOs;
 using ERM.UI.ViewModels.Base;
 using ERM.UI.ViewModels.Dialogs;
-using ERM.UI.ViewModelDTOs;
 using MaterialDesignThemes.Wpf;
 using System.Collections.ObjectModel;
 
@@ -13,6 +13,7 @@ namespace ERM.UI.ViewModels
         private readonly ICutBatchService _cutBatchService;
         private readonly IClothingModelService _clothingModelService;
         private readonly IFabricColorService _fabricColorService;
+        private readonly IEmployeeService _employeeService;
 
         public ObservableCollection<CutBatchDto> Batches { get; } = [];
 
@@ -54,11 +55,13 @@ namespace ERM.UI.ViewModels
         public CutBatchesViewModel(
             ICutBatchService cutBatchService,
             IClothingModelService clothingModelService,
-            IFabricColorService fabricColorService)
+            IFabricColorService fabricColorService,
+            IEmployeeService employeeService)
         {
             _cutBatchService = cutBatchService;
             _clothingModelService = clothingModelService;
             _fabricColorService = fabricColorService;
+            _employeeService = employeeService;
 
             LoadCommand = new AsyncRelayCommand(_ => LoadAsync());
             AddBatchCommand = new AsyncRelayCommand(_ => AddBatchAsync());
@@ -110,18 +113,23 @@ namespace ERM.UI.ViewModels
 
         private async Task AddBatchAsync()
         {
-            var dialogVm = new AddCutBatchDialogViewModel();
+            var employees = await _employeeService.GetAllAsync();
+            var dialogVm = new AddCutBatchDialogViewModel(employees);
             var result = await DialogHost.Show(dialogVm, "RootDialog");
 
             if (result is not AddCutBatchDialogViewModel vm || !vm.IsValid) return;
 
             var dateOnly = DateOnly.FromDateTime(vm.Date);
-            var (isSuccess, newBatch) = await ExecuteSafeAsync(() => _cutBatchService.CreateAsync(vm.Title, dateOnly, vm.DeclaredQuantity));
+
+            var (isSuccess, newBatch) = await ExecuteSafeAsync(() =>
+                _cutBatchService.CreateAsync(vm.Title, dateOnly, vm.DeclaredQuantity, vm.SelectedCutter!.Id));
+
             if (!isSuccess || newBatch is null) return;
 
             Batches.Insert(0, newBatch);
             SelectedBatch = newBatch;
         }
+
 
         private async Task DeleteBatchAsync(CutBatchDto? batch)
         {

@@ -3,6 +3,7 @@ using ERM.Application.Interfaces.Data;
 using ERM.Application.Interfaces.Services;
 using ERM.Application.Mappers;
 using ERM.Core.Domain.Entities;
+using ERM.Core.Domain.Entities.Enum;
 using Microsoft.EntityFrameworkCore;
 
 namespace ERM.Application.Services
@@ -17,26 +18,22 @@ namespace ERM.Application.Services
         {
             await using var context = await _contextFactory.CreateDbContextAsync(ct);
             var batches = await context.CutBatches
-                .Include(b => b.Items)
-                    .ThenInclude(i => i.ClothingModel)
-                .Include(b => b.Items)
-                    .ThenInclude(i => i.FabricColor)
-                .AsNoTracking()
-                .OrderByDescending(b => b.Date)
-                .ToListAsync(ct);
+                .Include(b => b.Items).ThenInclude(i => i.ClothingModel)
+                .Include(b => b.Items).ThenInclude(i => i.FabricColor)
+                .AsNoTracking().OrderByDescending(b => b.Date).ToListAsync(ct);
 
             return batches.Select(b => b.ToDto()).ToList();
         }
-
-        public async Task<CutBatchDto> CreateAsync(string title, DateOnly date, int declaredQuantity, CancellationToken ct = default)
+        public async Task<CutBatchDto> CreateAsync(string title, DateOnly date, int declaredQuantity, Guid cutterEmployeeId, CancellationToken ct = default)
         {
             await using var context = await _contextFactory.CreateDbContextAsync(ct);
-            var batch = new CutBatch(title, date, declaredQuantity);
+
+            var batch = new CutBatch(title, date, declaredQuantity, cutterEmployeeId);
             context.CutBatches.Add(batch);
+
             await context.SaveChangesAsync(ct);
             return batch.ToDto();
         }
-
 
         public async Task<CutBatchItemDto> AddItemToBatchAsync(Guid batchId, Guid modelId, Guid colorId, int quantity, CancellationToken ct = default)
         {
@@ -44,19 +41,35 @@ namespace ERM.Application.Services
 
             var batch = await context.CutBatches
                 .Include(b => b.Items)
-                .FirstOrDefaultAsync(b => b.Id == batchId, ct);
+                .Include(b => b.CutterEmployee).ThenInclude(e => e.Cutter) // Инклудим закройщика
+                .FirstOrDefaultAsync(b => b.Id == batchId, ct)
+                ?? throw new InvalidOperationException($"Крой с Id {batchId} не найден.");
 
-            if (batch is null)
-                throw new InvalidOperationException($"Крой с Id {batchId} не найден.");
+            var model = await context.ClothingModels.FirstOrDefaultAsync(m => m.Id == modelId, ct)
+                ?? throw new InvalidOperationException("Модель не найдена.");
 
-            var isNewItem = batch.AddItem(modelId, colorId, quantity);
+            if (batch.CutterEmployee.Cutter == null)
+                throw new InvalidOperationException("Выбранный сотрудник больше не является закройщиком.");
 
-            if (isNewItem) // Проверка на добавление нового элемента
-                context.CutBatchItems.Entry(batch.Items.Last()).State = EntityState.Added;
+            decimal cutPrice = model.SewingPrice * (batch.CutterEmployee.Cutter.Percentage / 100m);
+
+            var (isNewItem, currentItem) = batch.AddItem(modelId, colorId, quantity, cutPrice);
+
+            if (isNewItem) context.CutBatchItems.Entry(currentItem).State = EntityState.Added;
+
+            var assignment = new WorkAssignment(
+                batch.CutterEmployeeId,
+                OperationType.Cutting,
+                quantity,
+                cutPrice,
+                currentItem.Id, 
+                null);          // Размер при раскрое не важен
+
+            context.WorkAssignments.Add(assignment);
 
             await context.SaveChangesAsync(ct);
 
-            return batch.Items.Last().ToDto();
+            return currentItem.ToDto();
         }
 
         public async Task DeleteAsync(Guid id, CancellationToken ct = default)

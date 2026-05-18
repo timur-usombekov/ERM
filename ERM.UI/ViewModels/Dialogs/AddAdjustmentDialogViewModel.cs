@@ -6,8 +6,8 @@ namespace ERM.UI.ViewModels.Dialogs
 {
     public class AddAdjustmentDialogViewModel : ViewModelBase
     {
-        public string SeamstressName { get; }
-        public Guid SeamstressId { get; }
+        public string EmployeeName { get; }
+        public Guid EmployeeId { get; }
 
         private string _amountText = string.Empty;
         public string AmountText
@@ -34,10 +34,10 @@ namespace ERM.UI.ViewModels.Dialogs
             decimal.TryParse(AmountText, out var amount) && amount != 0 &&
             !string.IsNullOrWhiteSpace(Reason);
 
-        public AddAdjustmentDialogViewModel(SeamstressPayrollDto seamstress)
+        public AddAdjustmentDialogViewModel(EmployeePayrollDto employee)
         {
-            SeamstressName = seamstress.SeamstressName;
-            SeamstressId = seamstress.SeamstressId;
+            EmployeeName = employee.EmployeeName;
+            EmployeeId = employee.EmployeeId;
         }
     }
 }

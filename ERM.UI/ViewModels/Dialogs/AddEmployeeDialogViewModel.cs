@@ -59,10 +59,25 @@ namespace ERM.UI.ViewModels.Dialogs
                 OnPropertyChanged(nameof(IsValid));
             }
         }
+        private bool _isCutter;
+        public bool IsCutter
+        {
+            get => _isCutter;
+            set { SetField(ref _isCutter, value); OnPropertyChanged(nameof(IsValid)); }
+        }
+
+        private string _cutterPercentageText = string.Empty;
+        public string CutterPercentageText
+        {
+            get => _cutterPercentageText;
+            set { SetField(ref _cutterPercentageText, value); OnPropertyChanged(nameof(IsValid)); }
+        }
 
         public bool IsValid =>
             !string.IsNullOrWhiteSpace(FullName) &&
             !string.IsNullOrWhiteSpace(PhoneNumber) &&
-            (!IsSeamstress || !string.IsNullOrWhiteSpace(MachineNumber));
+            (!IsSeamstress || !string.IsNullOrWhiteSpace(MachineNumber)) &&
+            (!IsCutter || (decimal.TryParse(CutterPercentageText, out var p) && p >= 0 && p <= 100));
+
     }
 }

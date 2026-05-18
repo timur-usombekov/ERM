@@ -18,7 +18,10 @@ namespace ERM.Application.Mappers
 
                 IsSeamstress = employee.IsSeamstress,
                 SeamstressId = employee.Seamstress?.Id,
-                MachineNumber = employee.Seamstress?.MachineNumber
+                MachineNumber = employee.Seamstress?.MachineNumber,
+
+                IsCutter = employee.IsCutter,
+                CutterPercentage = employee.Cutter?.Percentage
             };
         }
     }

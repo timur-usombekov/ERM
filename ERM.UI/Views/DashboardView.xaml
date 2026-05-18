@@ -309,7 +309,7 @@
                                                      VerticalAlignment="Center"/>
                                     </Border>
                                     <StackPanel VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding SeamstressName}"
+                                        <TextBlock Text="{Binding EmployeeName}"
                                                    FontWeight="Medium" FontSize="13"/>
                                         <TextBlock Text="{Binding MachineNumber, StringFormat='Машина №{0}'}"
                                                    Foreground="{DynamicResource MaterialDesignBodyLight}"

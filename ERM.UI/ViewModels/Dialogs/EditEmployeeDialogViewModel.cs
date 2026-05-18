@@ -42,10 +42,25 @@ namespace ERM.UI.ViewModels.Dialogs
             set => SetField(ref _machineNumber, value);
         }
 
+        private bool _isCutter;
+        public bool IsCutter
+        {
+            get => _isCutter;
+            set { SetField(ref _isCutter, value); OnPropertyChanged(nameof(IsValid)); }
+        }
+
+        private string _cutterPercentageText = string.Empty;
+        public string CutterPercentageText
+        {
+            get => _cutterPercentageText;
+            set { SetField(ref _cutterPercentageText, value); OnPropertyChanged(nameof(IsValid)); }
+        }
+
         public bool IsValid =>
             !string.IsNullOrWhiteSpace(FullName) &&
             !string.IsNullOrWhiteSpace(PhoneNumber) &&
-            (!IsSeamstress || !string.IsNullOrWhiteSpace(MachineNumber));
+            (!IsSeamstress || !string.IsNullOrWhiteSpace(MachineNumber)) &&
+            (!IsCutter || (decimal.TryParse(CutterPercentageText, out var p) && p >= 0 && p <= 100));
 
         // Принимаем существующего сотрудника и заполняем поля его данными
         public EditEmployeeDialogViewModel(EmployeeDto employee)
@@ -56,6 +71,8 @@ namespace ERM.UI.ViewModels.Dialogs
             _notes = employee.Notes;
             _isSeamstress = employee.IsSeamstress;
             _machineNumber = employee.MachineNumber ?? string.Empty;
+            _isCutter = employee.IsCutter;
+            _cutterPercentageText = employee.CutterPercentage?.ToString() ?? string.Empty;
         }
     }
 }

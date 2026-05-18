@@ -1,17 +1,22 @@
 ﻿using ERM.Core.Domain.Entities.Base;
+using ERM.Core.Domain.Entities.Enum;
 using System.Globalization;
 
 namespace ERM.Core.Domain.Entities
 {
     public class WorkAssignment : Identity
     {
-        public Guid SeamstressId { get; private set; }
+        public Guid EmployeeId { get; private set; }
+        public Employee Employee { get; private set; } = null!;
 
-        public Guid CutBatchItemId { get; private set; }
+        public OperationType OperationType { get; private set; }
 
-        public string Size { get; private set; } = null!; // "52", "XL"
+        public Guid? CutBatchItemId { get; private set; }
+        public CutBatchItem? CutBatchItem { get; private set; }
+
+        public string? Size { get; private set; } = null!; // "52", "XL"
+
         public int Quantity { get; private set; }
-
         public decimal PricePerUnit { get; private set; }
         public decimal TotalPrice => Quantity * PricePerUnit; // Это не хранится в базе, а вычисляется при запросе
 
@@ -20,30 +25,33 @@ namespace ERM.Core.Domain.Entities
         public int WeekNumber { get; private set; }
         public int Year { get; private set; }
 
-        public Seamstress Seamstress { get; private set; } = null!;
-        public CutBatchItem CutBatchItem { get; private set; } = null!;
 
         protected WorkAssignment() { }
 
         public WorkAssignment(
-            Guid seamstressId,
-            Guid cutBatchItemId,
-            string size,
+            Guid employeeId,
+            OperationType operationType,
             int quantity,
-            decimal pricePerUnit)
+            decimal pricePerUnit,
+            Guid? cutBatchItemId = null,
+            string? size = null)
         {
-            SeamstressId = seamstressId;
-            CutBatchItemId = cutBatchItemId;
-            Size = size;
+            if (operationType == OperationType.Sewing && cutBatchItemId == null)
+                throw new ArgumentException("Пошив требует привязки к партии кроя.");
 
+            EmployeeId = employeeId;
+            OperationType = operationType;
             Quantity = quantity;
             PricePerUnit = pricePerUnit;
 
-            AssignedDate = DateOnly.FromDateTime(DateTime.Today);
+            CutBatchItemId = cutBatchItemId;
+            Size = size;
 
+            AssignedDate = DateOnly.FromDateTime(DateTime.Today);
             var dateTime = AssignedDate.ToDateTime(TimeOnly.MinValue);
             WeekNumber = ISOWeek.GetWeekOfYear(dateTime);
             Year = ISOWeek.GetYear(dateTime);
         }
+
     }
 }

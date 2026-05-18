@@ -3,6 +3,7 @@ using ERM.Application.Interfaces.Data;
 using ERM.Application.Interfaces.Services;
 using ERM.Application.Mappers;
 using ERM.Core.Domain.Entities;
+using ERM.Core.Domain.Entities.Enum;
 using Microsoft.EntityFrameworkCore;
 
 namespace ERM.Application.Services
@@ -22,154 +23,149 @@ namespace ERM.Application.Services
 
             var today = DateOnly.FromDateTime(DateTime.Today);
             var assignments = await context.WorkAssignments
-                .Include(a => a.Seamstress)
-                    .ThenInclude(s => s.Employee)
+                .Include(a => a.Employee)
+                    .ThenInclude(s => s.Seamstress)
                 .Include(a => a.CutBatchItem)
                     .ThenInclude(i => i.ClothingModel)
                 .Include(a => a.CutBatchItem)
                     .ThenInclude(i => i.FabricColor)
-                .Where(a => a.AssignedDate == today)
+                .Where(a => a.AssignedDate == today && a.OperationType == OperationType.Sewing)
                 .AsNoTracking()
                 .ToListAsync(ct);
             return assignments.Select(a => a.ToDto()).OrderByDescending(a => a.AssignedDate).ToList();
         }
 
-        public async Task<WorkAssignmentDto> IssueWorkAsync(Guid seamstressId, Guid cutBatchItemId, string size, int quantity, CancellationToken ct = default)
+        public async Task<WorkAssignmentDto> IssueWorkAsync(Guid employeeId, OperationType operationType, Guid? cutBatchItemId, string? size, int quantity, CancellationToken ct = default)
         {
             await using var context = await _contextFactory.CreateDbContextAsync(ct);
+            decimal price = 0;
 
-            var cutItem = await context.CutBatchItems
-                .Include(c => c.ClothingModel)
-                .FirstOrDefaultAsync(c => c.Id == cutBatchItemId, ct)
-                ?? throw new InvalidOperationException("Партия кроя не найдена.");
+            var employee = await context.Employees
+                .Include(e => e.Seamstress)
+                .FirstOrDefaultAsync(e => e.Id == employeeId, ct)
+                ?? throw new InvalidOperationException("Сотрудник не найден.");
 
-            cutItem.Issue(quantity);
+            CutBatchItem? cutItem = null;
 
-            decimal currentPrice = cutItem.ClothingModel.SewingPrice;
+            if (cutBatchItemId.HasValue)
+            {
+                cutItem = await context.CutBatchItems
+                    .Include(c => c.ClothingModel)
+                    .FirstOrDefaultAsync(c => c.Id == cutBatchItemId.Value, ct)
+                    ?? throw new InvalidOperationException("Партия кроя не найдена.");
 
-            var assignment = new WorkAssignment(seamstressId, cutBatchItemId, size, quantity, currentPrice);
+                cutItem.Issue(quantity);
+                price = cutItem.ClothingModel.SewingPrice; // Пока берем цену пошива
+            }
+
+            var assignment = new WorkAssignment(employeeId, operationType, quantity, price, cutBatchItemId, size);
             context.WorkAssignments.Add(assignment);
-
             await context.SaveChangesAsync(ct);
 
-            return assignment.ToDto();
+            return new WorkAssignmentDto
+            {
+                Id = assignment.Id,
+                EmployeeName = employee.FullName,
+                MachineNumber = employee.Seamstress?.MachineNumber ?? "?",
+                ClothingModelName = cutItem?.ClothingModel?.Name ?? "-",
+                Color = cutItem?.FabricColor?.Name ?? "-",
+                Size = size ?? "-",
+                Quantity = quantity,
+                AssignedDate = assignment.AssignedDate
+            };
+
         }
 
         public async Task DeleteAsync(Guid id, CancellationToken ct = default)
         {
             await using var context = await _contextFactory.CreateDbContextAsync(ct);
-
-            var assignment = await context.WorkAssignments
-                .FirstOrDefaultAsync(a => a.Id == id, ct);
+            var assignment = await context.WorkAssignments.FirstOrDefaultAsync(a => a.Id == id, ct);
             if (assignment is null) return;
 
-            var cutItem = await context.CutBatchItems
-                .FirstOrDefaultAsync(c => c.Id == assignment.CutBatchItemId, ct);
-            // Возвращаем баланс крою при отмене выдачи
-            cutItem?.CancelIssue(assignment.Quantity);
+            if (assignment.CutBatchItemId.HasValue)
+            {
+                var cutItem = await context.CutBatchItems.FirstOrDefaultAsync(c => c.Id == assignment.CutBatchItemId.Value, ct);
+                cutItem?.CancelIssue(assignment.Quantity);
+            }
 
             context.WorkAssignments.Remove(assignment);
             await context.SaveChangesAsync(ct);
         }
 
-        public async Task<IReadOnlyList<SeamstressPayrollDto>> GetPayrollAsync(DateOnly startDate, DateOnly endDate, CancellationToken ct = default)
+
+        public async Task<IReadOnlyList<EmployeePayrollDto>> GetPayrollAsync(DateOnly startDate, DateOnly endDate, CancellationToken ct = default)
         {
             await using var context = await _contextFactory.CreateDbContextAsync(ct);
 
-            //  сдельный заработок (Пошив)
             var assignments = await context.WorkAssignments
-                .Include(a => a.Seamstress).ThenInclude(s => s.Employee)
+                .Include(a => a.Employee).ThenInclude(e => e.Seamstress)
+                .Include(a => a.Employee).ThenInclude(e => e.Cutter)
                 .Include(a => a.CutBatchItem).ThenInclude(i => i.ClothingModel)
                 .Where(a => a.AssignedDate >= startDate && a.AssignedDate <= endDate)
-                .AsNoTracking()
-                .ToListAsync(ct);
+                .AsNoTracking().ToListAsync(ct);
 
-            //  финансовые корректировки 
             var adjustments = await context.PayrollAdjustments
-                .Include(a => a.Seamstress).ThenInclude(s => s.Employee)
+                .Include(a => a.Employee).ThenInclude(e => e.Seamstress)
+                .Include(a => a.Employee).ThenInclude(e => e.Cutter)
                 .Where(a => a.Date >= startDate && a.Date <= endDate)
-                .AsNoTracking()
-                .ToListAsync(ct);
+                .AsNoTracking().ToListAsync(ct);
 
-            // сбор уникальных швей из обоих списков
-            var allSeamstressIds = assignments.Select(a => a.SeamstressId)
-                .Union(adjustments.Select(a => a.SeamstressId))
-                .Distinct();
+            var allEmployeeIds = assignments.Select(a => a.EmployeeId)
+                .Union(adjustments.Select(a => a.EmployeeId)).Distinct();
 
-            var result = new List<SeamstressPayrollDto>();
+            var result = new List<EmployeePayrollDto>();
 
-            // выглядит страшно, но пока ничего лучше не придумалось для объединения данных по швеям из двух разных источников
-            // а ещё читается нормально
-            foreach (var seamstressId in allSeamstressIds)
+            foreach (var empId in allEmployeeIds)
             {
-                var seamstressAssignments = assignments.Where(a => a.SeamstressId == seamstressId).ToList();
-                var seamstressAdjustments = adjustments.Where(a => a.SeamstressId == seamstressId).ToList();
+                var empAssignments = assignments.Where(a => a.EmployeeId == empId).ToList();
+                var empAdjustments = adjustments.Where(a => a.EmployeeId == empId).ToList();
+                var emp = empAssignments.FirstOrDefault()?.Employee ?? empAdjustments.FirstOrDefault()?.Employee;
 
-                var sInfo = seamstressAssignments.FirstOrDefault()?.Seamstress
-                            ?? seamstressAdjustments.FirstOrDefault()?.Seamstress;
-
-                var dto = new SeamstressPayrollDto
+                var dto = new EmployeePayrollDto
                 {
-                    SeamstressId = seamstressId,
-                    SeamstressName = sInfo?.Employee.FullName ?? "Неизвестно",
-                    MachineNumber = sInfo?.MachineNumber ?? "?",
+                    EmployeeId = empId,
+                    EmployeeName = emp?.FullName ?? "Неизвестно",
+                    MachineNumber = emp?.Seamstress?.MachineNumber ?? "?",
 
-                    TotalItemsSewn = seamstressAssignments.Sum(a => a.Quantity),
-                    EarnedBySewing = seamstressAssignments.Sum(a => a.TotalPrice),
+                    IsSeamstress = emp?.IsSeamstress ?? false,
+                    IsCutter = emp?.IsCutter ?? false,
 
-                    TotalAdjustments = seamstressAdjustments.Sum(a => a.Amount),
+                    TotalItemsProcessed = empAssignments.Sum(a => a.Quantity),
+                    EarnedByOperations = empAssignments.Sum(a => a.TotalPrice),
+                    TotalAdjustments = empAdjustments.Sum(a => a.Amount),
 
-                    // Группируем сшитое для расшифровки
-                    SewingDetails = seamstressAssignments
-                        .GroupBy(a => new { a.CutBatchItem.ClothingModel.Name, a.PricePerUnit })
+                    OperationDetails = empAssignments
+                        .GroupBy(a => new { Name = a.CutBatchItem?.ClothingModel?.Name ?? "Прочее", a.PricePerUnit })
                         .Select(g => new PayrollDetailDto
                         {
                             ModelName = g.Key.Name,
                             PricePerUnit = g.Key.PricePerUnit,
                             Quantity = g.Sum(x => x.Quantity)
-                        })
-                        .OrderBy(d => d.ModelName).ToList(),
+                        }).OrderBy(d => d.ModelName).ToList(),
 
-                    // Добавляем расшифровку авансов
-                    AdjustmentDetails = seamstressAdjustments
-                        .Select(a => new AdjustmentDetailDto
-                        {
-                            Id = a.Id,
-                            Date = a.Date,
-                            Amount = a.Amount,
-                            Reason = a.Reason
-                        })
+                    AdjustmentDetails = empAdjustments
+                        .Select(a => new AdjustmentDetailDto { Id = a.Id, Date = a.Date, Amount = a.Amount, Reason = a.Reason })
                         .OrderBy(a => a.Date).ToList()
                 };
-
                 result.Add(dto);
             }
-
-            return result.OrderBy(p => p.SeamstressName).ToList();
+            return result.OrderBy(p => p.EmployeeName).ToList();
         }
 
-        public async Task AddAdjustmentAsync(Guid seamstressId, DateOnly date, decimal amount, string reason, CancellationToken ct = default)
+
+        public async Task AddAdjustmentAsync(Guid employeeId, DateOnly date, decimal amount, string reason, CancellationToken ct = default)
         {
             await using var context = await _contextFactory.CreateDbContextAsync(ct);
-
-            var adjustment = new PayrollAdjustment(seamstressId, date, amount, reason);
-            context.PayrollAdjustments.Add(adjustment);
-
+            context.PayrollAdjustments.Add(new PayrollAdjustment(employeeId, date, amount, reason));
             await context.SaveChangesAsync(ct);
         }
 
-        public async Task PaySalaryAsync(Guid seamstressId, DateOnly date, decimal amount, CancellationToken ct = default)
+        public async Task PaySalaryAsync(Guid employeeId, DateOnly date, decimal amount, CancellationToken ct = default)
         {
             if (amount <= 0) throw new ArgumentException("Сумма к выплате должна быть больше нуля.");
-
             await using var context = await _contextFactory.CreateDbContextAsync(ct);
-
-            var adjustment = new PayrollAdjustment(seamstressId, date, -amount, "Выплата ЗП (Закрытие периода)");
-            context.PayrollAdjustments.Add(adjustment);
-
+            context.PayrollAdjustments.Add(new PayrollAdjustment(employeeId, date, -amount, "Выплата ЗП (Закрытие периода)"));
             await context.SaveChangesAsync(ct);
         }
-
-
     }
 }

@@ -1,4 +1,5 @@
-﻿using ERM.Application.DTOs;
+﻿using ERM.Core.Domain.Entities.Enum;
+using ERM.Application.DTOs;
 using ERM.Application.Interfaces.Services;
 using ERM.UI.ViewModels.Base;
 using System.Collections.ObjectModel;
@@ -149,7 +150,13 @@ namespace ERM.UI.ViewModels
             Guid savedCutItemId = SelectedCutItem.Id;
 
             var (isSuccess, newAssignment) = await ExecuteSafeAsync(() =>
-                _workService.IssueWorkAsync(SelectedSeamstress.SeamstressId!.Value, SelectedCutItem.Id, SelectedSize, qty));
+                _workService.IssueWorkAsync(
+                    SelectedSeamstress.Id,
+                    OperationType.Sewing,
+                    SelectedCutItem.Id,
+                    SelectedSize,
+                    qty));
+
 
             if (isSuccess && newAssignment != null)
             {

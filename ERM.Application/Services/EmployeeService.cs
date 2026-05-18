@@ -21,6 +21,7 @@ namespace ERM.Application.Services
             await using var context = await _contextFactory.CreateDbContextAsync(ct);
             var employees = await context.Employees
                 .Include(e => e.Seamstress)
+                .Include(e => e.Cutter)
                 .AsNoTracking().ToListAsync(ct);
 
             return employees.Select(e => e.ToDto()).ToList();
@@ -31,51 +32,46 @@ namespace ERM.Application.Services
             await using var context = await _contextFactory.CreateDbContextAsync(ct);
             var employee = await context.Employees
                 .Include(e => e.Seamstress)
+                .Include(e => e.Cutter)
                 .FirstOrDefaultAsync(e => e.Id == id, ct);
             if (employee is null)
                 throw new InvalidOperationException($"Сотрудник с Id {id} не найден.");
             
             return employee?.ToDto();
         }
-        public async Task<EmployeeDto> CreateAsync(
-            string fullName,
-            string phoneNumber,
-            string? notes = null,
-            string? machineNumber = null,
-            CancellationToken ct = default)
+        public async Task<EmployeeDto> CreateAsync(string fullName, string phoneNumber, string? notes = null,
+            bool isSeamstress = false, string? machineNumber = null,
+            bool isCutter = false, decimal? cutterPercentage = null, CancellationToken ct = default)
         {
             await using var context = await _contextFactory.CreateDbContextAsync(ct);
-
             var employee = new Employee(fullName, phoneNumber);
 
-            if (!string.IsNullOrWhiteSpace(notes))
-                employee.UpdateNotes(notes);
+            if (!string.IsNullOrWhiteSpace(notes)) employee.UpdateGeneralInfo(fullName, phoneNumber, notes);
 
-            if (!string.IsNullOrWhiteSpace(machineNumber))
-                employee.AssignSeamstressRole(machineNumber); // домен создаёт Seamstress
+            if (isSeamstress && !string.IsNullOrWhiteSpace(machineNumber))
+                employee.AssignSeamstressRole(machineNumber);
+
+            if (isCutter && cutterPercentage.HasValue)
+                employee.AssignCutterRole(cutterPercentage.Value);
 
             context.Employees.Add(employee);
-            await context.SaveChangesAsync(ct); // один SaveChanges — INSERT Employee + Seamstress
+            await context.SaveChangesAsync(ct);
             return employee.ToDto();
         }
 
-        public async Task<EmployeeDto> EditEmployeeAsync(
-            Guid id,
-            string fullName,
-            string phoneNumber,
-            string? notes,
-            bool isSeamstress,
-            string? machineNumber,
-            CancellationToken ct = default)
+        public async Task<EmployeeDto> EditEmployeeAsync(Guid id, string fullName, string phoneNumber, string? notes,
+            bool isSeamstress, string? machineNumber,
+            bool isCutter, decimal? cutterPercentage, CancellationToken ct = default)
         {
             await using var context = await _contextFactory.CreateDbContextAsync(ct);
 
-            var employee = await context.Employees.Include(e => e.Seamstress).FirstOrDefaultAsync(e => e.Id == id, ct);
-            if (employee is null)
-                throw new InvalidOperationException($"Сотрудник с Id {id} не найден.");
+            var employee = await context.Employees
+                .Include(e => e.Seamstress)
+                .Include(e => e.Cutter)
+                .FirstOrDefaultAsync(e => e.Id == id, ct)
+                ?? throw new InvalidOperationException("Сотрудник не найден.");
 
-            employee.UpdateContacts(fullName, phoneNumber);
-            employee.UpdateNotes(notes);
+            employee.UpdateGeneralInfo(fullName, phoneNumber, notes);
 
             if (!employee.IsSeamstress && isSeamstress)
             {
@@ -93,6 +89,19 @@ namespace ERM.Application.Services
                 employee.UpdateMachineNumber(machineNumber!);
             }
 
+            if (!employee.IsCutter && isCutter) 
+            { 
+                employee.AssignCutterRole(cutterPercentage!.Value); 
+                context.Cutters.Add(employee.Cutter!); 
+            }
+            else if (employee.IsCutter && !isCutter) 
+            { 
+                employee.RevokeCutterRole(); 
+            }
+            else if (employee.IsCutter && isCutter && employee.Cutter!.Percentage != cutterPercentage) 
+            { 
+                employee.UpdateCutterPercentage(cutterPercentage!.Value); 
+            }
             await context.SaveChangesAsync(ct);
 
             return employee.ToDto();

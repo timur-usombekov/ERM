@@ -25,6 +25,12 @@ namespace ERM.Infrastructure.Configurations
                 .WithOne(s => s.Employee)
                 .HasForeignKey<Seamstress>(s => s.EmployeeId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne(e => e.Cutter)
+                .WithOne(c => c.Employee)
+                .HasForeignKey<Cutter>(c => c.EmployeeId)
+                .OnDelete(DeleteBehavior.Cascade);
+
         }
     }
 }

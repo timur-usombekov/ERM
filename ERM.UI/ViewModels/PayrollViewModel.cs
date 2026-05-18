@@ -11,7 +11,8 @@ namespace ERM.UI.ViewModels
     {
         private readonly IWorkAssignmentService _workService;
 
-        public ObservableCollection<SeamstressPayrollDto> PayrollList { get; } = [];
+        public ObservableCollection<EmployeePayrollDto> SeamstressesPayroll { get; } = [];
+        public ObservableCollection<EmployeePayrollDto> CuttersPayroll { get; } = [];
 
         // По умолчанию текущая неделю (с понедельника по воскресенье)
         private DateTime _startDate = GetStartOfWeek();
@@ -44,16 +45,16 @@ namespace ERM.UI.ViewModels
         }
 
         // Вычисляемое свойство для общей суммы по всему цеху
-        public decimal GrandTotal => PayrollList.Sum(p => p.TotalToPay);
+        public decimal GrandTotal => SeamstressesPayroll.Sum(p => p.TotalToPay) + CuttersPayroll.Sum(p => p.TotalToPay);
 
-        public AsyncRelayCommand<SeamstressPayrollDto> AddAdjustmentCommand { get; }
-        public AsyncRelayCommand<SeamstressPayrollDto> PayCommand { get; }
+        public AsyncRelayCommand<EmployeePayrollDto> AddAdjustmentCommand { get; }
+        public AsyncRelayCommand<EmployeePayrollDto> PayCommand { get; }
 
         public PayrollViewModel(IWorkAssignmentService workService)
         {
             _workService = workService;
-            AddAdjustmentCommand = new AsyncRelayCommand<SeamstressPayrollDto>(AddAdjustmentAsync);
-            PayCommand = new AsyncRelayCommand<SeamstressPayrollDto>(PayAsync, dto => dto != null && dto.TotalToPay > 0);
+            AddAdjustmentCommand = new AsyncRelayCommand<EmployeePayrollDto>(AddAdjustmentAsync);
+            PayCommand = new AsyncRelayCommand<EmployeePayrollDto>(PayAsync, dto => dto != null && dto.TotalToPay > 0);
 
         }
 
@@ -81,11 +82,16 @@ namespace ERM.UI.ViewModels
                     DateOnly.FromDateTime(StartDate),
                     DateOnly.FromDateTime(EndDate));
 
-                PayrollList.Clear();
+                SeamstressesPayroll.Clear();
+                CuttersPayroll.Clear();
+
                 foreach (var item in payrolls)
                 {
-                    PayrollList.Add(item);
+                    // Раскидываем по спискам
+                    if (item.IsSeamstress) SeamstressesPayroll.Add(item);
+                    if (item.IsCutter) CuttersPayroll.Add(item);
                 }
+
 
                 OnPropertyChanged(nameof(GrandTotal));
             }
@@ -95,11 +101,11 @@ namespace ERM.UI.ViewModels
             }
         }
 
-        private async Task AddAdjustmentAsync(SeamstressPayrollDto? seamstress)
+        private async Task AddAdjustmentAsync(EmployeePayrollDto? employee)
         {
-            if (seamstress is null) return;
+            if (employee is null) return;
 
-            var vm = new AddAdjustmentDialogViewModel(seamstress);
+            var vm = new AddAdjustmentDialogViewModel(employee);
             var result = await DialogHost.Show(vm, "RootDialog");
 
             if (result is not AddAdjustmentDialogViewModel r || !r.IsValid) return;
@@ -108,19 +114,19 @@ namespace ERM.UI.ViewModels
             var date = DateOnly.FromDateTime(r.SelectedDate);
 
             var isSuccess = await ExecuteSafeAsync(() =>
-                _workService.AddAdjustmentAsync(seamstress.SeamstressId, date, amount, r.Reason));
+                _workService.AddAdjustmentAsync(employee.EmployeeId, date, amount, r.Reason));
 
             if (isSuccess)
                 _ = CalculatePayrollAsync();
         }
 
-        private async Task PayAsync(SeamstressPayrollDto? seamstress)
+        private async Task PayAsync(EmployeePayrollDto? employee)
         {
-            if (seamstress is null || seamstress.TotalToPay <= 0) return;
+            if (employee is null || employee.TotalToPay <= 0) return;
 
             var confirmed = await MaterialDesignThemes.Wpf.DialogHost.Show(
                 new ConfirmDialogViewModel(
-                    $"Провести выплату {seamstress.TotalToPay:0.##} ₴ сотруднику {seamstress.SeamstressName}?",
+                    $"Провести выплату {employee.TotalToPay:0.##} ₴ сотруднику {employee.EmployeeName}?",
                     "Выплатить",
                     false),
                 "RootDialog");
@@ -129,7 +135,7 @@ namespace ERM.UI.ViewModels
             if (confirmed?.ToString() != "True") return;
 
             var isSuccess = await ExecuteSafeAsync(() =>
-                _workService.PaySalaryAsync(seamstress.SeamstressId, DateOnly.FromDateTime(DateTime.Today), seamstress.TotalToPay));
+                _workService.PaySalaryAsync(employee.EmployeeId, DateOnly.FromDateTime(DateTime.Today), employee.TotalToPay));
 
             if (isSuccess)
                 _ = CalculatePayrollAsync();

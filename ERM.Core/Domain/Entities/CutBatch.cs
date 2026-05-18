@@ -4,6 +4,9 @@ namespace ERM.Core.Domain.Entities
 {
     public class CutBatch : Identity
     {
+        public Guid CutterEmployeeId { get; private set; } 
+        public Employee CutterEmployee { get; private set; } = null!;
+
         public string Title { get; private set; } = null!;
         public DateOnly Date { get; private set; }
 
@@ -16,21 +19,24 @@ namespace ERM.Core.Domain.Entities
 
         protected CutBatch() { }
 
-        public CutBatch(string title, DateOnly date, int declaredQuantity)
+        public CutBatch(string title, DateOnly date, int declaredQuantity, Guid cutterEmployeeId)
         {
-            if (declaredQuantity <= 0)
-                throw new ArgumentException("Количество от закройщика должно быть больше нуля.");
-
+            if (declaredQuantity <= 0) throw new ArgumentException("Количество должно быть больше нуля.");
 
             Title = title;
             Date = date;
             DeclaredQuantity = declaredQuantity;
+            CutterEmployeeId = cutterEmployeeId;
             IsClosed = false;
         }
+
         /// <summary>
         /// </summary>
-        /// <returns> true, если был добавлен новый элемент, false если количество было увеличено для существующего элемента </returns>
-        public bool AddItem(Guid clothingModelId, Guid fabricColorId, int quantity)
+        /// <returns> 
+        /// true, если был добавлен новый элемент, false если количество было увеличено для существующего элемента.
+        /// А ещё возвращает сам элемент, который был добавлен или обновлён.
+        /// </returns>
+        public (bool isNewItem, CutBatchItem item) AddItem(Guid clothingModelId, Guid fabricColorId, int quantity, decimal cutPrice)
         {
             if (quantity <= 0)
                 throw new ArgumentException("Количество позиции должно быть больше нуля.");
@@ -51,12 +57,13 @@ namespace ERM.Core.Domain.Entities
             if (existingItem != null)
             {
                 existingItem.IncreaseQuantity(quantity);
-                return false;
+                return (false, existingItem);
             }
             else
             {
-                _items.Add(new CutBatchItem(Id, clothingModelId, fabricColorId, quantity));
-                return true;
+                var newItem = new CutBatchItem(Id, clothingModelId, fabricColorId, quantity, cutPrice);
+                _items.Add(newItem);
+                return (true, newItem);
             }
         }
 

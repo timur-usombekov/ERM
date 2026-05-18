@@ -20,9 +20,9 @@ namespace ERM.Infrastructure.Configurations
                 .IsRequired()
                 .HasMaxLength(250);
 
-            builder.HasOne(a => a.Seamstress)
-                .WithMany() // У швеи может быть много корректировок
-                .HasForeignKey(a => a.SeamstressId)
+            builder.HasOne(a => a.Employee)
+                .WithMany()
+                .HasForeignKey(a => a.EmployeeId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Индекс по дате для быстрого поиска при расчете ЗП

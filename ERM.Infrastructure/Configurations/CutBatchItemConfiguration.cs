@@ -23,6 +23,7 @@ namespace ERM.Infrastructure.Configurations
                 .HasForeignKey(i => i.FabricColorId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            builder.Property(i => i.CutPricePerUnit).IsRequired().HasColumnType("decimal(18,2)");
         }
     }
 }

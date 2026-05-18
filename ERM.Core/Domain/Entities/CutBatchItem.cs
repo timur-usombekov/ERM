@@ -11,21 +11,23 @@ namespace ERM.Core.Domain.Entities
         public int Quantity { get; private set; }
         public int IssuedQuantity { get; private set; }
 
+        public decimal CutPricePerUnit { get; private set; }
+
         public CutBatch CutBatch { get; private set; } = null!;
         public ClothingModel ClothingModel { get; private set; } = null!;
         public FabricColor FabricColor { get; private set; } = null!;
 
         protected CutBatchItem() { }
 
-        public CutBatchItem(Guid cutBatchId, Guid clothingModelId, Guid fabricColorId, int quantity)
+        public CutBatchItem(Guid cutBatchId, Guid clothingModelId, Guid fabricColorId, int quantity, decimal cutPricePerUnit)
         {
             CutBatchId = cutBatchId;
             ClothingModelId = clothingModelId;
             FabricColorId = fabricColorId;
             Quantity = quantity;
+            CutPricePerUnit = cutPricePerUnit;
             IssuedQuantity = 0;
         }
-
 
         public void Issue(int quantityToIssue)
         {

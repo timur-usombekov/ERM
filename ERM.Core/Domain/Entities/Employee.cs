@@ -8,7 +8,11 @@ namespace ERM.Core.Domain.Entities
         public string PhoneNumber { get; private set; } = null!;
         public string? Notes { get; private set; }
 
+        public Cutter? Cutter { get; private set; }
+        public bool IsCutter => Cutter is not null;
+
         public Seamstress? Seamstress { get; private set; }
+        public bool IsSeamstress => Seamstress is not null;
 
         protected Employee() { }
 
@@ -18,16 +22,13 @@ namespace ERM.Core.Domain.Entities
             PhoneNumber = phoneNumber;
         }
 
-        public void UpdateNotes(string? notes)
-        {
-            Notes = notes;
-        }
-
-        public void UpdateContacts(string fullName, string phoneNumber)
+        public void UpdateGeneralInfo(string fullName, string phoneNumber, string? notes)
         {
             FullName = fullName;
             PhoneNumber = phoneNumber;
+            Notes = notes;
         }
+
         public void AssignSeamstressRole(string machineNumber)
         {
             if (IsSeamstress)
@@ -51,6 +52,23 @@ namespace ERM.Core.Domain.Entities
 
             Seamstress!.UpdateMachineNumber(machineNumber);
         }
-        public bool IsSeamstress => Seamstress is not null;
+
+        public void AssignCutterRole(decimal percentage)
+        {
+            if (IsCutter) throw new InvalidOperationException("Сотрудник уже является закройщиком.");
+            Cutter = new Cutter(Id, percentage);
+        }
+
+        public void RevokeCutterRole()
+        {
+            if (!IsCutter) throw new InvalidOperationException("Сотрудник не является закройщиком.");
+            Cutter = null;
+        }
+
+        public void UpdateCutterPercentage(decimal percentage)
+        {
+            if (!IsCutter) throw new InvalidOperationException("Сотрудник не является закройщиком.");
+            Cutter!.UpdatePercentage(percentage);
+        }
     }
 }

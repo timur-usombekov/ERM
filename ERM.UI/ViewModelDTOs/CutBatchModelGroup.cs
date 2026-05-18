@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using ERM.Application.DTOs;
 
 namespace ERM.UI.ViewModelDTOs
 {

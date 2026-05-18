@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ERM.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260516193415_AddPayrollAdjustment")]
-    partial class AddPayrollAdjustment
+    [Migration("20260517154722_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -49,6 +49,9 @@ namespace ERM.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid>("CutterEmployeeId")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateOnly>("Date")
                         .HasColumnType("TEXT");
 
@@ -65,6 +68,8 @@ namespace ERM.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CutterEmployeeId");
+
                     b.ToTable("CutBatches");
                 });
 
@@ -79,6 +84,9 @@ namespace ERM.Infrastructure.Migrations
 
                     b.Property<Guid>("CutBatchId")
                         .HasColumnType("TEXT");
+
+                    b.Property<decimal>("CutPricePerUnit")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<Guid>("FabricColorId")
                         .HasColumnType("TEXT");
@@ -98,6 +106,26 @@ namespace ERM.Infrastructure.Migrations
                     b.HasIndex("FabricColorId");
 
                     b.ToTable("CutBatchItems");
+                });
+
+            modelBuilder.Entity("ERM.Core.Domain.Entities.Cutter", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("Percentage")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId")
+                        .IsUnique();
+
+                    b.ToTable("Cutters");
                 });
 
             modelBuilder.Entity("ERM.Core.Domain.Entities.Employee", b =>
@@ -156,19 +184,19 @@ namespace ERM.Infrastructure.Migrations
                     b.Property<DateOnly>("Date")
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Reason")
                         .IsRequired()
                         .HasMaxLength(250)
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("SeamstressId")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
                     b.HasIndex("Date");
 
-                    b.HasIndex("SeamstressId");
+                    b.HasIndex("EmployeeId");
 
                     b.ToTable("PayrollAdjustments");
                 });
@@ -204,8 +232,14 @@ namespace ERM.Infrastructure.Migrations
                     b.Property<DateOnly>("AssignedDate")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("CutBatchItemId")
+                    b.Property<Guid?>("CutBatchItemId")
                         .HasColumnType("TEXT");
+
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("OperationType")
+                        .HasColumnType("INTEGER");
 
                     b.Property<decimal>("PricePerUnit")
                         .HasColumnType("decimal(18,2)");
@@ -213,11 +247,7 @@ namespace ERM.Infrastructure.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid>("SeamstressId")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Size")
-                        .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("TEXT");
 
@@ -233,11 +263,22 @@ namespace ERM.Infrastructure.Migrations
 
                     b.HasIndex("CutBatchItemId");
 
-                    b.HasIndex("SeamstressId");
+                    b.HasIndex("EmployeeId");
 
                     b.HasIndex("WeekNumber", "Year");
 
                     b.ToTable("WorkAssignments");
+                });
+
+            modelBuilder.Entity("ERM.Core.Domain.Entities.CutBatch", b =>
+                {
+                    b.HasOne("ERM.Core.Domain.Entities.Employee", "CutterEmployee")
+                        .WithMany()
+                        .HasForeignKey("CutterEmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CutterEmployee");
                 });
 
             modelBuilder.Entity("ERM.Core.Domain.Entities.CutBatchItem", b =>
@@ -267,15 +308,26 @@ namespace ERM.Infrastructure.Migrations
                     b.Navigation("FabricColor");
                 });
 
+            modelBuilder.Entity("ERM.Core.Domain.Entities.Cutter", b =>
+                {
+                    b.HasOne("ERM.Core.Domain.Entities.Employee", "Employee")
+                        .WithOne("Cutter")
+                        .HasForeignKey("ERM.Core.Domain.Entities.Cutter", "EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
+                });
+
             modelBuilder.Entity("ERM.Core.Domain.Entities.PayrollAdjustment", b =>
                 {
-                    b.HasOne("ERM.Core.Domain.Entities.Seamstress", "Seamstress")
+                    b.HasOne("ERM.Core.Domain.Entities.Employee", "Employee")
                         .WithMany()
-                        .HasForeignKey("SeamstressId")
+                        .HasForeignKey("EmployeeId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Seamstress");
+                    b.Navigation("Employee");
                 });
 
             modelBuilder.Entity("ERM.Core.Domain.Entities.Seamstress", b =>
@@ -294,18 +346,17 @@ namespace ERM.Infrastructure.Migrations
                     b.HasOne("ERM.Core.Domain.Entities.CutBatchItem", "CutBatchItem")
                         .WithMany()
                         .HasForeignKey("CutBatchItemId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("ERM.Core.Domain.Entities.Seamstress", "Seamstress")
+                    b.HasOne("ERM.Core.Domain.Entities.Employee", "Employee")
                         .WithMany()
-                        .HasForeignKey("SeamstressId")
+                        .HasForeignKey("EmployeeId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("CutBatchItem");
 
-                    b.Navigation("Seamstress");
+                    b.Navigation("Employee");
                 });
 
             modelBuilder.Entity("ERM.Core.Domain.Entities.CutBatch", b =>
@@ -315,6 +366,8 @@ namespace ERM.Infrastructure.Migrations
 
             modelBuilder.Entity("ERM.Core.Domain.Entities.Employee", b =>
                 {
+                    b.Navigation("Cutter");
+
                     b.Navigation("Seamstress");
                 });
 #pragma warning restore 612, 618
