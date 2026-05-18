@@ -85,6 +85,7 @@
             <converters:ZeroToVisibilityConverter x:Key="ZeroToVisibility" />
             <converters:ZeroToInverseVisibilityConverter x:Key="ZeroToInverseVisibility" />
             <converters:AmountToColorConverter x:Key="AmountToColor" />
+            <converters:EmployeeRolesConverter x:Key="EmployeeRolesConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

@@ -109,36 +109,48 @@
                     </DataGridTextColumn>
 
                     <!-- Роль — бейдж -->
-                    <DataGridTemplateColumn Header="Роль" Width="120">
+                    <DataGridTemplateColumn Header="Роль" Width="200">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <Border HorizontalAlignment="Left" VerticalAlignment="Center">
-                                    <Border.Style>
-                                        <Style TargetType="Border">
-                                            <Setter Property="Background" Value="{DynamicResource PrimaryHueLightBrush}"/>
-                                            <Setter Property="CornerRadius" Value="6"/>
-                                            <Setter Property="Padding" Value="10,4"/>
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsSeamstress}" Value="False">
-                                                    <Setter Property="Background" Value="{DynamicResource MaterialDesignDivider}"/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Border.Style>
-                                    <TextBlock Text="{Binding IsSeamstress, Converter={StaticResource BoolToYesNo}}"
-                                               FontSize="12" FontWeight="Medium">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+
+                                    <!-- Бейджи ролей -->
+                                    <ItemsControl ItemsSource="{Binding ., 
+                                  Converter={StaticResource EmployeeRolesConverter}}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel Orientation="Horizontal"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <!-- Один шаблон на все роли -->
+                                                <Border CornerRadius="6" Padding="10,4" Margin="0,0,4,0"
+                                    Background="{Binding Background}">
+                                                    <TextBlock Text="{Binding Label}"
+                                           FontSize="12" FontWeight="Medium"
+                                           Foreground="{Binding Foreground}"/>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <!-- Прочерк если ролей нет -->
+                                    <TextBlock Text="—" FontSize="14" Opacity="0.35"
+                           VerticalAlignment="Center">
                                         <TextBlock.Style>
                                             <Style TargetType="TextBlock">
-                                                <Setter Property="Foreground" Value="{DynamicResource PrimaryHueMidBrush}"/>
+                                                <Setter Property="Visibility" Value="Collapsed"/>
                                                 <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding IsSeamstress}" Value="False">
-                                                        <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBodyLight}"/>
+                                                    <DataTrigger Binding="{Binding HasNoRole}" Value="True">
+                                                        <Setter Property="Visibility" Value="Visible"/>
                                                     </DataTrigger>
                                                 </Style.Triggers>
                                             </Style>
                                         </TextBlock.Style>
                                     </TextBlock>
-                                </Border>
+
+                                </StackPanel>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
@@ -169,12 +181,20 @@
                     </DataGridTextColumn>
 
                     <!-- Номер машины -->
-                    <DataGridTextColumn Header="№ машины" Binding="{Binding MachineNumber}" Width="100">
+                    <DataGridTextColumn Header="№ машины"
+                    Binding="{Binding MachineNumber, TargetNullValue='—'}"
+                    Width="100">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
                                 <Setter Property="VerticalAlignment" Value="Center"/>
-                                <Setter Property="FontSize" Value="14"/>
                                 <Setter Property="HorizontalAlignment" Value="Center"/>
+                                <Setter Property="FontSize" Value="14"/>
+                                <!-- Прочерк серый, число — обычный цвет -->
+                                <Style.Triggers>
+                                    <Trigger Property="Text" Value="—">
+                                        <Setter Property="Opacity" Value="0.35"/>
+                                    </Trigger>
+                                </Style.Triggers>
                             </Style>
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
