@@ -17,6 +17,8 @@ namespace ERM.Application.DTOs
         public bool IsCutter { get; set; }
         public decimal? CutterPercentage { get; set; }
 
+        public bool HasNoRole => !IsSeamstress && !IsCutter;
+
         //  отображение для UI
         public string DisplayInfo =>
             (IsSeamstress ? $"[Швея №{MachineNumber}] " : "") +

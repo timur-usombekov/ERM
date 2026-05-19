@@ -14,6 +14,9 @@ namespace ERM.Core.Domain.Entities
         public Seamstress? Seamstress { get; private set; }
         public bool IsSeamstress => Seamstress is not null;
 
+        public Ironer? Ironer { get; private set; }
+        public bool IsIroner => Ironer is not null;
+
         protected Employee() { }
 
         public Employee(string fullName, string phoneNumber)
@@ -70,5 +73,22 @@ namespace ERM.Core.Domain.Entities
             if (!IsCutter) throw new InvalidOperationException("Сотрудник не является закройщиком.");
             Cutter!.UpdatePercentage(percentage);
         }
+
+        public void AssignIronerRole()
+        {
+            if (IsIroner)
+                throw new InvalidOperationException("Сотрудник уже является гладильщицей.");
+
+            Ironer = new Ironer(Id);
+        }
+
+        public void RevokeIronerRole()
+        {
+            if (!IsIroner)
+                throw new InvalidOperationException("Сотрудник не является гладильщицей.");
+
+            Ironer = null;
+        }
+
     }
 }

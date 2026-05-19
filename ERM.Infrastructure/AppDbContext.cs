@@ -15,6 +15,9 @@ namespace ERM.Infrastructure
         public DbSet<FabricColor> FabricColors { get; set; } = null!;
         public DbSet<PayrollAdjustment> PayrollAdjustments { get; set; } = null!;
         public DbSet<Cutter> Cutters { get; } = null!;
+        public DbSet<Ironer> Ironers { get; set; } = null!;
+        public DbSet<IroningAssignment> IroningAssignments { get; set; } = null!;
+
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 

@@ -23,8 +23,8 @@ namespace ERM.Application.Services
         public async Task<ClothingModelDto> CreateAsync(string name, decimal sewingPrice, string? description, CancellationToken ct = default)
         {
             await using var context = await _contextFactory.CreateDbContextAsync(ct);
-
-            var model = new ClothingModel(name, sewingPrice, description);
+            // decimal.Zero - dump value for ironing price
+            var model = new ClothingModel(name, sewingPrice, decimal.Zero, description);
 
             context.ClothingModels.Add(model);
             await context.SaveChangesAsync(ct);
@@ -38,7 +38,7 @@ namespace ERM.Application.Services
             if (model is null)
                 throw new InvalidOperationException($"Модель одежды с Id {id} не найдена.");
 
-            model.Update(name, sewingPrice, description);
+            model.Update(name, sewingPrice, decimal.Zero, description);
             context.ClothingModels.Update(model);
 
             await context.SaveChangesAsync(ct);

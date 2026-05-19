@@ -31,6 +31,12 @@ namespace ERM.Infrastructure.Configurations
                 .HasForeignKey<Cutter>(c => c.EmployeeId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            builder.HasOne(e => e.Ironer)
+                .WithOne(i => i.Employee)
+                .HasForeignKey<Ironer>(i => i.EmployeeId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+
         }
     }
 }
