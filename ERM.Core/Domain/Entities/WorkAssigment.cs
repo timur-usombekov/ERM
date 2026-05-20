@@ -36,6 +36,7 @@ namespace ERM.Core.Domain.Entities
             Guid? cutBatchItemId = null,
             string? size = null)
         {
+            if (quantity == 0) throw new ArgumentException("Количество не может быть равно нулю.");
             if (operationType == OperationType.Sewing && cutBatchItemId == null)
                 throw new ArgumentException("Пошив требует привязки к партии кроя.");
 

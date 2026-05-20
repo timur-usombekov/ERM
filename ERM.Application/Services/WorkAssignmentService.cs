@@ -25,6 +25,8 @@ namespace ERM.Application.Services
             var assignments = await context.WorkAssignments
                 .Include(a => a.Employee)
                     .ThenInclude(s => s.Seamstress)
+                .Include(a => a.Employee)
+                    .ThenInclude(ir => ir.Ironer)
                 .Include(a => a.CutBatchItem)
                     .ThenInclude(i => i.ClothingModel)
                 .Include(a => a.CutBatchItem)
@@ -35,7 +37,7 @@ namespace ERM.Application.Services
             return assignments.Select(a => a.ToDto()).OrderByDescending(a => a.AssignedDate).ToList();
         }
 
-        public async Task<WorkAssignmentDto> IssueWorkAsync(Guid employeeId, OperationType operationType, Guid? cutBatchItemId, string? size, int quantity, CancellationToken ct = default)
+        /*public async Task<WorkAssignmentDto> IssueWorkAsync(Guid employeeId, OperationType operationType, Guid? cutBatchItemId, string? size, int quantity, CancellationToken ct = default)
         {
             await using var context = await _contextFactory.CreateDbContextAsync(ct);
             decimal price = 0;
@@ -74,6 +76,78 @@ namespace ERM.Application.Services
                 AssignedDate = assignment.AssignedDate
             };
 
+        }*/
+        public async Task IssueSewingAsync(Guid seamstressId, Guid shiftIronerId, Guid cutBatchItemId, string size, int quantity, CancellationToken ct = default)
+        {
+            await using var context = await _contextFactory.CreateDbContextAsync(ct);
+
+            var cutItem = await context.CutBatchItems
+                .Include(c => c.ClothingModel)
+                .FirstOrDefaultAsync(c => c.Id == cutBatchItemId, ct)
+                ?? throw new InvalidOperationException("Партия кроя не найдена.");
+
+            // 1. Списываем крой (это делается ТОЛЬКО при пошиве)
+            cutItem.Issue(quantity);
+
+            // 2. Создаем запись ПОШИВА для швеи
+            var sewingAssignment = new WorkAssignment(
+                seamstressId,
+                OperationType.Sewing, // <- Используем enum!
+                quantity,
+                cutItem.ClothingModel.SewingPrice,
+                cutBatchItemId,
+                size);
+
+            // 3. АВТОМАТИЧЕСКИ создаем запись ГЛАЖКИ для дежурной гладильщицы
+            var autoIroningAssignment = new WorkAssignment(
+                shiftIronerId,
+                OperationType.Ironing, // <- Используем enum!
+                quantity,
+                cutItem.ClothingModel.IroningPrice,
+                cutBatchItemId,
+                null); // Для глажки размер не важен
+
+            context.WorkAssignments.Add(sewingAssignment);
+            context.WorkAssignments.Add(autoIroningAssignment);
+
+            await context.SaveChangesAsync(ct);
+        }
+
+        public async Task RegisterIroningSubstitutionAsync(Guid substituteEmpId, Guid mainIronerId, Guid cutBatchItemId, int quantity, CancellationToken ct = default)
+        {
+            await using var context = await _contextFactory.CreateDbContextAsync(ct);
+
+            var cutItem = await context.CutBatchItems
+                .Include(c => c.ClothingModel)
+                .FirstOrDefaultAsync(c => c.Id == cutBatchItemId, ct)
+                ?? throw new InvalidOperationException("Партия кроя не найдена.");
+
+            // ВНИМАНИЕ: Мы НЕ списываем крой (cutItem.Issue), так как физически этот крой 
+            // уже был выдан и списан в момент пошива!
+
+            // 1. Создаем запись ГЛАЖКИ для подменщицы (ей плюс к ЗП)
+            var substituteAssignment = new WorkAssignment(
+                substituteEmpId,
+                OperationType.Ironing,
+                quantity,
+                cutItem.ClothingModel.IroningPrice,
+                cutBatchItemId,
+                null);
+
+            // 2. Создаем ОТРИЦАТЕЛЬНУЮ запись ГЛАЖКИ для основной гладильщицы (ей минус из ЗП)
+            // Заметь: передаем -quantity!
+            var deductionAssignment = new WorkAssignment(
+                mainIronerId,
+                OperationType.Ironing,
+                -quantity,
+                cutItem.ClothingModel.IroningPrice,
+                cutBatchItemId,
+                null);
+
+            context.WorkAssignments.Add(substituteAssignment);
+            context.WorkAssignments.Add(deductionAssignment);
+
+            await context.SaveChangesAsync(ct);
         }
 
         public async Task DeleteAsync(Guid id, CancellationToken ct = default)
@@ -153,19 +227,6 @@ namespace ERM.Application.Services
         }
 
 
-        public async Task AddAdjustmentAsync(Guid employeeId, DateOnly date, decimal amount, string reason, CancellationToken ct = default)
-        {
-            await using var context = await _contextFactory.CreateDbContextAsync(ct);
-            context.PayrollAdjustments.Add(new PayrollAdjustment(employeeId, date, amount, reason));
-            await context.SaveChangesAsync(ct);
-        }
 
-        public async Task PaySalaryAsync(Guid employeeId, DateOnly date, decimal amount, CancellationToken ct = default)
-        {
-            if (amount <= 0) throw new ArgumentException("Сумма к выплате должна быть больше нуля.");
-            await using var context = await _contextFactory.CreateDbContextAsync(ct);
-            context.PayrollAdjustments.Add(new PayrollAdjustment(employeeId, date, -amount, "Выплата ЗП (Закрытие периода)"));
-            await context.SaveChangesAsync(ct);
-        }
     }
 }

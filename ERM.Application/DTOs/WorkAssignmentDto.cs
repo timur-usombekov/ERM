@@ -10,6 +10,8 @@
         public string Size { get; set; } = string.Empty;
         public int Quantity { get; set; }
         public DateOnly AssignedDate { get; set; }
+
+        public string OperationName { get; set; } = string.Empty;
     }
 
 }

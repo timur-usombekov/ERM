@@ -16,7 +16,7 @@
                 <TextBlock Text="Журнал смены"
                            Style="{StaticResource MaterialDesignHeadline4TextBlock}"
                            FontWeight="Bold"/>
-                <TextBlock Text="Быстрая выдача и история за сегодня"
+                <TextBlock Text="Быстрая выдача, подмены и история операций за сегодня"
                            Foreground="{DynamicResource MaterialDesignBodyLight}"
                            FontSize="13" Margin="0,2,0,0" Opacity="0.7"/>
             </StackPanel>
@@ -31,42 +31,95 @@
                  md:ElevationAssist.Elevation="Dp2" UniformCornerRadius="10">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <!-- Акцентная левая полоса (primary) -->
+                    <!-- Акцентная левая полоса (меняет цвет в зависимости от режима) -->
                     <ColumnDefinition Width="4"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <Rectangle Grid.Column="0"
-                           Fill="{DynamicResource PrimaryHueMidBrush}"/>
+                <Rectangle Grid.Column="0">
+                    <Rectangle.Style>
+                        <Style TargetType="Rectangle">
+                            <Setter Property="Fill" Value="{DynamicResource PrimaryHueMidBrush}"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsSubstitutionMode}" Value="True">
+                                    <Setter Property="Fill" Value="#FF9800"/>
+                                    <!-- Оранжевый для подмены -->
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Rectangle.Style>
+                </Rectangle>
 
                 <StackPanel Grid.Column="1">
 
-                    <!-- ── Заголовок секции ── -->
+                    <!-- ── Заголовок секции и Настройки Смены ── -->
                     <Border Padding="24,18,24,14"
                             BorderBrush="{DynamicResource MaterialDesignDivider}"
                             BorderThickness="0,0,0,1">
-                        <StackPanel Orientation="Horizontal">
-                            <Border Background="Transparent"
-                                    BorderBrush="{DynamicResource PrimaryHueLightBrush}"
-                                    BorderThickness="1"
-                                    CornerRadius="6" Width="32" Height="32"
-                                    Margin="0,0,12,0">
-                                <md:PackIcon Kind="LightningBolt"
-                                             Width="16" Height="16"
-                                             Foreground="{DynamicResource PrimaryHueMidBrush}"
-                                             HorizontalAlignment="Center"
-                                             VerticalAlignment="Center"/>
-                            </Border>
-                            <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="Быстрая выдача"
-                                           FontSize="15" FontWeight="Bold"
-                                           Foreground="{DynamicResource MaterialDesignBody}"/>
-                                <TextBlock Text="Выберите швею, крой и укажите параметры"
-                                           FontSize="11"
-                                           Foreground="{DynamicResource MaterialDesignBodyLight}"
-                                           Opacity="0.7"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                <Border Background="Transparent"
+                                        BorderBrush="{DynamicResource PrimaryHueLightBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="6" Width="32" Height="32"
+                                        Margin="0,0,12,0">
+                                    <md:PackIcon Width="16" Height="16" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <md:PackIcon.Style>
+                                            <Style TargetType="md:PackIcon">
+                                                <Setter Property="Kind" Value="LightningBolt"/>
+                                                <Setter Property="Foreground" Value="{DynamicResource PrimaryHueMidBrush}"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsSubstitutionMode}" Value="True">
+                                                        <Setter Property="Kind" Value="SwapHorizontal"/>
+                                                        <Setter Property="Foreground" Value="#FF9800"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </md:PackIcon.Style>
+                                    </md:PackIcon>
+                                </Border>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock FontSize="15" FontWeight="Bold" Foreground="{DynamicResource MaterialDesignBody}">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Text" Value="Выдача кроя (Пошив)"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsSubstitutionMode}" Value="True">
+                                                        <Setter Property="Text" Value="Регистрация подмены (Глажка)"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </StackPanel>
                             </StackPanel>
-                        </StackPanel>
+
+                            <!-- ВЫБОР ГЛАДИЛЬЩИЦЫ СМЕНЫ -->
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock Text="Дежурная гладильщица:" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{DynamicResource MaterialDesignBodyLight}" FontWeight="Medium"/>
+                                <ComboBox ItemsSource="{Binding Ironers}"
+                                          SelectedItem="{Binding SelectedShiftIroner}"
+                                          DisplayMemberPath="FullName"
+                                          Width="180"
+                                          Style="{StaticResource MaterialDesignOutlinedComboBox}"
+                                          Padding="8,4"/>
+                            </StackPanel>
+
+                            <!-- ТУМБЛЕР РЕЖИМА -->
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="Режим подмены" VerticalAlignment="Center" Margin="0,0,8,0" FontWeight="Medium"
+                                           Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                                <ToggleButton Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                                              IsChecked="{Binding IsSubstitutionMode}"
+                                              ToolTip="Включите, чтобы записать глажку на другого сотрудника"/>
+                            </StackPanel>
+                        </Grid>
                     </Border>
 
                     <!-- ── Поля формы ── -->
@@ -78,7 +131,7 @@
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
-                            <!-- Строка 1: Швея + Крой -->
+                            <!-- Строка 1: Исполнитель + Крой -->
                             <Grid Grid.Row="0">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -86,33 +139,36 @@
                                     <ColumnDefinition Width="1.6*"/>
                                 </Grid.ColumnDefinitions>
 
-                                <!-- Швея -->
+                                <!-- ИСПОЛНИТЕЛЬ (Швея или Подменщица) -->
                                 <ComboBox Grid.Column="0"
-                                          md:HintAssist.Hint="Швея"
                                           md:HintAssist.IsFloating="True"
                                           ItemsSource="{Binding Seamstresses}"
                                           SelectedItem="{Binding SelectedSeamstress}"
                                           IsEditable="True"
                                           IsTextSearchEnabled="True"
                                           TextSearch.TextPath="DisplayInfo"
-                                          Style="{StaticResource MaterialDesignOutlinedComboBox}"
                                           FontSize="14">
+                                    <ComboBox.Style>
+                                        <Style TargetType="ComboBox" BasedOn="{StaticResource MaterialDesignOutlinedComboBox}">
+                                            <Setter Property="md:HintAssist.Hint" Value="Кому выдать (Швея)"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsSubstitutionMode}" Value="True">
+                                                    <Setter Property="md:HintAssist.Hint" Value="Кто гладил (Подменщица)"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </ComboBox.Style>
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate>
                                             <StackPanel Orientation="Horizontal">
-                                                <md:PackIcon Kind="AccountOutline"
-                                                             Width="14" Height="14"
-                                                             Foreground="{DynamicResource MaterialDesignBodyLight}"
-                                                             VerticalAlignment="Center"
-                                                             Margin="0,0,8,0"/>
-                                                <TextBlock Text="{Binding DisplayInfo}"
-                                                           VerticalAlignment="Center"/>
+                                                <md:PackIcon Kind="AccountOutline" Width="14" Height="14" Foreground="{DynamicResource MaterialDesignBodyLight}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                                <TextBlock Text="{Binding DisplayInfo}" VerticalAlignment="Center"/>
                                             </StackPanel>
                                         </DataTemplate>
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
 
-                                <!-- Крой -->
+                                <!-- КРОЙ -->
                                 <ComboBox Grid.Column="2"
                                           md:HintAssist.Hint="Модель и цвет (остаток)"
                                           md:HintAssist.IsFloating="True"
@@ -130,30 +186,15 @@
                                                     <ColumnDefinition Width="*"/>
                                                     <ColumnDefinition Width="Auto"/>
                                                 </Grid.ColumnDefinitions>
-
-                                                <StackPanel Grid.Column="0" Orientation="Horizontal"
-                                                            VerticalAlignment="Center">
-                                                    <TextBlock Text="{Binding ClothingModelName}"
-                                                               FontWeight="Medium" FontSize="13"/>
-                                                    <TextBlock Text=" · " Foreground="{DynamicResource MaterialDesignBodyLight}"
-                                                               FontSize="13"/>
-                                                    <TextBlock Text="{Binding Color}"
-                                                               Foreground="{DynamicResource MaterialDesignBodyLight}"
-                                                               FontSize="13"/>
+                                                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding ClothingModelName}" FontWeight="Medium" FontSize="13"/>
+                                                    <TextBlock Text=" · " Foreground="{DynamicResource MaterialDesignBodyLight}" FontSize="13"/>
+                                                    <TextBlock Text="{Binding Color}" Foreground="{DynamicResource MaterialDesignBodyLight}" FontSize="13"/>
                                                 </StackPanel>
-
-                                                <!-- Остаток в бейдже -->
-                                                <Border Grid.Column="1"
-                                                        CornerRadius="5" Padding="6,2"
-                                                        VerticalAlignment="Center"
-                                                        Margin="12,0,4,0">
+                                                <Border Grid.Column="1" CornerRadius="5" Padding="6,2" VerticalAlignment="Center" Margin="12,0,4,0">
                                                     <StackPanel Orientation="Horizontal">
-                                                        <TextBlock Text="{Binding AvailableQuantity}"
-                                                                   FontSize="12" FontWeight="Bold"
-                                                                   Foreground="{DynamicResource PrimaryHueMidBrush}"/>
-                                                        <TextBlock Text=" шт"
-                                                                   FontSize="12"
-                                                                   Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+                                                        <TextBlock Text="{Binding AvailableQuantity}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+                                                        <TextBlock Text=" шт" FontSize="12" Foreground="{DynamicResource PrimaryHueMidBrush}"/>
                                                     </StackPanel>
                                                 </Border>
                                             </Grid>
@@ -174,17 +215,27 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
 
-                                <!-- Размер -->
+                                <!-- РАЗМЕР (Скрывается при глажке) -->
                                 <ComboBox Grid.Column="0"
                                           md:HintAssist.Hint="Размер"
                                           md:HintAssist.IsFloating="True"
                                           ItemsSource="{Binding AvailableSizes}"
                                           SelectedItem="{Binding SelectedSize}"
                                           IsEditable="True"
-                                          Style="{StaticResource MaterialDesignOutlinedComboBox}"
-                                          FontSize="14"/>
+                                          FontSize="14">
+                                    <ComboBox.Style>
+                                        <Style TargetType="ComboBox" BasedOn="{StaticResource MaterialDesignOutlinedComboBox}">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsSubstitutionMode}" Value="True">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </ComboBox.Style>
+                                </ComboBox>
 
-                                <!-- Количество -->
+                                <!-- КОЛИЧЕСТВО -->
                                 <TextBox Grid.Column="2"
                                          md:HintAssist.Hint="Количество, шт"
                                          md:HintAssist.IsFloating="True"
@@ -196,10 +247,8 @@
                                     </TextBox.InputBindings>
                                 </TextBox>
 
-                                <!-- Сообщение об ошибке — встроено в сетку, между полями и кнопкой -->
-                                <Border Grid.Column="4"
-                                        CornerRadius="8" Padding="12,8"
-                                        VerticalAlignment="Center">
+                                <!-- ОШИБКА -->
+                                <Border Grid.Column="4" CornerRadius="8" Padding="12,8" VerticalAlignment="Center">
                                     <Border.Style>
                                         <Style TargetType="Border">
                                             <Setter Property="Background" Value="Transparent"/>
@@ -210,35 +259,55 @@
                                             </Style.Triggers>
                                         </Style>
                                     </Border.Style>
-                                    <StackPanel Orientation="Horizontal"
-                                                Visibility="{Binding ErrorMessage, Converter={StaticResource NullToVisibility}}">
-                                        <md:PackIcon Kind="AlertCircleOutline"
-                                                     Width="15" Height="15"
-                                                     Foreground="#E53935"
-                                                     VerticalAlignment="Center"
-                                                     Margin="0,0,6,0"/>
-                                        <TextBlock Text="{Binding ErrorMessage}"
-                                                   Foreground="#E53935"
-                                                   FontSize="13" FontWeight="Medium"
-                                                   VerticalAlignment="Center"/>
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding ErrorMessage, Converter={StaticResource NullToVisibility}}">
+                                        <md:PackIcon Kind="AlertCircleOutline" Width="15" Height="15" Foreground="#E53935" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                        <TextBlock Text="{Binding ErrorMessage}" Foreground="#E53935" FontSize="13" FontWeight="Medium" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Border>
 
-                                <!-- Кнопка ВЫДАТЬ -->
+                                <!-- КНОПКА ВЫПОЛНЕНИЯ (Меняет цвет и текст) -->
                                 <Button Grid.Column="6"
                                         Command="{Binding IssueWorkCommand}"
-                                        Style="{StaticResource MaterialDesignRaisedButton}"
                                         Height="42" Padding="24,0"
                                         md:ButtonAssist.CornerRadius="8"
                                         VerticalAlignment="Center">
+                                    <Button.Style>
+                                        <Style TargetType="Button" BasedOn="{StaticResource MaterialDesignRaisedButton}">
+                                            <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}"/>
+                                            <Setter Property="BorderBrush" Value="{DynamicResource PrimaryHueMidBrush}"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsSubstitutionMode}" Value="True">
+                                                    <Setter Property="Background" Value="#FF9800"/>
+                                                    <Setter Property="BorderBrush" Value="#FF9800"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
                                     <StackPanel Orientation="Horizontal">
-                                        <md:PackIcon Kind="LightningBolt"
-                                                     Width="17" Height="17"
-                                                     VerticalAlignment="Center"
-                                                     Margin="0,0,8,0"/>
-                                        <TextBlock Text="Выдать"
-                                                   FontSize="14" FontWeight="Bold"
-                                                   VerticalAlignment="Center"/>
+                                        <md:PackIcon Width="17" Height="17" VerticalAlignment="Center" Margin="0,0,8,0">
+                                            <md:PackIcon.Style>
+                                                <Style TargetType="md:PackIcon">
+                                                    <Setter Property="Kind" Value="LightningBolt"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsSubstitutionMode}" Value="True">
+                                                            <Setter Property="Kind" Value="CheckAll"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </md:PackIcon.Style>
+                                        </md:PackIcon>
+                                        <TextBlock FontSize="14" FontWeight="Bold" VerticalAlignment="Center">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Text" Value="Выдать работу"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsSubstitutionMode}" Value="True">
+                                                            <Setter Property="Text" Value="Записать подмену"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
                                     </StackPanel>
                                 </Button>
                             </Grid>
@@ -250,33 +319,21 @@
         </md:Card>
 
         <!-- ЗАГОЛОВОК ТАБЛИЦЫ -->
-        <StackPanel Grid.Row="2" Orientation="Horizontal"
-                    Margin="0,0,0,10" VerticalAlignment="Center">
-            <md:PackIcon Kind="ClipboardListOutline"
-                         Width="16" Height="16"
-                         Foreground="{DynamicResource MaterialDesignBodyLight}"
-                         VerticalAlignment="Center"
-                         Margin="0,0,8,0" Opacity="0.6"/>
-            <TextBlock Text="ВЫДАЧИ ЗА СЕГОДНЯ"
-                       FontSize="11" FontWeight="Bold"
-                       Foreground="{DynamicResource MaterialDesignBodyLight}"
-                       Opacity="0.6" VerticalAlignment="Center"/>
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,10" VerticalAlignment="Center">
+            <md:PackIcon Kind="ClipboardListOutline" Width="16" Height="16" Foreground="{DynamicResource MaterialDesignBodyLight}" VerticalAlignment="Center" Margin="0,0,8,0" Opacity="0.6"/>
+            <TextBlock Text="ИСТОРИЯ ОПЕРАЦИЙ ЗА СЕГОДНЯ" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource MaterialDesignBodyLight}" Opacity="0.6" VerticalAlignment="Center"/>
         </StackPanel>
 
         <!-- ТАБЛИЦА ВЫДАЧ -->
         <md:Card Grid.Row="3" md:ElevationAssist.Elevation="Dp2" UniformCornerRadius="10">
             <DataGrid ItemsSource="{Binding TodayAssignments}"
                       AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False"
-                      HeadersVisibility="Column"
-                      BorderThickness="0" Background="Transparent"
-                      RowHeight="52"
-                      Style="{StaticResource MaterialDesignDataGrid}"
-                      md:DataGridAssist.ColumnHeaderPadding="16,14"
-                      md:DataGridAssist.CellPadding="16,0">
+                      HeadersVisibility="Column" BorderThickness="0" Background="Transparent"
+                      RowHeight="52" Style="{StaticResource MaterialDesignDataGrid}"
+                      md:DataGridAssist.ColumnHeaderPadding="16,14" md:DataGridAssist.CellPadding="16,0">
 
                 <DataGrid.ColumnHeaderStyle>
-                    <Style TargetType="DataGridColumnHeader"
-                           BasedOn="{StaticResource MaterialDesignDataGridColumnHeader}">
+                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource MaterialDesignDataGridColumnHeader}">
                         <Setter Property="FontSize" Value="11"/>
                         <Setter Property="FontWeight" Value="Bold"/>
                         <Setter Property="Opacity" Value="0.6"/>
@@ -286,39 +343,41 @@
                 </DataGrid.ColumnHeaderStyle>
 
                 <DataGrid.RowStyle>
-                    <Style TargetType="DataGridRow"
-                           BasedOn="{StaticResource MaterialDesignDataGridRow}">
+                    <Style TargetType="DataGridRow" BasedOn="{StaticResource MaterialDesignDataGridRow}">
                         <Setter Property="VerticalAlignment" Value="Center"/>
                     </Style>
                 </DataGrid.RowStyle>
 
                 <DataGrid.Columns>
-
-                    <!-- Швея -->
-                    <DataGridTemplateColumn Header="Швея" Width="2*">
+                    <!-- Сотрудник -->
+                    <DataGridTemplateColumn Header="Сотрудник" Width="2*">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Border 
-                                            CornerRadius="6" Width="28" Height="28"
-                                            Margin="0,0,10,0">
-                                        <md:PackIcon Kind="AccountOutline"
-                                                     Width="14" Height="14"
-                                                     Foreground="{DynamicResource PrimaryHueMidBrush}"
-                                                     HorizontalAlignment="Center"
-                                                     VerticalAlignment="Center"/>
+                                    <Border CornerRadius="6" Width="28" Height="28" Margin="0,0,10,0">
+                                        <md:PackIcon Kind="AccountOutline" Width="14" Height="14" Foreground="{DynamicResource PrimaryHueMidBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
                                     <StackPanel VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding EmployeeName}"
-                                                   FontWeight="Medium" FontSize="13"/>
-                                        <TextBlock Text="{Binding MachineNumber, StringFormat='Машина №{0}'}"
-                                                   Foreground="{DynamicResource MaterialDesignBodyLight}"
-                                                   FontSize="11" Opacity="0.7"/>
+                                        <TextBlock Text="{Binding EmployeeName}" FontWeight="Medium" FontSize="13"/>
+                                        <TextBlock Text="{Binding MachineNumber, StringFormat='№{0}', TargetNullValue='—'}" Foreground="{DynamicResource MaterialDesignBodyLight}" FontSize="11" Opacity="0.7"/>
                                     </StackPanel>
                                 </StackPanel>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
+
+                    <!-- ОПЕРАЦИЯ (Добавлено, чтобы отличать Пошив от Глажки) -->
+                    <!-- Требует добавления поля OperationName (string) в WorkAssignmentDto! -->
+                    <DataGridTextColumn Header="Операция" Binding="{Binding OperationName}" Width="1.5*">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                <Setter Property="FontSize" Value="13"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                <Setter Property="Foreground" Value="Gray"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
 
                     <!-- Модель -->
                     <DataGridTextColumn Header="Модель" Binding="{Binding ClothingModelName}" Width="2*">
@@ -341,31 +400,30 @@
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
 
-                    <!-- Размер — бейдж -->
-                    <DataGridTemplateColumn Header="Размер" Width="90">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <Border Background="{DynamicResource MaterialDesignToolBarBackground}"
-                                        CornerRadius="6" Padding="10,4"
-                                        HorizontalAlignment="Left" VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding Size}"
-                                               FontSize="12" FontWeight="Bold"
-                                               Foreground="{DynamicResource MaterialDesignBody}"/>
-                                </Border>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
+                    <!-- Размер -->
+                    <DataGridTextColumn Header="Размер" Binding="{Binding Size}" Width="80">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                <Setter Property="FontSize" Value="13"/>
+                                <Setter Property="FontWeight" Value="Medium"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
 
-                    <!-- Количество -->
+                    <!-- Количество (Подсвечиваем красным, если минус) -->
                     <DataGridTemplateColumn Header="Кол-во" Width="100">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <Border 
-                                        CornerRadius="6" Padding="10,4"
-                                        HorizontalAlignment="Left" VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding Quantity, StringFormat='{}{0} шт'}"
-                                               FontSize="12" FontWeight="Bold"
-                                               Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+                                <Border CornerRadius="6" Padding="10,4" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Quantity, StringFormat='{}{0} шт'}" FontSize="12" FontWeight="Bold">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Foreground" Value="{DynamicResource PrimaryHueMidBrush}"/>
+                                                <!-- Если у тебя уже есть AmountToColorConverter, можно использовать его. Пока сделал через DataTrigger для надежности -->
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
                                 </Border>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
@@ -377,13 +435,8 @@
                             <DataTemplate>
                                 <Button Style="{StaticResource MaterialDesignToolButton}"
                                         Command="{Binding DataContext.DeleteAssignmentCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                        CommandParameter="{Binding}"
-                                        ToolTip="Отменить выдачу"
-                                        Width="32" Height="32" Padding="0"
-                                        HorizontalAlignment="Center">
-                                    <md:PackIcon Kind="CloseCircleOutline"
-                                                 Width="16" Height="16"
-                                                 Foreground="#E53935"/>
+                                        CommandParameter="{Binding}" ToolTip="Отменить операцию" Width="32" Height="32" Padding="0" HorizontalAlignment="Center">
+                                    <md:PackIcon Kind="CloseCircleOutline" Width="16" Height="16" Foreground="#E53935"/>
                                 </Button>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>

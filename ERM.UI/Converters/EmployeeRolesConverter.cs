@@ -32,8 +32,13 @@ namespace ERM.UI.Converters
                     Foreground = "#2E7D32"
                 });
 
-            // Добавить гладильщика — одна строчка:
-            // if (emp.IsIroner) roles.Add(new(...));
+            if (emp.IsIroner)
+                roles.Add(new RoleBadgeInfo
+                {
+                    Label = "Гладильщица",
+                    Background = "#E1BEE7", // Фиолетовый оттенок
+                    Foreground = "#6A1B9A"
+                });
 
             return roles; // пустой список — ItemsControl ничего не покажет
         }

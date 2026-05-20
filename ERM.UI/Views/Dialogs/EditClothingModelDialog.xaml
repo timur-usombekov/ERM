@@ -56,6 +56,11 @@
                              Style="{StaticResource MaterialDesignOutlinedTextBox}"
                              Text="{Binding SewingPriceText, UpdateSourceTrigger=PropertyChanged}"
                              Margin="0,0,0,16" FontSize="14"/>
+                    <TextBox md:HintAssist.Hint="Цена за гладильную работу 1 шт (грн)"
+                             md:HintAssist.IsFloating="True"
+                             Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                             Text="{Binding IroningPriceText, UpdateSourceTrigger=PropertyChanged}"
+                             Margin="0,0,0,16" FontSize="14"/>
                     <TextBox md:HintAssist.Hint="Описание (особенности кроя, материалы)"
                              md:HintAssist.IsFloating="True"
                              Style="{StaticResource MaterialDesignOutlinedTextBox}"

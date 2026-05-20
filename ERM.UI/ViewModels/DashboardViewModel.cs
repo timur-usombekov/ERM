@@ -14,7 +14,10 @@ namespace ERM.UI.ViewModels
 
         #region Списки данных
         public ObservableCollection<WorkAssignmentDto> TodayAssignments { get; } = [];
+
         public ObservableCollection<EmployeeDto> Seamstresses { get; } = [];
+        public ObservableCollection<EmployeeDto> Ironers { get; } = [];
+
         public ObservableCollection<CutBatchItemDto> AvailableCutItems { get; } = [];
 
         public IReadOnlyList<string> AvailableSizes { get; } =
@@ -30,11 +33,31 @@ namespace ERM.UI.ViewModels
             set { SetField(ref _selectedSeamstress, value); ClearError(); }
         }
 
+        private EmployeeDto? _selectedShiftIroner;
+        public EmployeeDto? SelectedShiftIroner
+        {
+            get => _selectedShiftIroner;
+            set { SetField(ref _selectedShiftIroner, value); ClearError(); }
+        }
+
         private CutBatchItemDto? _selectedCutItem;
         public CutBatchItemDto? SelectedCutItem
         {
             get => _selectedCutItem;
             set { SetField(ref _selectedCutItem, value); ClearError(); }
+        }
+
+        private bool _isSubstitutionMode;
+        public bool IsSubstitutionMode
+        {
+            get => _isSubstitutionMode;
+            set
+            {
+                SetField(ref _isSubstitutionMode, value);
+                ClearError();
+                // При переключении режима сбрасываем количество, чтобы случайно не выдать лишнего
+                QuantityText = string.Empty;
+            }
         }
 
         private string? _selectedSize;
@@ -101,6 +124,7 @@ namespace ERM.UI.ViewModels
             {
                 Guid? savedSeamstressId = SelectedSeamstress?.Id;
                 Guid? savedCutItemId = SelectedCutItem?.Id;
+                Guid? savedIronerId = SelectedShiftIroner?.Id;
                 string? savedSize = SelectedSize;
 
                 var assignments = await _workService.GetTodayAssignmentsAsync();
@@ -108,8 +132,12 @@ namespace ERM.UI.ViewModels
                 foreach (var a in assignments) TodayAssignments.Insert(0,a);
 
                 var employees = await _employeeService.GetAllAsync();
+
                 Seamstresses.Clear();
+                Ironers.Clear();
+
                 foreach (var s in employees.Where(e => e.IsSeamstress)) Seamstresses.Add(s);
+                foreach (var i in employees.Where(e => e.IsIroner)) Ironers.Add(i);
 
                 var batches = await _cutBatchService.GetAllAsync();
                 AvailableCutItems.Clear();
@@ -134,6 +162,16 @@ namespace ERM.UI.ViewModels
                     SelectedCutItem = AvailableCutItems.FirstOrDefault(c => c.Id == savedCutItemId.Value);
                 }
                 SelectedSize = savedSize;
+
+                if (savedIronerId.HasValue)
+                {
+                    SelectedShiftIroner = Ironers.FirstOrDefault(i => i.Id == savedIronerId.Value);
+                }
+                else if (Ironers.Any())
+                {
+                    // Если не было сохранено, автоматически выбираем первую (обычно она одна)
+                    SelectedShiftIroner = Ironers.First();
+                }
             }
             finally { IsLoading = false; }
         }
@@ -141,24 +179,71 @@ namespace ERM.UI.ViewModels
 
         private async Task IssueWorkAsync()
         {
-            if (SelectedSeamstress is null) { ErrorMessage = "Выберите швею"; return; }
+            if (SelectedSeamstress is null) { ErrorMessage = IsSubstitutionMode ? "Выберите сотрудника на подмене" : "Выберите швею"; return; }
             if (SelectedCutItem is null) { ErrorMessage = "Выберите крой"; return; }
-            if (string.IsNullOrWhiteSpace(SelectedSize)) { ErrorMessage = "Укажите размер"; return; }
+            if (!IsSubstitutionMode && string.IsNullOrWhiteSpace(SelectedSize)) { ErrorMessage = "Укажите размер"; return; }
             if (!int.TryParse(QuantityText, out int qty) || qty <= 0) { ErrorMessage = "Некорректное количество"; return; }
 
             Guid savedSeamstressId = SelectedSeamstress.Id;
             Guid savedCutItemId = SelectedCutItem.Id;
 
-            var (isSuccess, newAssignment) = await ExecuteSafeAsync(() =>
+            bool isSuccess = false;
+
+            /*var (isSuccess, newAssignment) = await ExecuteSafeAsync(() =>
                 _workService.IssueWorkAsync(
                     SelectedSeamstress.Id,
                     OperationType.Sewing,
                     SelectedCutItem.Id,
                     SelectedSize,
-                    qty));
+                    qty));*/
 
+            if (!IsSubstitutionMode)
+            {
+                // РЕЖИМ 1: Обычная выдача пошива
+                if (SelectedShiftIroner is null) { ErrorMessage = "Выберите гладильщицу на смене!"; return; }
 
-            if (isSuccess && newAssignment != null)
+                var result = await ExecuteSafeAsync(() =>
+                    // Мы изменим этот метод в Service слое, чтобы он принимал ShiftIronerId
+                    // и внутри себя создавал сразу ДВЕ записи (Пошив и Глажка)
+                    _workService.IssueSewingAsync(
+                        SelectedSeamstress.Id,
+                        SelectedShiftIroner.Id,
+                        SelectedCutItem.Id,
+                        SelectedSize,
+                        qty));
+
+                isSuccess = result;
+            }
+            else
+            {
+                // РЕЖИМ 2: Регистрация подмены глажки
+                if (SelectedShiftIroner is null) { ErrorMessage = "Системе нужно знать основную гладильщицу для вычета!"; return; }
+
+                var result = await ExecuteSafeAsync(() =>
+                    // Этот метод создаст глажку для подменщицы и вычтет это кол-во у основной гладильщицы
+                    _workService.RegisterIroningSubstitutionAsync(
+                        SelectedSeamstress.Id,        // Кто фактически погладил (швея)
+                        SelectedShiftIroner.Id,       // У кого вычитаем (основная гладильщица)
+                        SelectedCutItem.Id,
+                        qty));
+
+                isSuccess = result;
+            }
+
+            if (isSuccess)
+            {
+                QuantityText = string.Empty;
+                ErrorMessage = null;
+
+                // Перезагружаем данные с БД, чтобы обновить остатки кроя и таблицу
+                await LoadAsync();
+
+                // Восстанавливаем фокус (липкие поля)
+                SelectedSeamstress = Seamstresses.FirstOrDefault(s => s.Id == savedSeamstressId);
+                SelectedCutItem = AvailableCutItems.FirstOrDefault(c => c.Id == savedCutItemId);
+            }
+
+            /*if (isSuccess && newAssignment != null)
             {
                 TodayAssignments.Insert(0, newAssignment);
                 QuantityText = string.Empty;
@@ -168,7 +253,7 @@ namespace ERM.UI.ViewModels
 
                 SelectedSeamstress = Seamstresses.FirstOrDefault(s => s.Id == savedSeamstressId);
                 SelectedCutItem = AvailableCutItems.FirstOrDefault(c => c.Id == savedCutItemId);
-            }
+            }*/
         }
 
 

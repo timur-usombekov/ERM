@@ -10,6 +10,7 @@ namespace ERM.Application.Mappers
             Id = m.Id,
             Name = m.Name,
             SewingPrice = m.SewingPrice,
+            IroningPrice = m.IroningPrice,
             Description = m.Description
         };
     }

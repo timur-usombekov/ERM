@@ -17,13 +17,18 @@ namespace ERM.Application.DTOs
         public bool IsCutter { get; set; }
         public decimal? CutterPercentage { get; set; }
 
-        public bool HasNoRole => !IsSeamstress && !IsCutter;
+        public bool IsIroner { get; set; }
+
+        public bool HasNoRole => !IsSeamstress && !IsCutter && !IsIroner;
+
 
         //  отображение для UI
         public string DisplayInfo =>
             (IsSeamstress ? $"[Швея №{MachineNumber}] " : "") +
             (IsCutter ? $"[Закройщик] " : "") +
+            (IsIroner ? $"[Гладильщица] " : "") +
             FullName;
+
     }
 
 }

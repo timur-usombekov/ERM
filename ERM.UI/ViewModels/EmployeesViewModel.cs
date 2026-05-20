@@ -1,6 +1,5 @@
 ﻿using ERM.Application.Interfaces.Services;
 using ERM.Application.DTOs;
-using ERM.Core.Domain.Entities;
 using ERM.UI.ViewModels.Base;
 using ERM.UI.ViewModels.Dialogs;
 using MaterialDesignThemes.Wpf;
@@ -52,7 +51,8 @@ namespace ERM.UI.ViewModels
                     vm.EmployeeId,
                     vm.FullName, vm.PhoneNumber, vm.Notes,
                     vm.IsSeamstress, vm.MachineNumber,
-                    vm.IsCutter, string.IsNullOrWhiteSpace(vm.CutterPercentageText) ? null : decimal.Parse(vm.CutterPercentageText)
+                    vm.IsCutter, string.IsNullOrWhiteSpace(vm.CutterPercentageText) ? null : decimal.Parse(vm.CutterPercentageText),
+                    vm.IsIroner
                 )
             );
             if(isSuccess) 
@@ -98,10 +98,13 @@ namespace ERM.UI.ViewModels
             if (result is not AddEmployeeDialogViewModel vm || !vm.IsValid)
                 return;
 
-            var (isSuccess, _) = await ExecuteSafeAsync(() => _employeeService.CreateAsync(
-                vm.FullName, vm.PhoneNumber, vm.Notes,
-                vm.IsSeamstress, vm.MachineNumber,
-                vm.IsCutter, string.IsNullOrWhiteSpace(vm.CutterPercentageText) ? null : decimal.Parse(vm.CutterPercentageText))
+            var (isSuccess, _) = await ExecuteSafeAsync(() => 
+                _employeeService.CreateAsync(
+                    vm.FullName, vm.PhoneNumber, vm.Notes,
+                    vm.IsSeamstress, vm.MachineNumber,
+                    vm.IsCutter, string.IsNullOrWhiteSpace(vm.CutterPercentageText) ? null : decimal.Parse(vm.CutterPercentageText),
+                    vm.IsIroner
+                )
             );
 
             if(isSuccess) 

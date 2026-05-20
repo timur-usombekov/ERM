@@ -1,5 +1,6 @@
 ﻿using ERM.Application.DTOs;
 using ERM.Core.Domain.Entities;
+using ERM.Core.Domain.Entities.Enum;
 
 namespace ERM.Application.Mappers
 {
@@ -14,7 +15,16 @@ namespace ERM.Application.Mappers
             Color = w.CutBatchItem?.FabricColor?.Name ?? "-",
             Size = w.Size ?? "-", 
             Quantity = w.Quantity,
-            AssignedDate = w.AssignedDate
+            AssignedDate = w.AssignedDate,
+
+            OperationName = w.OperationType switch
+            {
+                OperationType.Sewing => "Пошив",
+                OperationType.Ironing => "ВТО / Глажка",
+                OperationType.Cutting => "Раскрой",
+                _ => "Прочее"
+            }
+
         };
     }
 }

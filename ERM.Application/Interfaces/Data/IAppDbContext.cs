@@ -14,6 +14,7 @@ namespace ERM.Application.Interfaces.Data
         DbSet<FabricColor> FabricColors { get; }
         DbSet<PayrollAdjustment> PayrollAdjustments { get; }
         DbSet<Cutter> Cutters { get; }
+        DbSet<Ironer> Ironers { get; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }

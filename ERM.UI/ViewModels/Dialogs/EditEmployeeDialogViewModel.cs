@@ -56,6 +56,17 @@ namespace ERM.UI.ViewModels.Dialogs
             set { SetField(ref _cutterPercentageText, value); OnPropertyChanged(nameof(IsValid)); }
         }
 
+        private bool _IsIroner;
+        public bool IsIroner
+        {
+            get => _IsIroner;
+            set
+            {
+                SetField(ref _IsIroner, value);
+                OnPropertyChanged(nameof(IsValid));
+            }
+        }
+
         public bool IsValid =>
             !string.IsNullOrWhiteSpace(FullName) &&
             !string.IsNullOrWhiteSpace(PhoneNumber) &&
@@ -73,6 +84,7 @@ namespace ERM.UI.ViewModels.Dialogs
             _machineNumber = employee.MachineNumber ?? string.Empty;
             _isCutter = employee.IsCutter;
             _cutterPercentageText = employee.CutterPercentage?.ToString() ?? string.Empty;
+            _IsIroner = employee.IsIroner;
         }
     }
 }

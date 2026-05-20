@@ -131,6 +131,28 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
+                    <!-- Цена пошива -->
+                    <DataGridTemplateColumn Header="Цена глажки" Width="140">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Border Background="#E8F5E9" 
+                                        BorderBrush="#FFCDD2"
+                                        BorderThickness="1"
+                                        CornerRadius="6" Padding="10,4"
+                                        HorizontalAlignment="Left" VerticalAlignment="Center">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding IroningPrice, StringFormat='{}{0:0.##}'}"
+                                                   FontSize="13" FontWeight="Bold"
+                                                   Foreground="#C62828"/>
+                                        <TextBlock Text=" ₴"
+                                                   FontSize="13" FontWeight="Bold"
+                                                   Foreground="#C62828" Opacity="0.8"/>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
                     <!-- Описание -->
                     <DataGridTextColumn Header="Описание" Binding="{Binding Description}" Width="1.5*">
                         <DataGridTextColumn.ElementStyle>

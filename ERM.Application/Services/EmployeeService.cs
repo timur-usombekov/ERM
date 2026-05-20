@@ -22,6 +22,7 @@ namespace ERM.Application.Services
             var employees = await context.Employees
                 .Include(e => e.Seamstress)
                 .Include(e => e.Cutter)
+                .Include(e => e.Ironer)
                 .AsNoTracking().ToListAsync(ct);
 
             return employees.Select(e => e.ToDto()).ToList();
@@ -33,6 +34,7 @@ namespace ERM.Application.Services
             var employee = await context.Employees
                 .Include(e => e.Seamstress)
                 .Include(e => e.Cutter)
+                .Include(e => e.Ironer)
                 .FirstOrDefaultAsync(e => e.Id == id, ct);
             if (employee is null)
                 throw new InvalidOperationException($"Сотрудник с Id {id} не найден.");
@@ -41,7 +43,9 @@ namespace ERM.Application.Services
         }
         public async Task<EmployeeDto> CreateAsync(string fullName, string phoneNumber, string? notes = null,
             bool isSeamstress = false, string? machineNumber = null,
-            bool isCutter = false, decimal? cutterPercentage = null, CancellationToken ct = default)
+            bool isCutter = false, decimal? cutterPercentage = null, 
+            bool isIroner = false,
+            CancellationToken ct = default)
         {
             await using var context = await _contextFactory.CreateDbContextAsync(ct);
             var employee = new Employee(fullName, phoneNumber);
@@ -54,6 +58,9 @@ namespace ERM.Application.Services
             if (isCutter && cutterPercentage.HasValue)
                 employee.AssignCutterRole(cutterPercentage.Value);
 
+            if (isIroner)
+                employee.AssignIronerRole();
+
             context.Employees.Add(employee);
             await context.SaveChangesAsync(ct);
             return employee.ToDto();
@@ -61,13 +68,16 @@ namespace ERM.Application.Services
 
         public async Task<EmployeeDto> EditEmployeeAsync(Guid id, string fullName, string phoneNumber, string? notes,
             bool isSeamstress, string? machineNumber,
-            bool isCutter, decimal? cutterPercentage, CancellationToken ct = default)
+            bool isCutter, decimal? cutterPercentage, 
+            bool isIroner,
+            CancellationToken ct = default)
         {
             await using var context = await _contextFactory.CreateDbContextAsync(ct);
 
             var employee = await context.Employees
                 .Include(e => e.Seamstress)
                 .Include(e => e.Cutter)
+                .Include(e => e.Ironer)
                 .FirstOrDefaultAsync(e => e.Id == id, ct)
                 ?? throw new InvalidOperationException("Сотрудник не найден.");
 
@@ -76,32 +86,33 @@ namespace ERM.Application.Services
             if (!employee.IsSeamstress && isSeamstress)
             {
                 employee.AssignSeamstressRole(machineNumber!);
-                context.Seamstresses.Add(employee.Seamstress!); // домен уже создал Seamstress, нужно только добавить в контекст
+                // домен уже создал Seamstress, но он будет как Update, а не Isert из-за Guid.NewGuid() в Identity, поэтому нужно добавить его в контекст
+                context.Seamstresses.Add(employee.Seamstress!); 
             }
             else if (employee.IsSeamstress && !isSeamstress)
-            {
-                // пока вроде бд удаляет Seamstress и при Seamstress = null
-                // _repository.RemoveSeamstress(employee.Seamstress!);
                 employee.RevokeSeamstressRole();
-            }
             else if (employee.IsSeamstress && isSeamstress && employee.Seamstress!.MachineNumber != machineNumber)
-            {
                 employee.UpdateMachineNumber(machineNumber!);
-            }
-
+            
             if (!employee.IsCutter && isCutter) 
             { 
                 employee.AssignCutterRole(cutterPercentage!.Value); 
-                context.Cutters.Add(employee.Cutter!); 
+                context.Cutters.Add(employee.Cutter!);
             }
             else if (employee.IsCutter && !isCutter) 
-            { 
                 employee.RevokeCutterRole(); 
-            }
             else if (employee.IsCutter && isCutter && employee.Cutter!.Percentage != cutterPercentage) 
-            { 
-                employee.UpdateCutterPercentage(cutterPercentage!.Value); 
+                employee.UpdateCutterPercentage(cutterPercentage!.Value);
+
+            if (!employee.IsIroner && isIroner)
+            {
+                employee.AssignIronerRole();
+                context.Ironers.Add(employee.Ironer!);
             }
+            else if (employee.IsIroner && !isIroner)
+                employee.RevokeIronerRole();
+
+
             await context.SaveChangesAsync(ct);
 
             return employee.ToDto();

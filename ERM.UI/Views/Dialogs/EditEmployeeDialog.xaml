@@ -78,15 +78,11 @@
                                      md:HintAssist.Hint="Номер машины"
                                      md:HintAssist.IsFloating="True"
                                      Text="{Binding MachineNumber, UpdateSourceTrigger=PropertyChanged}"
+                                     Visibility="{Binding IsSeamstress, Converter={StaticResource BooleanToVisibilityConverter}}"
                                      FontSize="14">
                                 <TextBox.Style>
                                     <Style TargetType="TextBox" BasedOn="{StaticResource MaterialDesignOutlinedTextBox}">
                                         <Setter Property="Opacity" Value="1"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsSeamstress}" Value="False">
-                                                <Setter Property="Visibility" Value="Collapsed"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
                                     </Style>
                                 </TextBox.Style>
                             </TextBox>
@@ -100,20 +96,31 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
 
-                            <CheckBox Grid.Column="0" Content="Является закройщиком" IsChecked="{Binding IsCutter}" VerticalAlignment="Center" Margin="0,0,16,0"/>
+                            <CheckBox Grid.Column="0" Content="Является закройщиком" IsChecked="{Binding IsCutter}" 
+                                      VerticalAlignment="Center" Margin="0,0,16,0"/>
 
-                            <TextBox Grid.Column="1" md:HintAssist.Hint="Процент от пошива (%)" md:HintAssist.IsFloating="True" Text="{Binding CutterPercentageText, UpdateSourceTrigger=PropertyChanged}" FontSize="14">
+                            <TextBox Grid.Column="1" md:HintAssist.Hint="Процент от пошива (%)" 
+                                     md:HintAssist.IsFloating="True" Text="{Binding CutterPercentageText, UpdateSourceTrigger=PropertyChanged}" 
+                                     FontSize="14"
+                                     Visibility="{Binding IsCutter, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                     >
                                 <TextBox.Style>
                                     <Style TargetType="TextBox" BasedOn="{StaticResource MaterialDesignOutlinedTextBox}">
                                         <Setter Property="Opacity" Value="1"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsCutter}" Value="False">
-                                                <Setter Property="Visibility" Value="Collapsed"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
                                     </Style>
                                 </TextBox.Style>
                             </TextBox>
+                        </Grid>
+                    </Border>
+
+                    <Border Background="{DynamicResource MaterialDesignToolBarBackground}"
+                                CornerRadius="8" Padding="14,12"
+                                Margin="0,0,0,16">
+                        <Grid>
+                            <CheckBox Content="Является гладильщиком"
+                                    IsChecked="{Binding IsIroner}"
+                                    VerticalAlignment="Center"
+                                    Margin="0,0,16,0"/>
                         </Grid>
                     </Border>
 

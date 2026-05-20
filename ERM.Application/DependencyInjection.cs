@@ -13,6 +13,7 @@ namespace ERM.Application
             services.AddTransient<ICutBatchService, CutBatchService>();
             services.AddTransient<IWorkAssignmentService, WorkAssignmentService>();
             services.AddTransient<IFabricColorService, FabricColorService>();
+            services.AddTransient<IPayrollService, PayrollService>();
 
             return services;
         }

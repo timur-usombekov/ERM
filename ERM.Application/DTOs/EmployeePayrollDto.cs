@@ -8,6 +8,7 @@
 
         public bool IsSeamstress { get; set; }
         public bool IsCutter { get; set; }
+        public bool IsIroner { get; set; }
 
         public int TotalItemsProcessed { get; set; }
         public decimal EarnedByOperations { get; set; } 

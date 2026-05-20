@@ -73,11 +73,21 @@ namespace ERM.UI.ViewModels.Dialogs
             set { SetField(ref _cutterPercentageText, value); OnPropertyChanged(nameof(IsValid)); }
         }
 
+        private bool _IsIroner;
+        public bool IsIroner
+        {
+            get => _IsIroner;
+            set
+            {
+                SetField(ref _IsIroner, value);
+                OnPropertyChanged(nameof(IsValid));
+            }
+        }
+
         public bool IsValid =>
             !string.IsNullOrWhiteSpace(FullName) &&
             !string.IsNullOrWhiteSpace(PhoneNumber) &&
             (!IsSeamstress || !string.IsNullOrWhiteSpace(MachineNumber)) &&
             (!IsCutter || (decimal.TryParse(CutterPercentageText, out var p) && p >= 0 && p <= 100));
-
     }
 }
