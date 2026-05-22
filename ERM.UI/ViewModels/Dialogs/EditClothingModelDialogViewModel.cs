@@ -14,6 +14,13 @@ namespace ERM.UI.ViewModels.Dialogs
             set => SetField(ref _name, value);
         }
 
+        private string _article;
+        public string Article
+        {
+            get => _article;
+            set => SetField(ref _article, value);
+        }
+
         private string _sewingPriceText = string.Empty;
         public string SewingPriceText
         {
@@ -37,13 +44,16 @@ namespace ERM.UI.ViewModels.Dialogs
 
         public bool IsValid =>
             !string.IsNullOrWhiteSpace(Name) &&
-            decimal.TryParse(SewingPriceText, out var p) && p >= 0;
+            !string.IsNullOrWhiteSpace(Article) &&
+            decimal.TryParse(SewingPriceText, out var p) && p >= 0 &&
+            decimal.TryParse(IroningPriceText, out var ir) && ir >= 0;
 
 
         public EditClothingModelDialogViewModel(ClothingModelDto dto)
         {
             ModelId = dto.Id;
             _name = dto.Name;
+            _article = dto.Article;
             _sewingPriceText = dto.SewingPrice.ToString();
             _ironingPriceText = dto.IroningPrice.ToString();
             _description = dto.Description;

@@ -178,6 +178,30 @@
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
 
+                    <DataGridTextColumn Header="Артикул" Binding="{Binding Article}" Width="Auto">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                <Setter Property="FontSize" Value="13"/>
+                                <Setter Property="Opacity" Value="0.75"/>
+                                <Setter Property="ToolTipService.InitialShowDelay" Value="200"/>
+                                <Setter Property="ToolTip">
+                                    <Setter.Value>
+                                        <ToolTip MaxWidth="350"
+                                                 Background="{DynamicResource MaterialDesignCardBackground}"
+                                                 BorderThickness="0"
+                                                 md:ElevationAssist.Elevation="Dp3">
+                                            <TextBlock Text="{Binding Article}" TextWrapping="Wrap"
+                                                       Foreground="{DynamicResource MaterialDesignBody}"
+                                                       Padding="4" FontSize="13"/>
+                                        </ToolTip>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
                     <!-- Действия -->
                     <DataGridTemplateColumn Width="90">
                         <DataGridTemplateColumn.CellTemplate>

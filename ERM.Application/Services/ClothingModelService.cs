@@ -20,19 +20,19 @@ namespace ERM.Application.Services
             return models.Select(m => m.ToDto()).ToList();
         }
 
-        public async Task<ClothingModelDto> CreateAsync(string name, decimal sewingPrice, decimal ironingPrice, 
+        public async Task<ClothingModelDto> CreateAsync(string name, string article, decimal sewingPrice, decimal ironingPrice, 
             string? description, CancellationToken ct = default)
         {
             await using var context = await _contextFactory.CreateDbContextAsync(ct);
             
-            var model = new ClothingModel(name, sewingPrice, ironingPrice, description);
+            var model = new ClothingModel(name, article, sewingPrice, ironingPrice, description);
 
             context.ClothingModels.Add(model);
             await context.SaveChangesAsync(ct);
             return model.ToDto();
         }
 
-        public async Task<ClothingModelDto> EditAsync(Guid id, string name, decimal sewingPrice, decimal ironingPrice, 
+        public async Task<ClothingModelDto> EditAsync(Guid id, string name, string article, decimal sewingPrice, decimal ironingPrice, 
             string? description, CancellationToken ct = default)
         {
             await using var context = await _contextFactory.CreateDbContextAsync(ct);
@@ -40,7 +40,7 @@ namespace ERM.Application.Services
             if (model is null)
                 throw new InvalidOperationException($"Модель одежды с Id {id} не найдена.");
 
-            model.Update(name, sewingPrice, ironingPrice, description);
+            model.Update(name, article, sewingPrice, ironingPrice, description);
             context.ClothingModels.Update(model);
 
             await context.SaveChangesAsync(ct);

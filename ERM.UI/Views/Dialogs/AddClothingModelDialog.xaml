@@ -51,6 +51,11 @@
                              Style="{StaticResource MaterialDesignOutlinedTextBox}"
                              Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
                              Margin="0,0,0,16" FontSize="14"/>
+                    <TextBox md:HintAssist.Hint="Артикул модели"
+                             md:HintAssist.IsFloating="True"
+                             Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                             Text="{Binding Article, UpdateSourceTrigger=PropertyChanged}"
+                             Margin="0,0,0,16" FontSize="14"/>
                     <TextBox md:HintAssist.Hint="Цена за пошив 1 шт (грн)"
                              md:HintAssist.IsFloating="True"
                              Style="{StaticResource MaterialDesignOutlinedTextBox}"

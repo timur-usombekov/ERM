@@ -5,9 +5,9 @@ namespace ERM.Application.Interfaces.Services
     public interface IClothingModelService
     {
         Task<IReadOnlyList<ClothingModelDto>> GetAllAsync(CancellationToken ct = default);
-        Task<ClothingModelDto> CreateAsync(string name, decimal sewingPrice, decimal ironingPrice, 
+        Task<ClothingModelDto> CreateAsync(string name, string article, decimal sewingPrice, decimal ironingPrice, 
             string? description, CancellationToken ct = default);
-        Task<ClothingModelDto> EditAsync(Guid id, string name, decimal sewingPrice, decimal ironingPrice, 
+        Task<ClothingModelDto> EditAsync(Guid id, string name, string article, decimal sewingPrice, decimal ironingPrice, 
             string? description, CancellationToken ct = default);
         Task DeleteAsync(Guid id, CancellationToken ct = default);
     }

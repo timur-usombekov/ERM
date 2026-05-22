@@ -4,6 +4,7 @@
     {
         public Guid Id { get; set; }
         public string Name { get; set; } = string.Empty;
+        public string Article { get; set; } = string.Empty;
         public decimal SewingPrice { get; set; }
         public decimal IroningPrice { get; set; }
         public string? Description { get; set; }

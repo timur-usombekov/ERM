@@ -15,6 +15,17 @@ namespace ERM.UI.ViewModels.Dialogs
             }
         }
 
+        private string _article = string.Empty;
+        public string Article
+        {
+            get => _article;
+            set
+            {
+                SetField(ref _article, value);
+                OnPropertyChanged(nameof(IsValid));
+            }
+        }
+
         private string _sewingPriceText = string.Empty;
         public string SewingPriceText
         {
@@ -42,6 +53,7 @@ namespace ERM.UI.ViewModels.Dialogs
 
         public bool IsValid =>
             !string.IsNullOrWhiteSpace(Name) &&
+            !string.IsNullOrWhiteSpace(Article) &&
             decimal.TryParse(SewingPriceText, out var p) && p >= 0 &&
             decimal.TryParse(IroningPriceText, out var ir) && ir >= 0;
 

@@ -37,46 +37,6 @@ namespace ERM.Application.Services
             return assignments.Select(a => a.ToDto()).OrderByDescending(a => a.AssignedDate).ToList();
         }
 
-        /*public async Task<WorkAssignmentDto> IssueWorkAsync(Guid employeeId, OperationType operationType, Guid? cutBatchItemId, string? size, int quantity, CancellationToken ct = default)
-        {
-            await using var context = await _contextFactory.CreateDbContextAsync(ct);
-            decimal price = 0;
-
-            var employee = await context.Employees
-                .Include(e => e.Seamstress)
-                .FirstOrDefaultAsync(e => e.Id == employeeId, ct)
-                ?? throw new InvalidOperationException("Сотрудник не найден.");
-
-            CutBatchItem? cutItem = null;
-
-            if (cutBatchItemId.HasValue)
-            {
-                cutItem = await context.CutBatchItems
-                    .Include(c => c.ClothingModel)
-                    .FirstOrDefaultAsync(c => c.Id == cutBatchItemId.Value, ct)
-                    ?? throw new InvalidOperationException("Партия кроя не найдена.");
-
-                cutItem.Issue(quantity);
-                price = cutItem.ClothingModel.SewingPrice; // Пока берем цену пошива
-            }
-
-            var assignment = new WorkAssignment(employeeId, operationType, quantity, price, cutBatchItemId, size);
-            context.WorkAssignments.Add(assignment);
-            await context.SaveChangesAsync(ct);
-
-            return new WorkAssignmentDto
-            {
-                Id = assignment.Id,
-                EmployeeName = employee.FullName,
-                MachineNumber = employee.Seamstress?.MachineNumber ?? "?",
-                ClothingModelName = cutItem?.ClothingModel?.Name ?? "-",
-                Color = cutItem?.FabricColor?.Name ?? "-",
-                Size = size ?? "-",
-                Quantity = quantity,
-                AssignedDate = assignment.AssignedDate
-            };
-
-        }*/
         public async Task IssueSewingAsync(Guid seamstressId, Guid shiftIronerId, Guid cutBatchItemId, string size, int quantity, CancellationToken ct = default)
         {
             await using var context = await _contextFactory.CreateDbContextAsync(ct);
@@ -86,22 +46,20 @@ namespace ERM.Application.Services
                 .FirstOrDefaultAsync(c => c.Id == cutBatchItemId, ct)
                 ?? throw new InvalidOperationException("Партия кроя не найдена.");
 
-            // 1. Списываем крой (это делается ТОЛЬКО при пошиве)
+            // Списывание кроя (это делается только при пошиве)
             cutItem.Issue(quantity);
 
-            // 2. Создаем запись ПОШИВА для швеи
             var sewingAssignment = new WorkAssignment(
                 seamstressId,
-                OperationType.Sewing, // <- Используем enum!
+                OperationType.Sewing,
                 quantity,
                 cutItem.ClothingModel.SewingPrice,
                 cutBatchItemId,
                 size);
 
-            // 3. АВТОМАТИЧЕСКИ создаем запись ГЛАЖКИ для дежурной гладильщицы
             var autoIroningAssignment = new WorkAssignment(
                 shiftIronerId,
-                OperationType.Ironing, // <- Используем enum!
+                OperationType.Ironing, 
                 quantity,
                 cutItem.ClothingModel.IroningPrice,
                 cutBatchItemId,
@@ -117,15 +75,21 @@ namespace ERM.Application.Services
         {
             await using var context = await _contextFactory.CreateDbContextAsync(ct);
 
+            var currentIronerBalance = await context.WorkAssignments
+                .Where(a => a.EmployeeId == mainIronerId && 
+                        a.CutBatchItemId == cutBatchItemId && 
+                        a.OperationType == OperationType.Ironing)
+                .SumAsync(a => a.Quantity, ct);
+
+            if (quantity > currentIronerBalance)
+                throw new InvalidOperationException(
+                    $"Невозможно записать {quantity} шт. На гладильщице числится только {currentIronerBalance} отшитых единиц этой модели.");
+
             var cutItem = await context.CutBatchItems
                 .Include(c => c.ClothingModel)
                 .FirstOrDefaultAsync(c => c.Id == cutBatchItemId, ct)
                 ?? throw new InvalidOperationException("Партия кроя не найдена.");
 
-            // ВНИМАНИЕ: Мы НЕ списываем крой (cutItem.Issue), так как физически этот крой 
-            // уже был выдан и списан в момент пошива!
-
-            // 1. Создаем запись ГЛАЖКИ для подменщицы (ей плюс к ЗП)
             var substituteAssignment = new WorkAssignment(
                 substituteEmpId,
                 OperationType.Ironing,
@@ -134,8 +98,6 @@ namespace ERM.Application.Services
                 cutBatchItemId,
                 null);
 
-            // 2. Создаем ОТРИЦАТЕЛЬНУЮ запись ГЛАЖКИ для основной гладильщицы (ей минус из ЗП)
-            // Заметь: передаем -quantity!
             var deductionAssignment = new WorkAssignment(
                 mainIronerId,
                 OperationType.Ironing,
@@ -149,6 +111,51 @@ namespace ERM.Application.Services
 
             await context.SaveChangesAsync(ct);
         }
+
+        public async Task<IReadOnlyList<CutBatchItemDto>> GetAvailableForSubstitutionAsync(Guid mainIronerId, CancellationToken ct = default)
+        {
+            await using var context = await _contextFactory.CreateDbContextAsync(ct);
+
+            // Bсе назначения глажки для гладильщицы и суммируем их по партиям кроя
+            var balances = await context.WorkAssignments
+                .Where(a => a.EmployeeId == mainIronerId && a.OperationType == OperationType.Ironing)
+                .GroupBy(a => a.CutBatchItemId)
+                .Select(g => new { CutBatchItemId = g.Key, Balance = g.Sum(x => x.Quantity) })
+                .Where(x => x.Balance > 0) // Берем только то, где баланс > 0
+                .ToListAsync(ct);
+
+            if (!balances.Any()) return new List<CutBatchItemDto>();
+
+            var batchItemIds = balances.Select(b => b.CutBatchItemId).ToList();
+
+            var cutItems = await context.CutBatchItems
+                .Include(c => c.ClothingModel)
+                .Include(c => c.FabricColor)
+                .Where(c => batchItemIds.Contains(c.Id))
+                .ToListAsync(ct);
+
+            var result = new List<CutBatchItemDto>();
+            foreach (var balance in balances)
+            {
+                var item = cutItems.FirstOrDefault(c => c.Id == balance.CutBatchItemId);
+                if (item != null)
+                {
+                    result.Add(new CutBatchItemDto
+                    {
+                        Id = item.Id,
+                        ClothingModelId = item.ClothingModelId,
+                        ClothingModelName = item.ClothingModel.Name,
+                        Color = item.FabricColor.Name,
+                        Quantity = item.Quantity,
+
+                        AvailableQuantity = balance.Balance
+                    });
+                }
+            }
+
+            return result.OrderBy(r => r.ClothingModelName).ToList();
+        }
+
 
         public async Task DeleteAsync(Guid id, CancellationToken ct = default)
         {
@@ -165,67 +172,6 @@ namespace ERM.Application.Services
             context.WorkAssignments.Remove(assignment);
             await context.SaveChangesAsync(ct);
         }
-
-
-        public async Task<IReadOnlyList<EmployeePayrollDto>> GetPayrollAsync(DateOnly startDate, DateOnly endDate, CancellationToken ct = default)
-        {
-            await using var context = await _contextFactory.CreateDbContextAsync(ct);
-
-            var assignments = await context.WorkAssignments
-                .Include(a => a.Employee).ThenInclude(e => e.Seamstress)
-                .Include(a => a.Employee).ThenInclude(e => e.Cutter)
-                .Include(a => a.CutBatchItem).ThenInclude(i => i.ClothingModel)
-                .Where(a => a.AssignedDate >= startDate && a.AssignedDate <= endDate)
-                .AsNoTracking().ToListAsync(ct);
-
-            var adjustments = await context.PayrollAdjustments
-                .Include(a => a.Employee).ThenInclude(e => e.Seamstress)
-                .Include(a => a.Employee).ThenInclude(e => e.Cutter)
-                .Where(a => a.Date >= startDate && a.Date <= endDate)
-                .AsNoTracking().ToListAsync(ct);
-
-            var allEmployeeIds = assignments.Select(a => a.EmployeeId)
-                .Union(adjustments.Select(a => a.EmployeeId)).Distinct();
-
-            var result = new List<EmployeePayrollDto>();
-
-            foreach (var empId in allEmployeeIds)
-            {
-                var empAssignments = assignments.Where(a => a.EmployeeId == empId).ToList();
-                var empAdjustments = adjustments.Where(a => a.EmployeeId == empId).ToList();
-                var emp = empAssignments.FirstOrDefault()?.Employee ?? empAdjustments.FirstOrDefault()?.Employee;
-
-                var dto = new EmployeePayrollDto
-                {
-                    EmployeeId = empId,
-                    EmployeeName = emp?.FullName ?? "Неизвестно",
-                    MachineNumber = emp?.Seamstress?.MachineNumber ?? "?",
-
-                    IsSeamstress = emp?.IsSeamstress ?? false,
-                    IsCutter = emp?.IsCutter ?? false,
-
-                    TotalItemsProcessed = empAssignments.Sum(a => a.Quantity),
-                    EarnedByOperations = empAssignments.Sum(a => a.TotalPrice),
-                    TotalAdjustments = empAdjustments.Sum(a => a.Amount),
-
-                    OperationDetails = empAssignments
-                        .GroupBy(a => new { Name = a.CutBatchItem?.ClothingModel?.Name ?? "Прочее", a.PricePerUnit })
-                        .Select(g => new PayrollDetailDto
-                        {
-                            ModelName = g.Key.Name,
-                            PricePerUnit = g.Key.PricePerUnit,
-                            Quantity = g.Sum(x => x.Quantity)
-                        }).OrderBy(d => d.ModelName).ToList(),
-
-                    AdjustmentDetails = empAdjustments
-                        .Select(a => new AdjustmentDetailDto { Id = a.Id, Date = a.Date, Amount = a.Amount, Reason = a.Reason })
-                        .OrderBy(a => a.Date).ToList()
-                };
-                result.Add(dto);
-            }
-            return result.OrderBy(p => p.EmployeeName).ToList();
-        }
-
 
 
     }

@@ -11,5 +11,7 @@ namespace ERM.Application.Interfaces.Services
 
         Task RegisterIroningSubstitutionAsync(Guid substituteEmpId, Guid mainIronerId, Guid cutBatchItemId, int quantity, CancellationToken ct = default);
         Task DeleteAsync(Guid id, CancellationToken ct = default);
+        Task<IReadOnlyList<CutBatchItemDto>> GetAvailableForSubstitutionAsync(Guid mainIronerId, CancellationToken ct = default);
+
     }
 }

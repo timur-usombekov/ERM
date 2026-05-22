@@ -172,7 +172,7 @@
                                 <ComboBox Grid.Column="2"
                                           md:HintAssist.Hint="Модель и цвет (остаток)"
                                           md:HintAssist.IsFloating="True"
-                                          ItemsSource="{Binding AvailableCutItems}"
+                                          ItemsSource="{Binding DisplayedCutItems}"
                                           SelectedItem="{Binding SelectedCutItem}"
                                           IsEditable="True"
                                           IsTextSearchEnabled="True"

@@ -18,7 +18,11 @@ namespace ERM.UI.ViewModels
         public ObservableCollection<EmployeeDto> Seamstresses { get; } = [];
         public ObservableCollection<EmployeeDto> Ironers { get; } = [];
 
-        public ObservableCollection<CutBatchItemDto> AvailableCutItems { get; } = [];
+        public IEnumerable<CutBatchItemDto> DisplayedCutItems =>
+            IsSubstitutionMode ? _availableCutItemsToSubstitute : _availableCutItemsToSew;
+
+        private ObservableCollection<CutBatchItemDto> _availableCutItemsToSew = [];
+        private ObservableCollection<CutBatchItemDto> _availableCutItemsToSubstitute = [];
 
         public IReadOnlyList<string> AvailableSizes { get; } =
             [ "42", "44", "46", "48", "50", "52", "54", "56", "58", "60",
@@ -37,7 +41,12 @@ namespace ERM.UI.ViewModels
         public EmployeeDto? SelectedShiftIroner
         {
             get => _selectedShiftIroner;
-            set { SetField(ref _selectedShiftIroner, value); ClearError(); }
+            set 
+            { 
+                SetField(ref _selectedShiftIroner, value); 
+                ClearError();
+                _ = ReloadSubstitutionBalancesAsync();
+            }
         }
 
         private CutBatchItemDto? _selectedCutItem;
@@ -55,8 +64,10 @@ namespace ERM.UI.ViewModels
             {
                 SetField(ref _isSubstitutionMode, value);
                 ClearError();
-                // При переключении режима сбрасываем количество, чтобы случайно не выдать лишнего
                 QuantityText = string.Empty;
+                SelectedCutItem = null; // Сбрасываем выбранный крой при смене режима
+                OnPropertyChanged(nameof(DisplayedCutItems));
+
             }
         }
 
@@ -117,6 +128,50 @@ namespace ERM.UI.ViewModels
         {
             await LoadAsync();
         }
+/*        private async Task LoadAsync()
+        {
+            IsLoading = true;
+            try
+            {
+                Guid? savedSeamstressId = SelectedSeamstress?.Id;
+                Guid? savedCutItemId = SelectedCutItem?.Id;
+                Guid? savedIronerId = SelectedShiftIroner?.Id;
+                string? savedSize = SelectedSize;
+
+                var assignments = await _workService.GetTodayAssignmentsAsync();
+                TodayAssignments.Clear();
+                foreach (var a in assignments) TodayAssignments.Add(a);
+
+                var employees = await _employeeService.GetAllAsync();
+                Seamstresses.Clear();
+                Ironers.Clear();
+                foreach (var s in employees.Where(e => e.IsSeamstress)) Seamstresses.Add(s);
+                foreach (var i in employees.Where(e => e.IsIroner)) Ironers.Add(i);
+
+                // Загружаем крой ДЛЯ ПОШИВА
+                var batches = await _cutBatchService.GetAllAsync();
+                _availableCutItemsToSew.Clear();
+                var activeItems = batches.Where(b => !b.IsClosed).SelectMany(b => b.Items).Where(i => i.AvailableQuantity > 0);
+                foreach (var item in activeItems) _availableCutItemsToSew.Add(item);
+
+                if (savedIronerId.HasValue)
+                    SelectedShiftIroner = Ironers.FirstOrDefault(i => i.Id == savedIronerId.Value);
+                else if (Ironers.Any())
+                    SelectedShiftIroner = Ironers.First();
+
+                // Важно: балансы подмены обновятся автоматически через сеттер SelectedShiftIroner
+
+                if (savedSeamstressId.HasValue) SelectedSeamstress = Seamstresses.FirstOrDefault(s => s.Id == savedSeamstressId.Value);
+                SelectedSize = savedSize;
+
+                // Восстанавливаем крой с учетом режима
+                if (savedCutItemId.HasValue)
+                    SelectedCutItem = DisplayedCutItems.FirstOrDefault(c => c.Id == savedCutItemId.Value);
+
+                OnPropertyChanged(nameof(DisplayedCutItems));
+            }
+            finally { IsLoading = false; }
+        }*/
         private async Task LoadAsync()
         {
             IsLoading = true;
@@ -129,49 +184,35 @@ namespace ERM.UI.ViewModels
 
                 var assignments = await _workService.GetTodayAssignmentsAsync();
                 TodayAssignments.Clear();
-                foreach (var a in assignments) TodayAssignments.Insert(0,a);
+                foreach (var a in assignments) TodayAssignments.Add(a);
 
                 var employees = await _employeeService.GetAllAsync();
-
                 Seamstresses.Clear();
                 Ironers.Clear();
-
                 foreach (var s in employees.Where(e => e.IsSeamstress)) Seamstresses.Add(s);
                 foreach (var i in employees.Where(e => e.IsIroner)) Ironers.Add(i);
 
+                // Загружаем крой ДЛЯ ПОШИВА
                 var batches = await _cutBatchService.GetAllAsync();
-                AvailableCutItems.Clear();
-
-                var activeItems = batches
-                    .Where(b => !b.IsClosed)
-                    .SelectMany(b => b.Items)
-                    .Where(i => i.AvailableQuantity > 0);
-
-                foreach (var item in activeItems)
-                {
-                    AvailableCutItems.Add(item);
-                }
-
-                // возврат выбранных элементов
-                if (savedSeamstressId.HasValue)
-                {
-                    SelectedSeamstress = Seamstresses.FirstOrDefault(s => s.Id == savedSeamstressId.Value);
-                }
-                if (savedCutItemId.HasValue)
-                {
-                    SelectedCutItem = AvailableCutItems.FirstOrDefault(c => c.Id == savedCutItemId.Value);
-                }
-                SelectedSize = savedSize;
+                _availableCutItemsToSew.Clear();
+                var activeItems = batches.Where(b => !b.IsClosed).SelectMany(b => b.Items).Where(i => i.AvailableQuantity > 0);
+                foreach (var item in activeItems) _availableCutItemsToSew.Add(item);
 
                 if (savedIronerId.HasValue)
-                {
                     SelectedShiftIroner = Ironers.FirstOrDefault(i => i.Id == savedIronerId.Value);
-                }
                 else if (Ironers.Any())
-                {
-                    // Если не было сохранено, автоматически выбираем первую (обычно она одна)
                     SelectedShiftIroner = Ironers.First();
-                }
+
+                // Важно: балансы подмены обновятся автоматически через сеттер SelectedShiftIroner
+
+                if (savedSeamstressId.HasValue) SelectedSeamstress = Seamstresses.FirstOrDefault(s => s.Id == savedSeamstressId.Value);
+                SelectedSize = savedSize;
+
+                // Восстанавливаем крой с учетом режима
+                if (savedCutItemId.HasValue)
+                    SelectedCutItem = DisplayedCutItems.FirstOrDefault(c => c.Id == savedCutItemId.Value);
+
+                OnPropertyChanged(nameof(DisplayedCutItems));
             }
             finally { IsLoading = false; }
         }
@@ -189,34 +230,23 @@ namespace ERM.UI.ViewModels
 
             bool isSuccess = false;
 
-            /*var (isSuccess, newAssignment) = await ExecuteSafeAsync(() =>
-                _workService.IssueWorkAsync(
-                    SelectedSeamstress.Id,
-                    OperationType.Sewing,
-                    SelectedCutItem.Id,
-                    SelectedSize,
-                    qty));*/
-
             if (!IsSubstitutionMode)
             {
-                // РЕЖИМ 1: Обычная выдача пошива
+                // Обычная выдача пошива
                 if (SelectedShiftIroner is null) { ErrorMessage = "Выберите гладильщицу на смене!"; return; }
 
                 var result = await ExecuteSafeAsync(() =>
-                    // Мы изменим этот метод в Service слое, чтобы он принимал ShiftIronerId
-                    // и внутри себя создавал сразу ДВЕ записи (Пошив и Глажка)
                     _workService.IssueSewingAsync(
                         SelectedSeamstress.Id,
                         SelectedShiftIroner.Id,
                         SelectedCutItem.Id,
-                        SelectedSize,
+                        SelectedSize!,
                         qty));
 
                 isSuccess = result;
             }
             else
             {
-                // РЕЖИМ 2: Регистрация подмены глажки
                 if (SelectedShiftIroner is null) { ErrorMessage = "Системе нужно знать основную гладильщицу для вычета!"; return; }
 
                 var result = await ExecuteSafeAsync(() =>
@@ -235,25 +265,11 @@ namespace ERM.UI.ViewModels
                 QuantityText = string.Empty;
                 ErrorMessage = null;
 
-                // Перезагружаем данные с БД, чтобы обновить остатки кроя и таблицу
                 await LoadAsync();
 
-                // Восстанавливаем фокус (липкие поля)
                 SelectedSeamstress = Seamstresses.FirstOrDefault(s => s.Id == savedSeamstressId);
-                SelectedCutItem = AvailableCutItems.FirstOrDefault(c => c.Id == savedCutItemId);
+                SelectedCutItem = _availableCutItemsToSew.FirstOrDefault(c => c.Id == savedCutItemId);
             }
-
-            /*if (isSuccess && newAssignment != null)
-            {
-                TodayAssignments.Insert(0, newAssignment);
-                QuantityText = string.Empty;
-                ErrorMessage = null;
-
-                await LoadAsync();
-
-                SelectedSeamstress = Seamstresses.FirstOrDefault(s => s.Id == savedSeamstressId);
-                SelectedCutItem = AvailableCutItems.FirstOrDefault(c => c.Id == savedCutItemId);
-            }*/
         }
 
 
@@ -272,6 +288,19 @@ namespace ERM.UI.ViewModels
                 TodayAssignments.Remove(dto);
                 _ = LoadAsync(); // Фоново обновляем остатки кроя
             }
+        }
+        private async Task ReloadSubstitutionBalancesAsync()
+        {
+            if (SelectedShiftIroner == null) return;
+
+            var balances = await _workService.GetAvailableForSubstitutionAsync(SelectedShiftIroner.Id);
+
+            _availableCutItemsToSubstitute.Clear();
+            foreach (var b in balances) _availableCutItemsToSubstitute.Add(b);
+
+            // Если мы в режиме подмены, уведомляем UI, что цифры обновились
+            if (IsSubstitutionMode)
+                OnPropertyChanged(nameof(DisplayedCutItems));
         }
 
         private void ClearError() => ErrorMessage = null;
