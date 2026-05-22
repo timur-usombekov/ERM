@@ -73,19 +73,24 @@
             <DataTemplate DataType="{x:Type vmDialogs:AddAdjustmentDialogViewModel}">
                 <dialogs:AddAdjustmentDialog />
             </DataTemplate>
+            
+            <DataTemplate DataType="{x:Type vmDialogs:EditCutBatchItemDialogViewModel}">
+                <dialogs:EditCutBatchItemDialog />
+            </DataTemplate>
 
 
             <!-- BooleanToVisibilityConverter вообще существует? -->
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-            <converters:BoolToYesNoConverter x:Key="BoolToYesNo" />
-            <converters:NullToVisibilityConverter x:Key="NullToVisibility" />
-            <converters:NullToBoolConverter x:Key="NullToBool" />
-            <converters:InverseBoolConverter x:Key="InverseBool" />
-            <converters:VisibilityToBoolConverter x:Key="VisibilityToBool" />
-            <converters:ZeroToVisibilityConverter x:Key="ZeroToVisibility" />
-            <converters:ZeroToInverseVisibilityConverter x:Key="ZeroToInverseVisibility" />
-            <converters:AmountToColorConverter x:Key="AmountToColor" />
+            <converters:BoolToYesNoConverter x:Key="BoolToYesNoConverter" />
+            <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
+            <converters:NullToBoolConverter x:Key="NullToBoolConverter" />
+            <converters:InverseBoolConverter x:Key="InverseBoolConverter" />
+            <converters:VisibilityToBoolConverter x:Key="VisibilityToBoolConverter" />
+            <converters:ZeroToVisibilityConverter x:Key="ZeroToVisibilityConverter" />
+            <converters:ZeroToInverseVisibilityConverter x:Key="ZeroToInverseVisibilityConverter" />
+            <converters:AmountToColorConverter x:Key="AmountToColorConverter" />
             <converters:EmployeeRolesConverter x:Key="EmployeeRolesConverter"/>
+            <converters:LessThanConverter x:Key="LessThanConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

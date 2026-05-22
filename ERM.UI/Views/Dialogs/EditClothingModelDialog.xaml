@@ -51,7 +51,7 @@
                              Style="{StaticResource MaterialDesignOutlinedTextBox}"
                              Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
                              Margin="0,0,0,16" FontSize="14"/>
-                    <TextBox md:HintAssist.Hint="Артикул модели"
+                    <TextBox md:HintAssist.Hint="Артикул модели (М17, 05, Номер 15 и тд.)"
                              md:HintAssist.IsFloating="True"
                              Style="{StaticResource MaterialDesignOutlinedTextBox}"
                              Text="{Binding Article, UpdateSourceTrigger=PropertyChanged}"

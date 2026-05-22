@@ -54,5 +54,19 @@ namespace ERM.Core.Domain.Entities
             Quantity += amount;
         }
 
+        public void UpdateDetails(Guid clothingModelId, Guid fabricColorId, int newQuantity, decimal newCutPricePerUnit)
+        {
+            // Защита: нельзя поставить количество меньше, чем уже успели выдать швеям
+            if (newQuantity < IssuedQuantity)
+                throw new InvalidOperationException(
+                    $"Нельзя установить количество {newQuantity}. Уже выдано в работу {IssuedQuantity} шт.");
+
+            ClothingModelId = clothingModelId;
+            FabricColorId = fabricColorId;
+            Quantity = newQuantity;
+            CutPricePerUnit = newCutPricePerUnit;
+        }
+
+
     }
 }

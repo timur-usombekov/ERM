@@ -253,13 +253,13 @@
                                         <Style TargetType="Border">
                                             <Setter Property="Background" Value="Transparent"/>
                                             <Style.Triggers>
-                                                <DataTrigger Binding="{Binding ErrorMessage, Converter={StaticResource NullToBool}}" Value="True">
+                                                <DataTrigger Binding="{Binding ErrorMessage, Converter={StaticResource NullToBoolConverter}}" Value="True">
                                                     <Setter Property="Background" Value="#FFEBEE"/>
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
                                     </Border.Style>
-                                    <StackPanel Orientation="Horizontal" Visibility="{Binding ErrorMessage, Converter={StaticResource NullToVisibility}}">
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding ErrorMessage, Converter={StaticResource NullToVisibilityConverter}}">
                                         <md:PackIcon Kind="AlertCircleOutline" Width="15" Height="15" Foreground="#E53935" VerticalAlignment="Center" Margin="0,0,6,0"/>
                                         <TextBlock Text="{Binding ErrorMessage}" Foreground="#E53935" FontSize="13" FontWeight="Medium" VerticalAlignment="Center"/>
                                     </StackPanel>

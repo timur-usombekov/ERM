@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="ERM.UI.Views.Dialogs.AddCutBatchItemDialog"
+﻿<UserControl x:Class="ERM.UI.Views.Dialogs.EditCutBatchItemDialog"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
@@ -23,7 +23,7 @@
                             BorderThickness="1"
                             CornerRadius="8" Width="44" Height="44"
                             Margin="0,0,16,0">
-                        <md:PackIcon Kind="PlaylistPlus"
+                        <md:PackIcon Kind="FileEditOutline"
                                      Width="22" Height="22"
                                      Foreground="{DynamicResource PrimaryHueMidBrush}"
                                      HorizontalAlignment="Center"
@@ -31,10 +31,10 @@
                     </Border>
 
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                        <TextBlock Text="Добавить позицию"
+                        <TextBlock Text="Редактировать позицию"
                                    FontSize="18" FontWeight="Bold"
                                    Foreground="{DynamicResource MaterialDesignBody}"/>
-                        <TextBlock Text="Выберите модель, цвет и укажите количество"
+                        <TextBlock Text="Измените параметры кроя"
                                    FontSize="12"
                                    Foreground="{DynamicResource MaterialDesignBodyLight}"
                                    Opacity="0.7" Margin="0,2,0,0"/>
@@ -83,7 +83,7 @@
                             Height="36" Padding="20,0"
                             md:ButtonAssist.CornerRadius="8"
                             Margin="0,0,10,0"/>
-                    <Button Content="Добавить"
+                    <Button Content="Сохранить"
                             Style="{StaticResource MaterialDesignRaisedButton}"
                             Command="{x:Static md:DialogHost.CloseDialogCommand}"
                             CommandParameter="{Binding}"

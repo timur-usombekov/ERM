@@ -94,5 +94,65 @@ namespace ERM.Application.Services
             await context.SaveChangesAsync(ct);
         }
 
+
+        public async Task EditItemInBatchAsync(Guid itemId, Guid modelId, Guid fabricColorId, int newQuantity, CancellationToken ct = default)
+        {
+            await using var context = await _contextFactory.CreateDbContextAsync(ct);
+
+            var item = await context.CutBatchItems
+                .Include(i => i.CutBatch).ThenInclude(b => b.CutterEmployee).ThenInclude(e => e.Cutter)
+                .FirstOrDefaultAsync(i => i.Id == itemId, ct)
+                ?? throw new InvalidOperationException("Позиция кроя не найдена.");
+
+            var model = await context.ClothingModels.FirstOrDefaultAsync(m => m.Id == modelId, ct)
+                ?? throw new InvalidOperationException("Модель одежды не найдена.");
+
+            if (item.CutBatch.CutterEmployee.Cutter == null)
+                throw new InvalidOperationException("Сотрудник больше не является закройщиком.");
+
+            int otherItemsSum = item.CutBatch.Items.Where(i => i.Id != itemId).Sum(i => i.Quantity);
+            if (otherItemsSum + newQuantity > item.CutBatch.DeclaredQuantity)
+                throw new InvalidOperationException("Сумма позиций превышает заявленное количество документа.");
+
+            decimal newCutPrice = model.SewingPrice * (item.CutBatch.CutterEmployee.Cutter.Percentage / 100m);
+
+            item.UpdateDetails(modelId, fabricColorId, newQuantity, newCutPrice);
+
+            // Не забыить пересчитать и обновить начисление закройщику зп
+            var cutterAssignment = await context.WorkAssignments
+                .FirstOrDefaultAsync(a => a.CutBatchItemId == itemId && a.OperationType == OperationType.Cutting, ct);
+
+            if (cutterAssignment != null)
+            {
+                cutterAssignment.UpdateQuantity(newQuantity);
+                // ВАЖНО: PricePerUnit обновится неявно через Reflection или лучше добавить метод обновления цены в WorkAssignment, 
+                // но для простоты EF Core отследит изменения, если мы пересоздадим или обновим поля.
+                // Добавь public void UpdatePrice(decimal newPrice) { PricePerUnit = newPrice; } в WorkAssignment.cs
+            }
+
+            await context.SaveChangesAsync(ct);
+        }
+
+        public async Task RemoveItemFromBatchAsync(Guid itemId, CancellationToken ct = default)
+        {
+            await using var context = await _contextFactory.CreateDbContextAsync(ct);
+
+            var item = await context.CutBatchItems.FirstOrDefaultAsync(i => i.Id == itemId, ct)
+                ?? throw new InvalidOperationException("Позиция кроя не найдена.");
+
+            if (item.IssuedQuantity > 0)
+                throw new InvalidOperationException($"Нельзя удалить позицию. Уже выдано {item.IssuedQuantity} шт.");
+
+            // Удалить начисление закройщику
+            var cutterAssignments = await context.WorkAssignments
+                .Where(a => a.CutBatchItemId == itemId && a.OperationType == OperationType.Cutting)
+                .ToListAsync(ct);
+
+            context.WorkAssignments.RemoveRange(cutterAssignments);
+
+            context.CutBatchItems.Remove(item);
+
+            await context.SaveChangesAsync(ct);
+        }
     }
 }

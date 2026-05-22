@@ -1,10 +1,12 @@
 ﻿using ERM.Application.DTOs;
 using ERM.UI.ViewModels.Base;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace ERM.UI.ViewModels.Dialogs
 {
-    public class AddCutBatchItemDialogViewModel : ViewModelBase
+    public class EditCutBatchItemDialogViewModel : ViewModelBase
     {
         public IReadOnlyList<ClothingModelDto> AvailableModels { get; }
         public ObservableCollection<FabricColorDto> AvailableColors { get; }
@@ -37,10 +39,18 @@ namespace ERM.UI.ViewModels.Dialogs
             Quantity > 0 &&
             !string.IsNullOrWhiteSpace(ColorText);
 
-        public AddCutBatchItemDialogViewModel(IReadOnlyList<ClothingModelDto> availableModels, IEnumerable<FabricColorDto> colors)
+        public EditCutBatchItemDialogViewModel(
+            CutBatchItemDto existingItem,
+            IReadOnlyList<ClothingModelDto> availableModels,
+            IEnumerable<FabricColorDto> colors)
         {
             AvailableModels = availableModels;
             AvailableColors = new ObservableCollection<FabricColorDto>(colors);
+
+            // Предзаполняем данные существующей позиции
+            SelectedModel = AvailableModels.FirstOrDefault(m => m.Id == existingItem.ClothingModelId);
+            ColorText = existingItem.Color;
+            QuantityText = existingItem.Quantity.ToString();
         }
     }
 }

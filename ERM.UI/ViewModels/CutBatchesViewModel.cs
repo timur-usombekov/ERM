@@ -51,6 +51,8 @@ namespace ERM.UI.ViewModels
         public AsyncRelayCommand<CutBatchDto> DeleteBatchCommand { get; }
         public AsyncRelayCommand<CutBatchDto> ToggleBatchStatusCommand { get; }
 
+        public AsyncRelayCommand<CutBatchItemDto> EditItemCommand { get; }
+        public AsyncRelayCommand<CutBatchItemDto> DeleteItemCommand { get; }
 
         public CutBatchesViewModel(
             ICutBatchService cutBatchService,
@@ -68,6 +70,8 @@ namespace ERM.UI.ViewModels
             AddItemCommand = new AsyncRelayCommand(_ => AddItemAsync(), _ => SelectedBatch is not null);
             DeleteBatchCommand = new AsyncRelayCommand<CutBatchDto>(DeleteBatchAsync);
             ToggleBatchStatusCommand = new AsyncRelayCommand<CutBatchDto>(ToggleStatusAsync);
+            EditItemCommand = new AsyncRelayCommand<CutBatchItemDto>(EditItemAsync);
+            DeleteItemCommand = new AsyncRelayCommand<CutBatchItemDto>(DeleteItemAsync);
 
         }
 
@@ -180,6 +184,47 @@ namespace ERM.UI.ViewModels
             if (batch is null) return;
             await ExecuteSafeAsync(() => _cutBatchService.ToggleStatusAsync(batch.Id));
             await LoadAsync();
+        }
+
+        private async Task EditItemAsync(CutBatchItemDto? item)
+        {
+            if (item is null || SelectedBatch is null) return;
+
+            var models = await _clothingModelService.GetAllAsync();
+            var colors = await _fabricColorService.GetAllAsync();
+
+            // Создаем диалог редактирования (по сути копия диалога создания, но с предзаполненными данными)
+            var vm = new EditCutBatchItemDialogViewModel(item, models, colors);
+            var result = await DialogHost.Show(vm, "RootDialog");
+
+            if (result is not EditCutBatchItemDialogViewModel r || !r.IsValid) return;
+
+            var (isColorSuccess, colorDto) = await ExecuteSafeAsync(() => _fabricColorService.GetOrCreateAsync(r.ColorText));
+            if (!isColorSuccess || colorDto is null) return;
+
+            var isSuccess = await ExecuteSafeAsync(() =>
+                _cutBatchService.EditItemInBatchAsync(item.Id, r.SelectedModel!.Id, colorDto.Id, r.Quantity)
+            );
+
+            if (isSuccess) await LoadAsync();
+        }
+
+        private async Task DeleteItemAsync(CutBatchItemDto? item)
+        {
+            if (item is null) return;
+
+            if (item.AvailableQuantity < item.Quantity)
+            {
+                ErrorMessage = "Нельзя удалить позицию, часть которой уже выдана швеям. Отредактируйте количество.";
+                return;
+            }
+
+            var confirmed = await DialogHost.Show(new ConfirmDialogViewModel($"Удалить {item.ClothingModelName} ({item.Color})?"), "RootDialog");
+            if (confirmed?.ToString() != "True") return;
+
+            var isSuccess = await ExecuteSafeAsync(() => _cutBatchService.RemoveItemFromBatchAsync(item.Id));
+
+            if (isSuccess) await LoadAsync();
         }
 
     }

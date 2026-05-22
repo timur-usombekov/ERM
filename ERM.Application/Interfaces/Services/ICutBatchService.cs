@@ -10,5 +10,9 @@ namespace ERM.Application.Interfaces.Services
         Task DeleteAsync(Guid id, CancellationToken ct = default);
         Task ToggleStatusAsync(Guid id, CancellationToken ct = default);
 
+        Task EditItemInBatchAsync(Guid itemId, Guid modelId, Guid fabricColorId, int newQuantity, CancellationToken ct = default);
+        Task RemoveItemFromBatchAsync(Guid itemId, CancellationToken ct = default);
+
+
     }
 }

@@ -54,5 +54,11 @@ namespace ERM.Core.Domain.Entities
             Year = ISOWeek.GetYear(dateTime);
         }
 
+        public void UpdateQuantity(int newQuantity)
+        {
+            if (newQuantity == 0) throw new ArgumentException("Количество не может быть нулем.");
+            Quantity = newQuantity;
+        }
+
     }
 }

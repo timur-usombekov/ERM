@@ -62,10 +62,15 @@ namespace ERM.Application.Services
                     EmployeeName = emp.FullName,
 
                     IsSeamstress = emp.IsSeamstress,
+                    MachineNumber = emp.Seamstress?.MachineNumber ?? string.Empty,
+
                     IsCutter = emp.IsCutter,
                     IsIroner = emp.IsIroner,
 
-                    TotalItemsProcessed = empWorks.Sum(a => a.Quantity),
+                    TotalItemsProcessed = empWorks.Sum(a =>
+                        emp.IsSeamstress
+                        ? (a.OperationType == OperationType.Sewing ? a.Quantity : 0)
+                        : a.Quantity),
                     EarnedByOperations = empWorks.Sum(a => a.TotalPrice),
                     TotalAdjustments = empAdjs.Sum(a => a.Amount),
 
