@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ERM.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class Init : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -17,8 +17,11 @@ namespace ERM.Infrastructure.Migrations
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
+                    Article = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
                     SewingPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Description = table.Column<string>(type: "TEXT", maxLength: 1000, nullable: true)
+                    IroningPrice = table.Column<decimal>(type: "TEXT", nullable: false),
+                    Description = table.Column<string>(type: "TEXT", maxLength: 1000, nullable: true),
+                    IsDeleted = table.Column<bool>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -32,7 +35,8 @@ namespace ERM.Infrastructure.Migrations
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     FullName = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
                     PhoneNumber = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false),
-                    Notes = table.Column<string>(type: "TEXT", maxLength: 1000, nullable: true)
+                    Notes = table.Column<string>(type: "TEXT", maxLength: 1000, nullable: true),
+                    IsFired = table.Column<bool>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -86,6 +90,24 @@ namespace ERM.Infrastructure.Migrations
                     table.PrimaryKey("PK_Cutters", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Cutters_Employees_EmployeeId",
+                        column: x => x.EmployeeId,
+                        principalTable: "Employees",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Ironers",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    EmployeeId = table.Column<Guid>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Ironers", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Ironers_Employees_EmployeeId",
                         column: x => x.EmployeeId,
                         principalTable: "Employees",
                         principalColumn: "Id",
@@ -232,6 +254,12 @@ namespace ERM.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Ironers_EmployeeId",
+                table: "Ironers",
+                column: "EmployeeId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_PayrollAdjustments_Date",
                 table: "PayrollAdjustments",
                 column: "Date");
@@ -273,6 +301,9 @@ namespace ERM.Infrastructure.Migrations
         {
             migrationBuilder.DropTable(
                 name: "Cutters");
+
+            migrationBuilder.DropTable(
+                name: "Ironers");
 
             migrationBuilder.DropTable(
                 name: "PayrollAdjustments");

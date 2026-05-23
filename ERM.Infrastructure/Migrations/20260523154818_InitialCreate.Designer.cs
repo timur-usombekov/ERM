@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ERM.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260519150831_AddIroner")]
-    partial class AddIroner
+    [Migration("20260523154818_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -26,12 +26,20 @@ namespace ERM.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Article")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Description")
                         .HasMaxLength(1000)
                         .HasColumnType("TEXT");
 
                     b.Property<decimal>("IroningPrice")
                         .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -142,6 +150,9 @@ namespace ERM.Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("IsFired")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Notes")
                         .HasMaxLength(1000)
                         .HasColumnType("TEXT");
@@ -190,51 +201,6 @@ namespace ERM.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("Ironers");
-                });
-
-            modelBuilder.Entity("ERM.Core.Domain.Entities.IroningAssignment", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateOnly>("AssignedDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("CutBatchItemId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("IronerId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("PricePerUnit")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<Guid?>("SubstituteSeamstressId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("WeekNumber")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("Year")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AssignedDate");
-
-                    b.HasIndex("CutBatchItemId");
-
-                    b.HasIndex("IronerId");
-
-                    b.HasIndex("SubstituteSeamstressId");
-
-                    b.HasIndex("WeekNumber", "Year");
-
-                    b.ToTable("IroningAssignments");
                 });
 
             modelBuilder.Entity("ERM.Core.Domain.Entities.PayrollAdjustment", b =>
@@ -393,32 +359,6 @@ namespace ERM.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Employee");
-                });
-
-            modelBuilder.Entity("ERM.Core.Domain.Entities.IroningAssignment", b =>
-                {
-                    b.HasOne("ERM.Core.Domain.Entities.CutBatchItem", "CutBatchItem")
-                        .WithMany()
-                        .HasForeignKey("CutBatchItemId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("ERM.Core.Domain.Entities.Ironer", "Ironer")
-                        .WithMany()
-                        .HasForeignKey("IronerId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("ERM.Core.Domain.Entities.Seamstress", "SubstituteSeamstress")
-                        .WithMany()
-                        .HasForeignKey("SubstituteSeamstressId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("CutBatchItem");
-
-                    b.Navigation("Ironer");
-
-                    b.Navigation("SubstituteSeamstress");
                 });
 
             modelBuilder.Entity("ERM.Core.Domain.Entities.PayrollAdjustment", b =>
