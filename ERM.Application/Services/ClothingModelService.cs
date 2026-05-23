@@ -16,7 +16,7 @@ namespace ERM.Application.Services
         public async Task<IReadOnlyList<ClothingModelDto>> GetAllAsync(CancellationToken ct = default)
         {
             await using var context = await _contextFactory.CreateDbContextAsync(ct);
-            var models = await context.ClothingModels.AsNoTracking().ToListAsync(ct);
+            var models = await context.ClothingModels.Where(m => !m.IsDeleted).AsNoTracking().ToListAsync(ct);
             return models.Select(m => m.ToDto()).ToList();
         }
 
@@ -47,14 +47,15 @@ namespace ERM.Application.Services
             return model.ToDto();
         }
 
-        public async Task DeleteAsync(Guid id, CancellationToken ct = default)
+        public async Task SoftDeleteAsync(Guid id, CancellationToken ct = default)
         {
             await using var context = await _contextFactory.CreateDbContextAsync(ct);
             var model = await context.ClothingModels.FirstOrDefaultAsync(m => m.Id == id, ct);
             if (model is null)
                 throw new InvalidOperationException($"Модель одежды с Id {id} не найдена.");
 
-            context.ClothingModels.Remove(model);
+            model.MarkAsDeleted();
+            context.ClothingModels.Update(model);
             await context.SaveChangesAsync(ct);
         }
     }

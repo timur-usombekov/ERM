@@ -9,6 +9,6 @@ namespace ERM.Application.Interfaces.Services
             string? description, CancellationToken ct = default);
         Task<ClothingModelDto> EditAsync(Guid id, string name, string article, decimal sewingPrice, decimal ironingPrice, 
             string? description, CancellationToken ct = default);
-        Task DeleteAsync(Guid id, CancellationToken ct = default);
+        Task SoftDeleteAsync(Guid id, CancellationToken ct = default);
     }
 }

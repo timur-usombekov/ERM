@@ -10,6 +10,8 @@ namespace ERM.Core.Domain.Entities
         public decimal IroningPrice { get; private set; }
         public string? Description { get; private set; }
 
+        public bool IsDeleted { get; private set; }
+
         protected ClothingModel() { }
 
         public ClothingModel(string name, string article, decimal sewingPrice, decimal ironingPrice, string? description = null)
@@ -32,6 +34,11 @@ namespace ERM.Core.Domain.Entities
             SewingPrice = sewingPrice;
             IroningPrice = ironingPrice;
             Description = description;
+        }
+
+        public void MarkAsDeleted()
+        {
+            IsDeleted = true;
         }
 
     }

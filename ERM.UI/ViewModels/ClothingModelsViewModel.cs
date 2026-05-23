@@ -87,7 +87,7 @@ namespace ERM.UI.ViewModels
 
             if (confirmed?.ToString() != "True") return;
 
-            if (!await ExecuteSafeAsync(() => _service.DeleteAsync(dto.Id))) return;
+            if (!await ExecuteSafeAsync(() => _service.SoftDeleteAsync(dto.Id))) return;
 
             Models.Remove(dto);
         }

@@ -209,6 +209,8 @@
                                     </Border>
                                 </StackPanel>
                             </StackPanel>
+                            
+                            
 
                             <!-- Кнопки действий -->
                             <StackPanel Grid.Column="1" Orientation="Vertical" VerticalAlignment="Top">
@@ -240,6 +242,7 @@
                                             <TextBlock Text="Добавить" VerticalAlignment="Center" FontSize="13"/>
                                         </StackPanel>
                                     </Button>
+                                    
 
                                     <!-- Кнопка удаления -->
                                     <Button Style="{StaticResource MaterialDesignOutlinedButton}"
@@ -250,6 +253,24 @@
                                         <md:PackIcon Kind="TrashCanOutline" Foreground="#D32F2F" Width="18" Height="18"/>
                                     </Button>
                                 </StackPanel>
+
+                                <!-- ОШИБКА -->
+                                <Border CornerRadius="8" Padding="12,8" VerticalAlignment="Center" Margin="0,6,0,0">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background" Value="Transparent"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding ErrorMessage, Converter={StaticResource NullToBoolConverter}}" Value="True">
+                                                    <Setter Property="Background" Value="#FFEBEE"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding ErrorMessage, Converter={StaticResource NullToVisibilityConverter}}">
+                                        <md:PackIcon Kind="AlertCircleOutline" Width="15" Height="15" Foreground="#E53935" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                        <TextBlock Text="{Binding ErrorMessage}" Foreground="#E53935" FontSize="13" FontWeight="Medium" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
                             </StackPanel>
                         </Grid>
                     </Border>

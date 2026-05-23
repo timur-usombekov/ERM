@@ -22,10 +22,11 @@ namespace ERM.Infrastructure.Configurations
                 .IsRequired()
                 .HasColumnType("decimal(18,2)"); // формат для денег
 
-
             builder.Property(m => m.Description)
                 .HasMaxLength(1000);
 
+            builder.Property(m => m.IsDeleted)
+                .IsRequired();
         }
     }
 }
