@@ -77,6 +77,9 @@
             <DataTemplate DataType="{x:Type vmDialogs:EditCutBatchItemDialogViewModel}">
                 <dialogs:EditCutBatchItemDialog />
             </DataTemplate>
+            <DataTemplate DataType="{x:Type vmDialogs:EditCutBatchDialogViewModel}">
+                <dialogs:EditCutBatchDialog />
+            </DataTemplate>
 
 
             <!-- BooleanToVisibilityConverter вообще существует? -->

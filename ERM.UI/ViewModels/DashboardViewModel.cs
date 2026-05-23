@@ -128,50 +128,7 @@ namespace ERM.UI.ViewModels
         {
             await LoadAsync();
         }
-/*        private async Task LoadAsync()
-        {
-            IsLoading = true;
-            try
-            {
-                Guid? savedSeamstressId = SelectedSeamstress?.Id;
-                Guid? savedCutItemId = SelectedCutItem?.Id;
-                Guid? savedIronerId = SelectedShiftIroner?.Id;
-                string? savedSize = SelectedSize;
 
-                var assignments = await _workService.GetTodayAssignmentsAsync();
-                TodayAssignments.Clear();
-                foreach (var a in assignments) TodayAssignments.Add(a);
-
-                var employees = await _employeeService.GetAllAsync();
-                Seamstresses.Clear();
-                Ironers.Clear();
-                foreach (var s in employees.Where(e => e.IsSeamstress)) Seamstresses.Add(s);
-                foreach (var i in employees.Where(e => e.IsIroner)) Ironers.Add(i);
-
-                // Загружаем крой ДЛЯ ПОШИВА
-                var batches = await _cutBatchService.GetAllAsync();
-                _availableCutItemsToSew.Clear();
-                var activeItems = batches.Where(b => !b.IsClosed).SelectMany(b => b.Items).Where(i => i.AvailableQuantity > 0);
-                foreach (var item in activeItems) _availableCutItemsToSew.Add(item);
-
-                if (savedIronerId.HasValue)
-                    SelectedShiftIroner = Ironers.FirstOrDefault(i => i.Id == savedIronerId.Value);
-                else if (Ironers.Any())
-                    SelectedShiftIroner = Ironers.First();
-
-                // Важно: балансы подмены обновятся автоматически через сеттер SelectedShiftIroner
-
-                if (savedSeamstressId.HasValue) SelectedSeamstress = Seamstresses.FirstOrDefault(s => s.Id == savedSeamstressId.Value);
-                SelectedSize = savedSize;
-
-                // Восстанавливаем крой с учетом режима
-                if (savedCutItemId.HasValue)
-                    SelectedCutItem = DisplayedCutItems.FirstOrDefault(c => c.Id == savedCutItemId.Value);
-
-                OnPropertyChanged(nameof(DisplayedCutItems));
-            }
-            finally { IsLoading = false; }
-        }*/
         private async Task LoadAsync()
         {
             IsLoading = true;

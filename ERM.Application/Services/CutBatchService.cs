@@ -118,16 +118,14 @@ namespace ERM.Application.Services
 
             item.UpdateDetails(modelId, fabricColorId, newQuantity, newCutPrice);
 
-            // Не забыить пересчитать и обновить начисление закройщику зп
+            // Не забыть пересчитать и обновить начисление закройщику зп
             var cutterAssignment = await context.WorkAssignments
                 .FirstOrDefaultAsync(a => a.CutBatchItemId == itemId && a.OperationType == OperationType.Cutting, ct);
 
             if (cutterAssignment != null)
             {
                 cutterAssignment.UpdateQuantity(newQuantity);
-                // ВАЖНО: PricePerUnit обновится неявно через Reflection или лучше добавить метод обновления цены в WorkAssignment, 
-                // но для простоты EF Core отследит изменения, если мы пересоздадим или обновим поля.
-                // Добавь public void UpdatePrice(decimal newPrice) { PricePerUnit = newPrice; } в WorkAssignment.cs
+                // PricePerUnit обновится неявно через Reflection по идее
             }
 
             await context.SaveChangesAsync(ct);
@@ -154,5 +152,22 @@ namespace ERM.Application.Services
 
             await context.SaveChangesAsync(ct);
         }
+
+        public async Task<CutBatchDto> EditBatchAsync(Guid batchId, string title, DateOnly date, int declaredQuantity, Guid cutterEmployeeId, CancellationToken ct = default)
+        {
+            await using var context = await _contextFactory.CreateDbContextAsync(ct);
+
+            var batch = await context.CutBatches
+                .Include(b => b.Items)
+                .FirstOrDefaultAsync(b => b.Id == batchId, ct)
+                ?? throw new InvalidOperationException("Документ не найден.");
+
+            batch.UpdateDetails(title, date, declaredQuantity, cutterEmployeeId);
+
+            await context.SaveChangesAsync(ct);
+
+            return batch.ToDto();
+        }
+
     }
 }

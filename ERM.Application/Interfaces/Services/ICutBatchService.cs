@@ -12,6 +12,7 @@ namespace ERM.Application.Interfaces.Services
 
         Task EditItemInBatchAsync(Guid itemId, Guid modelId, Guid fabricColorId, int newQuantity, CancellationToken ct = default);
         Task RemoveItemFromBatchAsync(Guid itemId, CancellationToken ct = default);
+        Task<CutBatchDto> EditBatchAsync(Guid batchId, string title, DateOnly date, int declaredQuantity, Guid cutterEmployeeId, CancellationToken ct = default);
 
 
     }

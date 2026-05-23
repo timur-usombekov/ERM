@@ -18,6 +18,9 @@ namespace ERM.Infrastructure.Configurations
                 .IsRequired()
                 .HasMaxLength(20);
 
+            builder.Property(e => e.IsFired)
+                .IsRequired();
+
             builder.Property(e => e.Notes)
                 .HasMaxLength(1000);
 

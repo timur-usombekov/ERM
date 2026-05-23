@@ -214,6 +214,14 @@
                             <StackPanel Grid.Column="1" Orientation="Vertical" VerticalAlignment="Top">
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right">
 
+                                    <Button Style="{StaticResource MaterialDesignOutlinedButton}"
+                                            Command="{Binding EditBatchCommand}"
+                                            CommandParameter="{Binding SelectedBatch}"
+                                            Width="38" Height="38" Padding="8" md:ButtonAssist.CornerRadius="8" Margin="0,0,10,0"
+                                            BorderBrush="Gray" Foreground="Gray" ToolTip="Редактировать документ">
+                                        <md:PackIcon Kind="PencilOutline" Width="18" Height="18"/>
+                                    </Button>
+
                                     <!-- КНОПКА: АРХИВИРОВАТЬ -->
                                     <Button Style="{StaticResource MaterialDesignOutlinedButton}"
                                             Command="{Binding ToggleBatchStatusCommand}"

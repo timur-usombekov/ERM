@@ -69,6 +69,25 @@ namespace ERM.Core.Domain.Entities
 
         public void Close() => IsClosed = true;
         public void Open() => IsClosed = false;
+
+        public void UpdateDetails(string title, DateOnly date, int declaredQuantity, Guid cutterEmployeeId)
+        {
+            if (declaredQuantity <= 0)
+                throw new ArgumentException("Количество должно быть больше нуля.");
+
+            int currentlyDistributed = _items.Sum(i => i.Quantity);
+
+            // Защита: нельзя поставить общий лимит меньше, чем уже расписано по моделям
+            if (declaredQuantity < currentlyDistributed)
+                throw new InvalidOperationException(
+                    $"Нельзя установить общее количество {declaredQuantity} шт. Уже распределено по моделям {currentlyDistributed} шт.");
+
+            Title = title;
+            Date = date;
+            DeclaredQuantity = declaredQuantity;
+            CutterEmployeeId = cutterEmployeeId;
+        }
+
     }
 
 }

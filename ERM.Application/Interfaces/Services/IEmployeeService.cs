@@ -18,7 +18,7 @@ namespace ERM.Application.Interfaces.Services
             bool isIroner,
             CancellationToken ct = default);
 
-        Task DeleteAsync(Guid id, CancellationToken ct = default);
+        Task SoftDeleteAsync(Guid id, CancellationToken ct = default);
 
     }
 }

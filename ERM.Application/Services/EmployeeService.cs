@@ -19,7 +19,7 @@ namespace ERM.Application.Services
         public async Task<IReadOnlyList<EmployeeDto>> GetAllAsync(CancellationToken ct = default)
         {
             await using var context = await _contextFactory.CreateDbContextAsync(ct);
-            var employees = await context.Employees
+            var employees = await context.Employees.Where(e => !e.IsFired)
                 .Include(e => e.Seamstress)
                 .Include(e => e.Cutter)
                 .Include(e => e.Ironer)
@@ -31,7 +31,7 @@ namespace ERM.Application.Services
         public async Task<EmployeeDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
         {
             await using var context = await _contextFactory.CreateDbContextAsync(ct);
-            var employee = await context.Employees
+            var employee = await context.Employees.Where(e => !e.IsFired)
                 .Include(e => e.Seamstress)
                 .Include(e => e.Cutter)
                 .Include(e => e.Ironer)
@@ -74,7 +74,7 @@ namespace ERM.Application.Services
         {
             await using var context = await _contextFactory.CreateDbContextAsync(ct);
 
-            var employee = await context.Employees
+            var employee = await context.Employees.Where(e => !e.IsFired)
                 .Include(e => e.Seamstress)
                 .Include(e => e.Cutter)
                 .Include(e => e.Ironer)
@@ -118,13 +118,14 @@ namespace ERM.Application.Services
             return employee.ToDto();
         }
 
-        public async Task DeleteAsync(Guid id, CancellationToken ct = default)
+        public async Task SoftDeleteAsync(Guid id, CancellationToken ct = default)
         {
             await using var context = await _contextFactory.CreateDbContextAsync(ct);
             var employee = await context.Employees.FirstOrDefaultAsync(e => e.Id == id, ct);
             if (employee is null)
                 throw new InvalidOperationException($"Сотрудник с Id {id} не найден.");
-            context.Employees.Remove(employee);
+            employee.Fire();
+            context.Employees.Update(employee);
             await context.SaveChangesAsync(ct);
         }
     }

@@ -116,13 +116,13 @@
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
                                                 <ToggleButton
-                                                HorizontalAlignment="Center"
-                                                IsChecked="{Binding Path=DetailsVisibility,
+                                                            HorizontalAlignment="Center"
+                                                            IsChecked="{Binding Path=DetailsVisibility,
                                                             RelativeSource={RelativeSource AncestorType=DataGridRow},
                                                             Converter={StaticResource VisibilityToBoolConverter}}"
-                                                Width="32" Height="32"
-                                                Style="{StaticResource MaterialDesignIconButton}"
-                                                Foreground="{DynamicResource MaterialDesignBodyLight}">
+                                                            Width="32" Height="32"
+                                                            Style="{StaticResource MaterialDesignIconButton}"
+                                                            Foreground="{DynamicResource MaterialDesignBodyLight}">
                                                     <md:PackIcon Width="18" Height="18">
                                                         <md:PackIcon.Style>
                                                             <Style TargetType="md:PackIcon">
@@ -276,11 +276,11 @@
                                                                         <ColumnDefinition Width="65"/>
                                                                         <ColumnDefinition Width="Auto"/>
                                                                     </Grid.ColumnDefinitions>
-                                                                    <TextBlock Grid.Column="0"
-                                                                           Text="{Binding ModelName}"
-                                                                           FontWeight="Medium"
-                                                                           TextTrimming="CharacterEllipsis"
-                                                                           Foreground="{DynamicResource MaterialDesignBody}"/>
+                                                                    <StackPanel Grid.Column="0">
+                                                                        <TextBlock Text="{Binding ModelName}" FontWeight="Medium" Foreground="{DynamicResource MaterialDesignBody}"/>
+                                                                        <!-- Вот тут выводим OperationName, если подменщица (будет написано "ВТО / Глажка") -->
+                                                                        <TextBlock Text="{Binding OperationName}" FontSize="11" Foreground="{DynamicResource MaterialDesignBodyLight}" Opacity="0.8"/>
+                                                                    </StackPanel>
                                                                     <TextBlock Grid.Column="1"
                                                                            Text="{Binding Quantity, StringFormat='{}{0} шт'}"
                                                                            Foreground="Gray" FontWeight="Medium"/>
@@ -325,12 +325,12 @@
                                                         </StackPanel>
 
                                                         <Button Grid.Column="1"
-                                                            Command="{Binding DataContext.AddAdjustmentCommand,
+                                                                Command="{Binding DataContext.AddAdjustmentCommand,
                                                                 RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                            CommandParameter="{Binding}"
-                                                            Style="{StaticResource MaterialDesignOutlinedButton}"
-                                                            Height="28" Padding="10,0"
-                                                            md:ButtonAssist.CornerRadius="6">
+                                                                CommandParameter="{Binding}"
+                                                                Style="{StaticResource MaterialDesignOutlinedButton}"
+                                                                Height="28" Padding="10,0"
+                                                                md:ButtonAssist.CornerRadius="6">
                                                             <StackPanel Orientation="Horizontal">
                                                                 <md:PackIcon Kind="Plus"
                                                                          Width="14" Height="14"
@@ -517,7 +517,10 @@
                                                                         <ColumnDefinition Width="1*"/>
                                                                         <ColumnDefinition Width="Auto"/>
                                                                     </Grid.ColumnDefinitions>
-                                                                    <TextBlock Grid.Column="0" Text="{Binding ModelName}" FontWeight="Medium" Foreground="{DynamicResource MaterialDesignBody}"/>
+                                                                    <StackPanel Grid.Column="0">
+                                                                        <TextBlock Text="{Binding ModelName}" FontWeight="Medium" Foreground="{DynamicResource MaterialDesignBody}"/>
+                                                                        <TextBlock Text="{Binding OperationName}" FontSize="11" Foreground="{DynamicResource MaterialDesignBodyLight}" Opacity="0.8"/>
+                                                                    </StackPanel>
                                                                     <TextBlock Grid.Column="1" Text="{Binding Quantity, StringFormat='{}{0} шт'}" Foreground="Gray" FontWeight="Medium"/>
                                                                     <TextBlock Grid.Column="2" Text="{Binding PricePerUnit, StringFormat='x {0} ₴'}" Foreground="Gray"/>
                                                                     <TextBlock Grid.Column="3" Text="{Binding Sum, StringFormat='{}{0:0.##} ₴'}" FontWeight="Bold" Foreground="{DynamicResource PrimaryHueMidBrush}"/>
@@ -570,12 +573,12 @@
                         </TabItem>
                         <TabItem Header="Гладильщицы">
                             <DataGrid ItemsSource="{Binding IronersPayroll}"
-              AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False"
-              HeadersVisibility="Column" BorderThickness="0" Background="Transparent"
-              RowHeight="56" RowDetailsVisibilityMode="Collapsed" 
-              SelectionUnit="FullRow" FocusVisualStyle="{x:Null}"
-              Style="{StaticResource MaterialDesignDataGrid}"
-              md:DataGridAssist.ColumnHeaderPadding="16,14" md:DataGridAssist.CellPadding="16,0">
+                                      AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False"
+                                      HeadersVisibility="Column" BorderThickness="0" Background="Transparent"
+                                      RowHeight="56" RowDetailsVisibilityMode="Collapsed" 
+                                      SelectionUnit="FullRow" FocusVisualStyle="{x:Null}"
+                                      Style="{StaticResource MaterialDesignDataGrid}"
+                                      md:DataGridAssist.ColumnHeaderPadding="16,14" md:DataGridAssist.CellPadding="16,0">
 
                                 <DataGrid.ColumnHeaderStyle>
                                     <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource MaterialDesignDataGridColumnHeader}">
@@ -600,8 +603,8 @@
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
                                                 <ToggleButton Style="{StaticResource MaterialDesignExpandCollapseToggleStyle}"
-                                      IsChecked="{Binding Path=DetailsVisibility, RelativeSource={RelativeSource AncestorType=DataGridRow}, Converter={StaticResource VisibilityToBoolConverter}}"
-                                      Width="24" Height="24" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                                                              IsChecked="{Binding Path=DetailsVisibility, RelativeSource={RelativeSource AncestorType=DataGridRow}, Converter={StaticResource VisibilityToBoolConverter}}"
+                                                              Width="24" Height="24" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>

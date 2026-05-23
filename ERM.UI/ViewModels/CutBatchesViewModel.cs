@@ -48,6 +48,7 @@ namespace ERM.UI.ViewModels
         public AsyncRelayCommand LoadCommand { get; }
         public AsyncRelayCommand AddBatchCommand { get; }
         public AsyncRelayCommand AddItemCommand { get; }
+        public AsyncRelayCommand<CutBatchDto> EditBatchCommand { get; }
         public AsyncRelayCommand<CutBatchDto> DeleteBatchCommand { get; }
         public AsyncRelayCommand<CutBatchDto> ToggleBatchStatusCommand { get; }
 
@@ -68,6 +69,7 @@ namespace ERM.UI.ViewModels
             LoadCommand = new AsyncRelayCommand(_ => LoadAsync());
             AddBatchCommand = new AsyncRelayCommand(_ => AddBatchAsync());
             AddItemCommand = new AsyncRelayCommand(_ => AddItemAsync(), _ => SelectedBatch is not null);
+            EditBatchCommand = new AsyncRelayCommand<CutBatchDto>(EditBatchAsync);
             DeleteBatchCommand = new AsyncRelayCommand<CutBatchDto>(DeleteBatchAsync);
             ToggleBatchStatusCommand = new AsyncRelayCommand<CutBatchDto>(ToggleStatusAsync);
             EditItemCommand = new AsyncRelayCommand<CutBatchItemDto>(EditItemAsync);
@@ -223,6 +225,23 @@ namespace ERM.UI.ViewModels
             if (confirmed?.ToString() != "True") return;
 
             var isSuccess = await ExecuteSafeAsync(() => _cutBatchService.RemoveItemFromBatchAsync(item.Id));
+
+            if (isSuccess) await LoadAsync();
+        }
+
+        private async Task EditBatchAsync(CutBatchDto? batch)
+        {
+            if (batch is null) return;
+
+            var employees = await _employeeService.GetAllAsync();
+            var vm = new EditCutBatchDialogViewModel(batch, employees);
+
+            var result = await DialogHost.Show(vm, "RootDialog");
+            if (result is not EditCutBatchDialogViewModel r || !r.IsValid) return;
+
+            var (isSuccess, _) = await ExecuteSafeAsync(() =>
+                _cutBatchService.EditBatchAsync(
+                    batch.Id, r.Title, DateOnly.FromDateTime(r.Date), r.DeclaredQuantity, r.SelectedCutter!.Id));
 
             if (isSuccess) await LoadAsync();
         }

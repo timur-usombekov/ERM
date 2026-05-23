@@ -17,6 +17,8 @@ namespace ERM.Core.Domain.Entities
         public Ironer? Ironer { get; private set; }
         public bool IsIroner => Ironer is not null;
 
+        public bool IsFired { get; private set; }
+
         protected Employee() { }
 
         public Employee(string fullName, string phoneNumber)
@@ -90,5 +92,11 @@ namespace ERM.Core.Domain.Entities
             Ironer = null;
         }
 
+        public void Fire()
+        {
+            if (IsFired)
+                throw new InvalidOperationException("Сотрудник уже уволен.");
+            IsFired = true;
+        }
     }
 }

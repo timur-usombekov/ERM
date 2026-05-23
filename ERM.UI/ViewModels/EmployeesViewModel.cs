@@ -69,7 +69,7 @@ namespace ERM.UI.ViewModels
 
             if (confirmed?.ToString() != "True") return;
 
-            if(!await ExecuteSafeAsync(() => _employeeService.DeleteAsync(employee.Id))) return;
+            if(!await ExecuteSafeAsync(() => _employeeService.SoftDeleteAsync(employee.Id))) return;
             Employees.Remove(employee); // не перегружаем весь список — просто убираем из коллекции
         }
 
